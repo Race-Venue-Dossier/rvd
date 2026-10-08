@@ -75,8 +75,14 @@ for (const [k, b] of Object.entries(BOARDS)) out[k] = { items: await board(b) };
 out.rvd = { items: await rvdBoard() };
 // Dateien: Download-Adressen gelten nur eine Stunde, deshalb werden sie einmalig geholt und verschlüsselt im Repo abgelegt.
 const MAXA = 40 * 1024 * 1024;
+// Aus dem Dossier nach monday kopierte Dateien sind schon auf der Seite: nicht nochmals holen (data/monasset_skip.json)
+let SKIP = { names: [], ids: [] };
+try { SKIP = JSON.parse(fs.readFileSync('data/monasset_skip.json', 'utf8')); } catch (e) {}
+const skipN = new Set(SKIP.names || []), skipI = new Set((SKIP.ids || []).map(String));
 const assets = [];
-for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) { f.ok = f.size <= MAXA && !!f.ext; if (f.ok) assets.push({ ...f }); delete f.url; }
+for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) {
+  f.dup = skipN.has(f.n) || skipI.has(String(f.id));
+  f.ok = !f.dup && f.size <= MAXA && !!f.ext; if (f.ok) assets.push({ ...f }); delete f.url; }
 const body = JSON.stringify(out);
 const hash = crypto.createHash('sha256').update(body).digest('hex');
 const hf = 'data/live.sha';
