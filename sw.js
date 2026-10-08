@@ -1,6 +1,6 @@
 /* Service Worker: App-Gefühl und Offline-Zugriff (GitHub-Pages-Version).
    Alle Daten bleiben verschlüsselt im Cache; entschlüsselt wird nur in der Seite. */
-var V='rvd-4bb2a09831b0',SHELL=['./','index.html','key.json','manifest.webmanifest','icons/apple-touch-icon.png','icons/icon-192.png','icons/favicon.svg','data/core.gz.enc'];
+var V='rvd-283055eb2e33',SHELL=['./','index.html','key.json','manifest.webmanifest','icons/apple-touch-icon.png','icons/icon-192.png','icons/favicon.svg','data/core.gz.enc'];
 self.addEventListener('install',function(e){ e.waitUntil(caches.open(V).then(function(c){ return c.addAll(SHELL); }).then(function(){ return self.skipWaiting(); })); });
 self.addEventListener('activate',function(e){ e.waitUntil(caches.keys().then(function(ks){ return Promise.all(ks.filter(function(k){ return k.indexOf('rvd-')===0&&k!==V&&k!=='rvd-media'&&k!=='rvd-map'; }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); })); });
 function netFirst(req,cache){
