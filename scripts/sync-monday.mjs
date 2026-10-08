@@ -60,6 +60,8 @@ async function rvdBoard() {
       for (const c of it.column_values) { cv[c.id] = c.text || ''; if (c.files) for (const f of c.files) if (f.asset) files.push(f.asset); }
       let link = null;
       try { const lv = JSON.parse((it.column_values.find(c => c.id === 'link_mm7yseny') || {}).value || 'null'); if (lv && lv.url) link = { u: lv.url, t: lv.text || '' }; } catch (e) {}
+      // Vorlage ohne Inhalt (keine Datei, kein Link, keine Notiz): weglassen
+      if (!files.length && !link && !(cv.long_text_mm7ya2cv || '').trim()) continue;
       p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, note: cv.long_text_mm7ya2cv, link,
         files: files.map(a => ({ id: a.id, n: a.name, ext: (a.file_extension || '').replace(/^\./, '').toLowerCase(), size: +a.file_size || 0, url: a.public_url })) });
     }
