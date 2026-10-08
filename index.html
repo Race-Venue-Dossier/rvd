@@ -935,7 +935,7 @@ ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
 #gate .gmap .leaflet-control-attribution{background:rgba(0,0,0,.35)!important;color:rgba(255,255,255,.55);font-size:9px}
 #gate .gmap .leaflet-control-attribution a{color:inherit}
 #gate .gshade{position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(16,20,27,.95) 0%,rgba(16,20,27,.78) 22%,rgba(16,20,27,.2) 45%,rgba(16,20,27,.15) 72%,rgba(16,20,27,.88) 100%)}
-#gate .gdot{display:block;width:9px;height:9px;border-radius:50%;background:#DA291C;box-shadow:0 0 0 3px rgba(218,41,28,.35),0 0 10px rgba(218,41,28,.8)}
+#gate .gdot{display:block;width:8px;height:8px;border-radius:50%;background:#ff3b2f;border:1.5px solid #fff;box-sizing:border-box;box-shadow:0 0 6px rgba(0,0,0,.6)}
 #gate .gtop,#gate .gbot{position:relative;z-index:1}
 #gate .gkick{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.62)}
 #gate .gkick i{width:22px;height:2px;background:var(--red,#DA291C);display:block}
@@ -1083,9 +1083,9 @@ ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
     var el=document.getElementById('gate-map'); if(!el||!window.L) return;
     var wide=window.innerWidth>860,m=L.map(el,{zoomControl:false,attributionControl:true,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,zoomSnap:0.25});
     m.attributionControl.setPrefix(false);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, Earthstar Geographics'}).addTo(m);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri, Maxar, Earthstar Geographics',tileSize:128,zoomOffset:1,detectRetina:true,maxNativeZoom:16,keepBuffer:4}).addTo(m);
     m.fitBounds([[28,-118],[58,26]],{paddingTopLeft:wide?[0,140]:[0,60],paddingBottomRight:[0,0]});
-    P.forEach(function(p){ L.marker(p,{icon:L.divIcon({className:'',html:'<span class="gdot"></span>',iconSize:[9,9],iconAnchor:[4,4]}),interactive:false,keyboard:false}).addTo(m); });
+    P.forEach(function(p){ L.marker(p,{icon:L.divIcon({className:'',html:'<span class="gdot"></span>',iconSize:[8,8],iconAnchor:[4,4]}),interactive:false,keyboard:false}).addTo(m); });
   }
   var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; s.onload=function(){ if(document.getElementById('gate')) go(); }; document.head.appendChild(s);
 })();
@@ -2327,7 +2327,7 @@ function loadLeaflet(){
 function baseLayer(L,map){
   var inClaude=!window.__STANDALONE&&!window.__encFetch;
   if(!inClaude){
-    return L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:13,maxNativeZoom:13,attribution:'Bild: Esri, Maxar, Earthstar Geographics'}).addTo(map);
+    return L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:14,maxNativeZoom:17,detectRetina:true,attribution:'Bild: Esri, Maxar, Earthstar Geographics'}).addTo(map);
   }
   return L.imageOverlay('world.jpg',[[-85.05,-180],[85.05,180]],{attribution:'Bild: NASA Blue Marble'}).addTo(map);
 }
