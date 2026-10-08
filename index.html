@@ -680,6 +680,8 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .tbl td.stick,.tbl th.stick{position:sticky;left:0;background:var(--surface);z-index:1}
 .tbl thead th.stick{z-index:3;background:var(--th)}
 .spc-l{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+.tw+.spc-l,svg+.spc-l,.spl>.spc-l,.tc2+.spc-l,.spm+.spc-l,.spb>.spc-l:last-child,ol+.spc-l{margin-top:10px}
+.spc-l+.spc-l{margin-top:3px}
 .spc-f{margin:0;padding-left:16px;font-size:12px;color:var(--ink-2);line-height:1.55;display:flex;flex-direction:column;gap:2px}
 .spc-f b{color:var(--ink)}
 .up{color:var(--ok)}.dn{color:var(--loss)}
@@ -739,12 +741,43 @@ ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
 .mpop-go{grid-column:1/-1;font-size:12px;font-weight:750;color:var(--red)}
 @media (max-width:640px){.evmap{height:66vh;min-height:360px}.evh-r{align-items:flex-start}}
 .tcmp td,.tcmp th{padding-block:6px}
+.sekg{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start;margin-top:8px}
+@media (max-width:860px){.sekg{grid-template-columns:1fr}}
+.sekh{margin:14px 0 0;font-size:12.5px;font-weight:750}
+.sekt tr.me td{background:color-mix(in srgb,var(--red) 6%,var(--surface))}
+.sekt td i,.sekt th i,.sekc i[class^="st"]{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+.sekcs{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.sekc{display:grid;grid-template-columns:110px minmax(0,1fr) 40px;gap:8px;align-items:center;font-size:12.5px}
+.sekl{white-space:nowrap;font-weight:650}
+.sekb{height:12px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.sekb i{display:block;height:100%;background:var(--ink-2);border-radius:0 4px 4px 0}
+.sekt .num{text-align:right}
+.sekv{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+table.srt th.sh{cursor:pointer;user-select:none;white-space:nowrap}
+table.srt th.sh:hover{color:var(--ink)}
+table.srt th.sh::after{content:"↕";margin-left:4px;font-size:9px;opacity:.35}
+table.srt th.sh.on{color:var(--ink)}
+table.srt th.sh.on::after{content:"▼";opacity:.9}
+table.srt th.sh.on.asc::after{content:"▲"}
 .lvb{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:4px 10px;white-space:nowrap}
 .lvb i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
 .lvb.on i{background:#16a34a;box-shadow:0 0 0 3px color-mix(in srgb,#16a34a 25%,transparent)}
 .lvb.err{color:var(--loss);white-space:normal}
 .lvt td{vertical-align:middle}
-.lvn{display:inline-flex;align-items:center;gap:7px}
+.lvn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lvn svg.flag{flex:none}
+.flag-ph{display:inline-block;width:20px}
+.lvc>summary{list-style:none;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0}
+.lvc>summary::-webkit-details-marker{display:none}
+.lvc[open]>summary{margin-bottom:12px}
+.lvs{display:flex;align-items:center;gap:10px}
+.lvx{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-top:-4px;transition:transform .15s}
+.lvc[open] .lvx{transform:rotate(-135deg);margin-top:4px}
+.lvt tr.lvmo th{background:var(--surface-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding-block:6px}
+.lvt tr.past td{opacity:.55}
+.lvt td.lvdt{font-weight:700;font-variant-numeric:tabular-nums}
+.lvk{font-size:10.5px;font-weight:750;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
+.lvk.sp{color:var(--stG);border-color:color-mix(in srgb,var(--stG) 40%,var(--line))}.lvk.te{color:var(--stT);border-color:color-mix(in srgb,var(--stT) 40%,var(--line))}.lvk.ot{color:var(--muted)}
 .lvm{display:none;list-style:none;margin:0;padding:0}
 .lvm li{padding:10px 0;border-top:1px solid var(--row-line);display:flex;flex-direction:column;gap:4px}
 .lvm-h{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13.5px}
@@ -1669,6 +1702,7 @@ function repBody(it,alt){
   return '<div class="rep-b">'+out+(foot.length?'<p class="rep-f">'+foot.join(' · ')+'</p>':'')+'</div>';
 }
 function itemRow(it){
+  if(it.k==='sek'&&SP){ var cev=S.events.filter(function(x){return x.id===S.ev;})[0]; var nat=cev?sekNative(cev,it):''; if(nat) return nat; }
   var href=it.asset?('/_blob/'+encodeURIComponent(it.asset)):(okUrl(it.url)?it.url:'');
   var k=KIND[it.k]||KIND.div,vim=vimeoId(it.url),isRep=it.blocks&&it.blocks.length;
   var meta=[];
@@ -1841,11 +1875,11 @@ function sectorCard(r){
   }).join('');
   var mob='<div class="spm" role="table" aria-label="Sektorränge"><div class="spm-r spm-h" role="row"><span class="spm-n">Sektor</span><span class="spm-c">'+r.best.map(function(b,k){ var t=r.st&&r.st[k]; return '<i class="spm-s'+(t?' st'+t:'')+'" title="'+h('S'+(k+1)+(t?' '+STN[t]:''))+'">'+(k+1)+'</i>'; }).join('')+'</span></div>'+
     show.map(function(a){ return '<div class="spm-r'+(a.nat==='SUI'?'':' ref')+'" role="row"><span class="spm-n"><b>'+h(shortN(a.n))+'</b><small>'+a.rk+'. · '+(a.rk===1?fmtT(a.fin):sg(a.fin-r.bf))+'</small></span><span class="spm-c">'+a.srk.map(function(rk,k){ return '<i style="'+lossBg(a.lp[k])+'" class="'+(rk<=3?'top':'')+'" title="'+h('S'+(k+1)+': '+sg(a.gap[k])+' s, Rang '+rk)+'">'+rk+'</i>'; }).join('')+'</span></div>'; }).join('')+
-    '<p class="spc-l">Zahl = Sektorrang. Gold umrandet = Top 3. Je dunkler, desto grösser der Rückstand.</p></div>';
+    '<p class="spc-l">Zahl = Sektorrang · Gold = Top 3 · dunkler = mehr Rückstand.</p></div>';
   return '<div class="spc"><div class="spc-h"><span class="pill'+(r.tr?' tr':'')+'">'+h(r.lab)+'</span><span class="cd-t">Sektoranalyse · FIS-Zwischenzeiten</span><span class="sp"></span>'+
       (r.st?'':'<span class="spc-n">Streckencharakter nicht zugeordnet</span>')+'</div>'+
     '<div class="tw spt-d"><table class="tbl spt"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
-    '<p class="spc-l">Zellen: Rückstand auf die Sektor-Bestzeit in Sekunden und Sektorrang. Je dunkler, desto grösser der Verlust in Prozent.</p>'+mob+
+    '<p class="spc-l">Rückstand auf die Sektor-Bestzeit (s) und Sektorrang · dunkler = mehr Verlust.</p>'+mob+
     '<details class="spfz"'+(window.innerWidth>760?' open':'')+'><summary>Fazit pro Athlet:in <span class="mu">('+Math.min(8,sui.length)+')</span></summary><ul class="spc-f">'+notes+'</ul></details></div>';
 }
 function fmtT(s){ var m=Math.floor(s/60),x=(s-m*60).toFixed(2); return m?m+':'+(x<10?'0':'')+x:x; }
@@ -1894,7 +1928,7 @@ function viewSpeed(){
   if(!SP) return '<section class="card"><div class="empty"><b>Sektordaten werden geladen</b>FIS-Zwischenzeiten und Pistenbedingungen.</div></section>';
   var st=spState(); if(!st.area) st.area='speed';
   var intro=function(inner){ return '<section class="card spi"><div class="spi-h"><h2>Athletenprofile</h2>'+seg('sp-a','spa',st.area,[['speed','Speed · DH/SG'],['tech','Technik · GS/SL']],'spa')+'</div><p>'+
-    (st.area==='tech'?'Wo verlieren die Schweizer Technik-Athlet:innen Zeit? Grundlage sind die Gate-to-Gate-Reports 2025/26 (Rückstand auf die Laufbestzeit pro Tor) und die Kursdaten jedes Tors: Gefälle, Drehung, Torart und Abstand.':'Zeitverlust der Schweizer Speed-Athlet:innen nach Streckenabschnitt und Bedingungen. Grundlage: FIS-Zwischenzeiten, Board «Slope Analysis SPEED» (Technisch, Mix, Gleiten) und Pistenbedingungen.')+
+    (st.area==='tech'?'Wo verlieren die Schweizer Technik-Athlet:innen Zeit?':'Wo verlieren die Schweizer Speed-Athlet:innen Zeit?')+
     '</p><div class="filters spf">'+inner+'</div></section>'; };
   if(st.area==='tech') return viewTech(st,intro);
   var st=spState(),races=spRaces(st),team=spTeam(races),top=spTop(races);
@@ -1910,7 +1944,7 @@ function viewSpeed(){
   /* Team-Übersicht */
   var COLS=[['T','Technisch','sec'],['M','Mix','sec'],['G','Gleiten','sec'],['kalt','Schnee kalt','snow'],['mittel','Schnee mittel','snow'],['mild','Schnee mild','snow'],['sonnig','Sonne','wx'],['bewölkt','Bewölkt','wx'],['Niederschlag','Schneefall','wx'],['hart/aggressiv','Piste hart','prep'],['kompakt','Piste kompakt','prep'],['weich/gesalzen','Piste weich','prep']];
   var colRef={}; COLS.forEach(function(c){ var vals=team.map(function(n){ var s=stats[n]; return c[2]==='sec'?s['m'+c[0]]:(s[c[2]][c[0]]&&s[c[2]][c[0]].length>=2?med(s[c[2]][c[0]]):null); }).filter(function(v){return v!=null;}); colRef[c[0]]=med(vals); });
-  var heat='<div class="tw"><table class="tbl sph"><thead><tr><th class="stick">Athlet:in</th><th class="num">Läufe</th><th class="num">Ø Rang</th><th>Letzte Läufe <small class="mu">Rang</small></th>'+
+  var heat='<div class="tw"><table class="tbl sph srt" data-sid="sph"><thead><tr><th class="stick">Athlet:in</th><th class="num">Läufe</th><th class="num">Ø Rang</th><th>Letzte Läufe <small class="mu">Rang</small></th>'+
     '<th class="grp" colspan="3">Rückstand je Abschnittstyp</th><th class="grp" colspan="3">Rückstand im Ziel nach Schneetemperatur</th><th class="grp" colspan="3">nach Wetter</th><th class="grp" colspan="3">nach Piste</th></tr>'+
     '<tr class="sub"><th class="stick"></th><th></th><th></th><th></th>'+COLS.map(function(c){return '<th class="num">'+(c[2]==='sec'?'<i class="st'+c[0]+'" aria-hidden="true"></i>':'')+h(c[1].replace(/^Schnee |^Piste /,''))+'</th>';}).join('')+'</tr></thead><tbody>'+
     team.map(function(n){ var s=stats[n];
@@ -1918,7 +1952,7 @@ function viewSpeed(){
         COLS.map(function(c){ var v=c[2]==='sec'?s['m'+c[0]]:(s[c[2]][c[0]]&&s[c[2]][c[0]].length>=2?med(s[c[2]][c[0]]):null),cnt=c[2]==='sec'?null:(s[c[2]][c[0]]||[]).length;
           return '<td class="num hc" style="'+divBg(v,colRef[c[0]],c[2]==='sec'?1.2:2.5)+'" title="'+h(n+' · '+c[1]+': '+(v==null?'zu wenig Läufe':pc(v)+(cnt?' ('+cnt+' Läufe)':'')))+'">'+(v==null?'<span class="na">–</span>':pc(v))+'</td>'; }).join('')+'</tr>';
     }).join('')+'</tbody></table></div>'+
-    '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Rang: Podest, Top 10, Top 20, dahinter (neuester rechts) · ▲▼ Trend der letzten 3 Läufe.</p><p class="spc-l"><span class="lg good"></span> besser als der Team-Median der Spalte <span class="lg bad"></span> schlechter. Abschnittstyp: Median-Rückstand auf die Sektor-Bestzeit. Bedingungen: Median-Rückstand auf die Siegerzeit, ab zwei Läufen.</p>';
+    '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Rang · ▲▼ Trend letzte 3 Läufe · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als Team-Median.</p><p class="spc-l">Abschnitt: Rückstand auf die Sektor-Bestzeit · Bedingungen: Rückstand auf die Siegerzeit (Median, ab 2 Läufen).</p>';
   var lead='<div class="spk3">'+['T','M','G'].map(function(t){ var rk=team.filter(function(n){return stats[n]['m'+t]!=null&&stats[n][t].length>=4;}).sort(function(a,b){return stats[a]['m'+t]-stats[b]['m'+t];}).slice(0,3);
     return '<div class="k3"><p class="h3"><i class="st'+t+'" aria-hidden="true"></i>Am stärksten: '+STL[t]+'</p><ol>'+rk.map(function(n){ return '<li><button type="button" class="lnk" data-act="spath" data-v="'+h(n)+'">'+h(n)+'</button><span>'+pc(stats[n]['m'+t])+'</span></li>'; }).join('')+'</ol><p class="spc-l">Top 10 Weltcup: '+pc(top[t])+'</p></div>'; }).join('')+'</div>';
   return ctrl+lead+
@@ -1951,7 +1985,7 @@ function spProfile(name,s,tm,top,races){
   var bars='<div class="spb" role="img" aria-label="Rückstand je Abschnittstyp im Vergleich"><p class="spc-l spbk"><span class="lg me"></span>'+h(shortN(name))+' <span class="lg tm"></span>Team SUI <span class="lg tp"></span>Top 10 Weltcup</p>'+['T','M','G'].map(function(t){
     var row=function(v,cls){ return '<div class="spbr"><span class="spbt"><i class="'+cls+'" style="width:'+(v==null?0:Math.max(2,v/mx*100)).toFixed(1)+'%"></i></span><span class="spbv">'+pc(v)+'</span></div>'; };
     return '<div class="spbg"><p class="spbh"><i class="st'+t+'" aria-hidden="true"></i>'+STL[t]+'<small>'+s[t].length+' Sektoren</small></p>'+row(s['m'+t],'me')+row(tm[t],'tm')+row(top[t],'tp')+'</div>';
-  }).join('')+'<p class="spc-l">Median-Rückstand auf die Sektor-Bestzeit. Kürzer ist besser.</p></div>';
+  }).join('')+'<p class="spc-l">Median-Rückstand auf die Sektor-Bestzeit.</p></div>';
   /* Formkurve: Punkt = Lauf, Zahl = Rang, Höhe = Rückstand auf die Siegerzeit */
   var mob=window.innerWidth<640,W=mob?380:680,Hh=mob?220:210,pl=mob?34:40,pr=mob?8:14,pt=16,pb=40,mxv=Math.max(2,Math.ceil(Math.max.apply(null,L.map(function(x){return x.a.fp;}))));
   var X=function(i){ return pl+14+(L.length<2?0:i/(L.length-1)*(W-pl-pr-28)); },Y=function(v){ return pt+Math.min(v,mxv)/mxv*(Hh-pb-pt); };
@@ -1966,7 +2000,7 @@ function spProfile(name,s,tm,top,races){
   var chart='<div class="spl"><svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Formkurve '+h(name)+': Rückstand auf die Siegerzeit pro Lauf">'+grid+seas.join('')+line+dots+xl+'</svg>'+
     '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Zahl = Rang · Höhe = Rückstand auf die Siegerzeit (oben = näher am Sieg)'+(L.length>2?' · <span class="lg rl"></span> Schnitt über 3 Läufe':'')+(L.some(function(x){return x.r.tr;})?' · gestrichelt = Training':'')+'</p></div>';
   /* Läufe */
-  var tbl='<div class="tw tall sprd"><table class="tbl spr"><thead><tr><th>Datum</th><th>Ort</th><th>Lauf</th><th class="num">Rang</th><th class="num">Rückstand</th><th>Stärkster Sektor</th><th>Grösster Verlust</th><th>Bedingungen</th></tr></thead><tbody>'+
+  var tbl='<div class="tw tall sprd"><table class="tbl spr srt" data-sid="spr"><thead><tr><th>Datum</th><th>Ort</th><th>Lauf</th><th class="num">Rang</th><th class="num">Rückstand</th><th>Stärkster Sektor</th><th>Grösster Verlust</th><th>Bedingungen</th></tr></thead><tbody>'+
     L.slice().reverse().map(function(x){ var a=x.a,r=x.r,ks=a.gap.map(function(g,k){return k;});
       var bk=ks.slice().sort(function(p,q){return a.srk[p]-a.srk[q];})[0],wk=ks.slice().sort(function(p,q){return a.lp[q]-a.lp[p];})[0];
       var tn=function(k){ return '<b>S'+(k+1)+'</b>'+(r.st?' <i class="st'+r.st[k]+'" aria-hidden="true"></i>'+STN[r.st[k]]:''); };
@@ -1980,6 +2014,47 @@ function spProfile(name,s,tm,top,races){
   return '<section class="card spp" id="spProfile"><div class="ch"><h2>'+h(name)+'</h2><span class="h3v">Athletenprofil · '+(S.sp.season==='all'?'2024/25 und 2025/26':S.sp.season)+'</span></div>'+
     kpi+'<div class="swbox">'+sw+'</div><div class="spg2"><div><p class="h3">Rückstand je Abschnittstyp</p>'+bars+'</div><div><p class="h3">Formkurve</p>'+chart+'</div></div>'+
     '<p class="h3" style="margin-top:18px">Alle Läufe</p>'+tbl+ml+'</section>';
+}
+
+/* ───────────── Sektoranalyse eines Rennens: eigene Grafiken (ersetzen die Bilder aus den Berichten) ───────────── */
+function spearman(x,y){
+  var n=x.length; if(n<5) return null;
+  var rk=function(a){ var idx=a.map(function(v,i){return [v,i];}).sort(function(p,q){return p[0]-q[0];}),r=new Array(n),i=0;
+    while(i<n){ var j=i; while(j+1<n&&idx[j+1][0]===idx[i][0]) j++; var m=(i+j)/2+1; for(var k=i;k<=j;k++) r[idx[k][1]]=m; i=j+1; } return r; };
+  var a=rk(x),b=rk(y),ma=(n+1)/2,num=0,da=0,db=0;
+  for(var i=0;i<n;i++){ num+=(a[i]-ma)*(b[i]-ma); da+=(a[i]-ma)*(a[i]-ma); db+=(b[i]-ma)*(b[i]-ma); }
+  return da&&db?num/Math.sqrt(da*db):null;
+}
+function sekRaces(ev,it){
+  if(!SP) return [];
+  return SP.races.filter(function(r){ return r.g===ev.g&&r.d>=ev.frm&&r.d<=ev.to&&r.disc===it.disc&&!r.tr&&(!it.d||r.d===it.d); });
+}
+function sekRace(r){
+  var cls=r.rows.filter(function(a){return a.rk&&a.rk<=30&&a.lp.length===r.best.length;});
+  /* Nationen: SUI plus die Nationen mit den meisten klassierten Fahrer:innen */
+  var by={}; cls.forEach(function(a){ (by[a.nat]=by[a.nat]||[]).push(a); });
+  var nats=Object.keys(by).sort(function(a,b){ return (b==='SUI')-(a==='SUI')||by[b].length-by[a].length||a.localeCompare(b); }).slice(0,7);
+  var types=r.st?['T','M','G'].filter(function(t){return r.st.indexOf(t)>=0;}):[];
+  var cell=function(arr){ return arr.length?arr.reduce(function(s,v){return s+v;},0)/arr.length:null; };
+  var rowsN=nats.map(function(n){ var A=by[n],o={n:n,c:A.length,fin:cell(A.map(function(a){return a.fp;}))};
+    types.forEach(function(t){ var v=[]; A.forEach(function(a){ r.st.forEach(function(s,k){ if(s===t) v.push(a.lp[k]); }); }); o[t]=cell(v); });
+    return o; }).sort(function(a,b){return a.fin-b.fin;});
+  var all=[]; rowsN.forEach(function(o){ types.forEach(function(t){ if(o[t]!=null) all.push(o[t]); }); });
+  var ref=med(all);
+  var tab='<div class="tw"><table class="tbl sekt srt" data-sid="sekt"><thead><tr><th>Nation</th><th class="num">Fahrer:innen</th>'+types.map(function(t){return '<th class="num"><i class="st'+t+'" aria-hidden="true"></i>'+STN[t]+'</th>';}).join('')+'<th class="num">Ziel</th></tr></thead><tbody>'+
+    rowsN.map(function(o){ return '<tr'+(o.n==='SUI'?' class="me"':'')+'><td>'+flag(o.n)+' <b>'+o.n+'</b></td><td class="num">'+o.c+'</td>'+
+      types.map(function(t){ return '<td class="num hc" style="'+divBg(o[t],ref,1.2)+'">'+pc(o[t])+'</td>'; }).join('')+'<td class="num"><b>'+pc(o.fin)+'</b></td></tr>'; }).join('')+'</tbody></table></div>';
+  /* Welcher Abschnitt entscheidet: Spearman Abschnittsrückstand vs. Zielrang */
+  var cor=r.best.map(function(b,k){ return {k:k,r:spearman(cls.map(function(a){return a.gap[k];}),cls.map(function(a){return a.rk;}))}; }).filter(function(x){return x.r!=null;}).sort(function(a,b){return b.r-a.r;});
+  var bars=cor.map(function(x){ var t=r.st&&r.st[x.k];
+    return '<div class="sekc"><span class="sekl">S'+(x.k+1)+(t?' <i class="st'+t+'" aria-hidden="true"></i>'+STN[t]:'')+'</span><span class="sekb"><i style="width:'+Math.max(0,x.r*100).toFixed(0)+'%"></i></span><span class="sekv">'+x.r.toFixed(2).replace('.',',')+'</span></div>'; }).join('');
+  return '<div class="sekg"><div><p class="h3">Rückstand pro Nation und Abschnitt</p>'+tab+'<p class="spc-l">Ø Rückstand auf die Sektor-Bestzeit (klassierte Top 30) · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der Schnitt.</p></div>'+
+    '<div><p class="h3">Welcher Abschnitt entscheidet das Rennen?</p><div class="sekcs">'+bars+'</div><p class="spc-l">Rangkorrelation (Spearman) zwischen Abschnitts-Rückstand und Zielrang. Höher = mehr Einfluss.</p></div></div>';
+}
+function sekNative(ev,it){
+  var R=sekRaces(ev,it); if(!R.length) return '';
+  return '<div class="spc sekn"><div class="spc-h"><span class="kb2">Sektoranalyse</span><b>'+h(DISC[it.disc]||it.disc||'')+'</b><span class="sp"></span><span class="spc-n">aus den FIS-Zwischenzeiten berechnet</span></div>'+
+    R.map(function(r){ return (R.length>1?'<p class="sekh">'+h(r.lab)+' · '+dm(r.d)+'</p>':'')+sekRace(r); }).join('')+'</div>';
 }
 
 /* ───────────── Technik: Gate-to-Gate-Analyse Riesenslalom und Slalom ─────────────
@@ -2043,7 +2118,7 @@ function tStats(name,runs){
   });
   o.v={}; TCAT.forEach(function(c){ var n=o.cnt[c.k]||0; o.v[c.k]=n>=12?o.sum[c.k]/n*100:null; o.n=o.runs.length; });
   o.kt={}; o.runs.forEach(function(x){ var k; for(k in x.r.kt){ var q=o.kt[k]||(o.kt[k]={s:0,n:0,r:0}); x.a.diff.forEach(function(d){ if(d!=null){ q.s+=d; q.n++; } }); q.r++; } });
-  for(var kk in o.kt) o.kt[kk].v=o.kt[kk].r>=2?o.kt[kk].s/o.kt[kk].n*100:null;
+  for(var kk in o.kt) o.kt[kk].v=o.kt[kk].r>=3?o.kt[kk].s/o.kt[kk].n*100:null;
   o.prof=o.bins.map(function(s,i){ return o.binN[i]?s/o.binN[i]*100:null; });
   o.tot=med(o.runs.map(function(x){return x.a.tot;}));
   return o;
@@ -2063,24 +2138,24 @@ function viewTech(st,intro){
     '<span class="count"><b>'+runs.length+'</b> Läufe mit Gate-to-Gate-Daten · '+runs.filter(function(r){return r.gates;}).length+' mit Kursdaten pro Tor</span>');
   if(!team.length) return ctrl+'<section class="card"><div class="empty"><b>Zu wenig Daten</b>Für diese Auswahl gibt es keine Schweizer Athlet:innen mit mindestens drei Läufen in den Gate-to-Gate-Reports.</div></section>';
   /* Kurstyp: wer ist bei welchem Kurs stark */
-  var T=SP.tech,th=T.thr,ktLeg='Viele Figuren: RS ab '+th.GS.nfig+', SL ab '+th.SL.nfig+' Figuren pro Lauf. Steiler Kurs: Ø Gefälle RS ab '+Math.round(th.GS.pit)+' %, SL ab '+Math.round(th.SL.pit)+' %. Stark gedreht: Ø Offset RS ab '+th.GS.off.toFixed(1).replace('.',',')+' m, SL ab '+th.SL.off.toFixed(1).replace('.',',')+' m. Jeweils Teilung am Median aller Läufe 2025/26.';
+  var T=SP.tech,th=T.thr,ktLeg='Viele Figuren: RS ab '+th.GS.nfig+', SL ab '+th.SL.nfig+' Figuren pro Lauf. Steiler Kurs: Ø Gefälle RS ab '+Math.round(th.GS.pit)+' %, SL ab '+Math.round(th.SL.pit)+' %. Stark gedreht: Ø Offset RS ab '+th.GS.off.toFixed(1).replace('.',',')+' m, SL ab '+th.SL.off.toFixed(1).replace('.',',')+' m. Teilung am Median 2025/26.';
   var ktv=function(n,k){ var q=stats[n].kt[k]; return q&&q.v!=null?q.v:null; };
-  var LEAD=[['fig_hi','Viele Figuren im Kurs'],['pit_hi','Steiler Kurs'],['off_hi','Stark gedrehter Kurs']];
+  var LEAD=[['fig_hi','Viele Figuren im Kurs','Läufe mit RS ab '+th.GS.nfig+' bzw. SL ab '+th.SL.nfig+' Figuren.'],['pit_hi','Steiler Kurs','Läufe mit Ø Gefälle RS ab '+Math.round(th.GS.pit)+' %, SL ab '+Math.round(th.SL.pit)+' %.'],['off_hi','Stark gedrehter Kurs','Läufe mit Ø Offset RS ab '+th.GS.off.toFixed(1).replace('.',',')+' m, SL ab '+th.SL.off.toFixed(1).replace('.',',')+' m.']];
   var lead='<div class="spk3">'+LEAD.map(function(L){ var rk=team.filter(function(n){return ktv(n,L[0])!=null;}).sort(function(a,b){return ktv(a,L[0])-ktv(b,L[0]);}).slice(0,3);
-    return '<div class="k3"><p class="h3">Am schnellsten: '+L[1]+'</p><ol>'+rk.map(function(n){ var v=ktv(n,L[0]),d=v-stats[n].v.all;
-      return '<li><button type="button" class="lnk" data-act="tath" data-v="'+h(n)+'">'+h(n)+'</button><span>'+hund(v)+' <small class="'+(d<=-0.15?'up':d>=0.15?'dn':'mu')+'">'+(Math.abs(d)<0.15?'wie sonst':(d<0?'−':'+')+Math.abs(d).toFixed(1).replace('.',',')+' zu sonst')+'</small></span></li>'; }).join('')+'</ol>'+
-      '<p class="spc-l">Ø Hundertstel Rückstand pro Tor in diesen Läufen (ab 2 Läufen).</p></div>'; }).join('')+'</div>';
-  var ktab='<div class="tw"><table class="tbl sph tkt"><thead><tr><th class="stick">Athlet:in</th><th class="num">Ø alle Läufe</th>'+TKT.map(function(k){return '<th class="num">'+k[1]+'</th>';}).join('')+'</tr></thead><tbody>'+
+    return '<div class="k3"><p class="h3">Am schnellsten bei: '+L[1]+'</p><ol>'+rk.map(function(n){ var v=ktv(n,L[0]),d=v-stats[n].v.all;
+      return '<li><button type="button" class="lnk" data-act="tath" data-v="'+h(n)+'">'+h(n)+'</button><span>'+hund(v)+' <small class="mu">'+stats[n].kt[L[0]].r+' Läufe</small></span></li>'; }).join('')+'</ol>'+
+      '<p class="spc-l">Ø Hundertstel pro Tor, ab 3 Läufen. '+L[2]+'</p></div>'; }).join('')+'</div>';
+  var ktab='<div class="tw"><table class="tbl sph tkt srt" data-sid="tkt"><thead><tr><th class="stick">Athlet:in</th><th class="num">Ø alle Läufe</th>'+TKT.map(function(k){return '<th class="num">'+k[1]+'</th>';}).join('')+'</tr></thead><tbody>'+
     team.map(function(n){ var s=stats[n],base=s.v.all;
       return '<tr class="click'+(n===st.tath?' sel':'')+'" data-act="tath" data-v="'+h(n)+'"><td class="stick"><b>'+h(n)+'</b></td><td class="num"><b>'+hund(base)+'</b></td>'+
         TKT.map(function(k){ var q=s.kt[k[0]],v=q&&q.v!=null?q.v:null,d=v==null?null:v-base;
-          return '<td class="num hc" style="'+divBg(v,base,1.2)+'" title="'+h(n+' · '+k[1]+': '+(v==null?'weniger als 2 Läufe':hund(v)+' pro Tor in '+q.r+' Läufen'))+'">'+(v==null?'<span class="na">–</span>':hund(v)+'<small class="ktd">'+(Math.abs(d)<0.15?'±0':(d<0?'−':'+')+Math.abs(d).toFixed(1).replace('.',','))+'</small>')+'</td>'; }).join('')+'</tr>'; }).join('')+
-    '</tbody></table></div><p class="spc-l"><span class="lg good"></span> schneller als im eigenen Schnitt <span class="lg bad"></span> langsamer. Zahl: Ø Hundertstel pro Tor, klein: Unterschied zum eigenen Schnitt. '+ktLeg+'</p>';
+          return '<td class="num hc" style="'+divBg(v,base,1.2)+'" title="'+h(n+' · '+k[1]+': '+(v==null?'weniger als 3 Läufe':hund(v)+' pro Tor in '+q.r+' Läufen'))+'">'+(v==null?'<span class="na" title="weniger als 3 Läufe">–</span>':hund(v)+'<small class="ktd">'+(Math.abs(d)<0.15?'±0':(d<0?'−':'+')+Math.abs(d).toFixed(1).replace('.',','))+' · '+q.r+' L.</small>')+'</td>'; }).join('')+'</tr>'; }).join('')+
+    '</tbody></table></div><p class="spc-l"><span class="lg good"></span> schneller <span class="lg bad"></span> langsamer als der eigene Schnitt · Ø Hundertstel pro Tor, ab 3 Läufen (L.).</p><p class="spc-l">'+ktLeg+'</p>';
   var ktCard='<section class="card"><div class="ch"><h2>Welcher Kurs liegt wem?</h2><span class="h3v">Läufe nach Kurssetzung eingeteilt</span></div>'+ktab+'</section>';
   /* Team-Übersicht */
   var COLS=TCAT.filter(function(c){return c.k!=='all';}),grp=[];
   COLS.forEach(function(c){ if(!grp.length||grp[grp.length-1].g!==c.g) grp.push({g:c.g,n:0}); grp[grp.length-1].n++; });
-  var heat='<div class="tw"><table class="tbl sph tph"><thead><tr><th class="stick">Athlet:in</th><th class="num">Läufe</th><th class="num">Ø Rang</th><th>Letzte Rennen <small class="mu">Rang</small></th><th class="num grp">Ø pro Tor</th>'+
+  var heat='<div class="tw"><table class="tbl sph tph srt" data-sid="tph"><thead><tr><th class="stick">Athlet:in</th><th class="num">Läufe</th><th class="num">Ø Rang</th><th>Letzte Rennen <small class="mu">Rang</small></th><th class="num grp">Ø pro Tor</th>'+
     grp.map(function(x){return '<th class="grp" colspan="'+x.n+'">'+x.g+'</th>';}).join('')+'</tr>'+
     '<tr class="sub"><th class="stick"></th><th></th><th></th><th></th><th class="num">Hundertstel</th>'+COLS.map(function(c){return '<th class="num">'+h(c.n)+'</th>';}).join('')+'</tr></thead><tbody>'+
     team.map(function(n){ var s=stats[n],rr=tRes(st,n),rk=rr.filter(function(x){return x.rk;}).map(function(x){return x.rk;});
@@ -2088,8 +2163,8 @@ function viewTech(st,intro){
         '<td class="num hc"><b>'+hund(s.v.all)+'</b></td>'+
         COLS.map(function(c){ var v=s.v[c.k]; return '<td class="num hc" style="'+divBg(v,tm[c.k],2)+'" title="'+h(n+' · '+TCL[c.k]+': '+(v==null?'zu wenig Tore':hund(v)+' Hundertstel pro Tor ('+s.cnt[c.k]+' Tore)'))+'">'+(v==null?'<span class="na">–</span>':hund(v))+'</td>'; }).join('')+'</tr>'; }).join('')+
     '</tbody></table></div>'+
-    '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Rang im Rennen (neuester rechts, A = Ausfall). Werte: Ø Rückstand pro Tor in Hundertstelsekunden auf die Laufbestzeit, ab 12 Toren. <span class="lg good"></span> besser als der Team-Median der Spalte <span class="lg bad"></span> schlechter.</p>'+
-    '<p class="spc-l">Gelände: Gefälle unter 28 %, 28–36 %, über 36 %. Drehung (Offset): RS unter 6 m, 6–8 m, über 8 m; SL unter 2 m, 2–3,2 m, über 3,2 m. Rhythmuswechsel: Torabstand ändert sich um mehr als 12 %.</p>';
+    '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Rang (A = Ausfall) · Ø Hundertstel pro Tor · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als Team-Median.</p>'+
+    '<p class="spc-l">Gelände &lt;28 / 28–36 / &gt;36 % · Drehung RS &lt;6 / 6–8 / &gt;8 m, SL &lt;2 / 2–3,2 / &gt;3,2 m · Rhythmuswechsel: Torabstand ±12 %.</p>';
   return ctrl+lead+ktCard+'<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.tg==='M'?'Männer':'Frauen')+': Rückstand pro Tor</h2><span class="h3v">Zeile antippen für das Profil</span></div>'+heat+'</section>'+
     (st.tath?tProfile(st,st.tath,stats[st.tath],tm,runs):'');
 }
@@ -2107,7 +2182,7 @@ function tProfile(st,name,s,tm,runs){
   var chip=function(p){ return '<span class="swc"><b>'+h(TCL[p.k])+'</b><em>'+hund(p.v)+'</em><small>eigener Schnitt '+hund(base)+' · Team '+hund(tm[p.k])+'</small></span>'; };
   var sw='<div class="swr up"><span class="swl">Stärken</span><div class="swcs">'+(strong.length?strong.map(chip).join(''):'<span class="spc-l">kein Bereich klar besser als der eigene Schnitt</span>')+'</div></div>'+
     '<div class="swr dn"><span class="swl">Schwächen</span><div class="swcs">'+(weak.length?weak.map(chip).join(''):'<span class="spc-l">kein Bereich klar schwächer als der eigene Schnitt</span>')+'</div></div>'+
-    '<p class="spc-l swn">Gemessen am eigenen Schnitt pro Tor (Hundertstel). Grün = hier besser als sonst, Orange = hier verliert '+h(shortN(name))+' am meisten.</p>';
+    '<p class="spc-l swn">Verglichen mit dem eigenen Schnitt pro Tor.</p>';
   var t10=rk.filter(function(r){return r<=10;}).length;
   var kpi='<div class="spkpi"><div><b>'+rr.length+'</b><span>Rennen 2025/26</span></div><div><b>'+(rk.length?Math.min.apply(null,rk)+'.':'–')+'</b><span>bester Rang</span></div><div><b>'+(rk.length?Math.round(med(rk))+'.':'–')+'</b><span>Rang im Median</span></div><div><b>'+t10+' / '+rr.length+'</b><span>Top 10</span></div><div><b>'+(s.tot==null?'–':'+'+s.tot.toFixed(2).replace('.',',')+' s')+'</b><span>Rückstand pro Lauf (Median)</span></div></div>';
   /* Vergleich zum Team je Kategorie als Tabelle */
@@ -2121,7 +2196,7 @@ function tProfile(st,name,s,tm,runs){
       return '<tr><td>'+h(k[1])+(q&&q.r?' <small class="mu">'+q.r+' Läufe</small>':'')+'</td><td class="num"><b>'+hund(v)+'</b></td><td class="num mu">'+hund(t)+'</td><td>'+cmp(d)+'</td></tr>'; }).join('')+'</tbody>';
   var bars='<div class="tc2"><div class="tw"><table class="tbl tcmp">'+head+grpRows('Gelände')+grpRows('Drehung')+grpRows('Tor')+'</table></div>'+
     '<div class="tw"><table class="tbl tcmp">'+head+grpRows('Abschnitt')+ktRows+'</table></div></div>'+
-    '<p class="spc-l">Ø Hundertstelsekunden Rückstand pro Tor auf die Laufbestzeit. Team = Median der Schweizer:innen in dieser Auswahl. Kurstyp: Läufe nach Kurssetzung eingeteilt (siehe «Welcher Kurs liegt wem?»).</p>';
+    '<p class="spc-l">Ø Hundertstel pro Tor. Team = Median Schweiz.</p>';
   /* Verlauf im Lauf: wo geht die Zeit verloren */
   var teamProf=[]; for(var b=0;b<10;b++){ var a=[]; tRunsTeamBins(runs,b,a); teamProf.push(a.length?a.reduce(function(x,y){return x+y;},0)/a.length*100:null); }
   var W=window.innerWidth<640?380:window.innerWidth>=1000?1100:680,H=window.innerWidth>=1000?220:190,pl=40,pr=10,pt=14,pb=34,all=s.prof.concat(teamProf).filter(function(v){return v!=null;});
@@ -2144,7 +2219,7 @@ function tProfile(st,name,s,tm,runs){
     return {r:r,a:a,html:'<tr><td class="nw">'+dm(r.d)+r.d.slice(2,4)+'</td><td>'+h(r.pl)+'</td><td class="nw">'+h(DSHORT[r.disc]||r.disc)+' · Lauf '+r.run+'</td><td class="num">'+(r.top?'<small class="mu" title="Laufbestzeit">'+h(shortN(r.top))+'</small> ':'')+'+'+a.tot.toFixed(2)+'</td><td class="num">'+hund(a.tot/a.diff.filter(function(d){return d!=null;}).length*100)+'</td><td class="nw">Tor '+(wi+1)+gt+' <small class="mu">+'+wv.toFixed(2)+'</small></td><td class="nw">'+(thirds.length?TCAT.filter(function(c){return c.k===thirds[0].k;})[0].n:'–')+'</td><td class="num">'+(res?(res.rk?'<span class="rkb '+rkCls(res.rk)+'">'+res.rk+'</span>':'<span class="mu">'+h(STAT[res.s]||res.s||'')+'</span>'):'')+'</td></tr>',
       m:'<li><span class="rkb '+(res&&res.rk?rkCls(res.rk):'out')+'">'+(res&&res.rk?res.rk:'–')+'</span><div><b>'+h(r.pl)+'</b> <span class="mu">'+h(DISC[r.disc]||r.disc)+' · Lauf '+r.run+' · '+dm(r.d)+r.d.slice(2,4)+'</span><span class="sprm-v">+'+a.tot.toFixed(2)+' s auf die Laufbestzeit · grösster Verlust Tor '+(wi+1)+gt+' +'+wv.toFixed(2)+'</span>'+(thirds.length?'<small>stärkster Abschnitt: '+TCAT.filter(function(c){return c.k===thirds[0].k;})[0].n+'</small>':'')+'</div></li>'};
   });
-  var tbl='<div class="tw tall sprd"><table class="tbl spr"><thead><tr><th>Datum</th><th>Ort</th><th>Lauf</th><th class="num">Rückstand Lauf</th><th class="num">Ø pro Tor</th><th>Grösster Verlust</th><th>Stärkster Abschnitt</th><th class="num">Rang Rennen</th></tr></thead><tbody>'+rows.map(function(x){return x.html;}).join('')+'</tbody></table></div><ul class="sprm">'+rows.slice(0,8).map(function(x){return x.m;}).join('')+'</ul>'+(rows.length>8?'<details class="sprm-more"><summary>Alle '+rows.length+' Läufe anzeigen</summary><ul class="sprm">'+rows.slice(8).map(function(x){return x.m;}).join('')+'</ul></details>':'');
+  var tbl='<div class="tw tall sprd"><table class="tbl spr srt" data-sid="tspr"><thead><tr><th>Datum</th><th>Ort</th><th>Lauf</th><th class="num">Rückstand Lauf</th><th class="num">Ø pro Tor</th><th>Grösster Verlust</th><th>Stärkster Abschnitt</th><th class="num">Rang Rennen</th></tr></thead><tbody>'+rows.map(function(x){return x.html;}).join('')+'</tbody></table></div><ul class="sprm">'+rows.slice(0,8).map(function(x){return x.m;}).join('')+'</ul>'+(rows.length>8?'<details class="sprm-more"><summary>Alle '+rows.length+' Läufe anzeigen</summary><ul class="sprm">'+rows.slice(8).map(function(x){return x.m;}).join('')+'</ul></details>':'');
   return '<section class="card spp" id="spProfile"><div class="ch"><h2>'+h(name)+'</h2><span class="h3v">Athletenprofil Technik · '+(st.td==='all'?'Riesenslalom und Slalom':DISC[st.td])+' · 2025/26</span></div>'+
     kpi+'<div class="swbox">'+sw+'</div><p class="h3">Wo geht die Zeit verloren?</p>'+prof+'<p class="h3" style="margin-top:16px">Rückstand pro Tor im Vergleich zum Team</p>'+bars+
     '<p class="h3" style="margin-top:18px">Alle Läufe mit Gate-to-Gate-Daten</p>'+tbl+'</section>';
@@ -2170,7 +2245,7 @@ function techCard(r){
       '<td class="nw">Tor '+(wi+1)+gt+' <small class="mu">+'+wv.toFixed(2)+'</small></td></tr>'; }).join('');
   return '<div class="spc"><div class="spc-h"><span class="pill">'+h((DISC[r.disc]||r.disc)+' · Lauf '+r.run)+'</span><span class="cd-t">Gate-to-Gate-Auswertung · Rückstand pro Tor</span><span class="sp"></span>'+(r.top?'<span class="spc-n">Laufbestzeit: '+h(r.top)+'</span>':'')+'</div>'+
     '<div class="tw"><table class="tbl spt tgc"><thead><tr><th class="stick">Athlet:in</th><th class="num">Rückstand Lauf</th><th class="num">Start</th><th class="num">Mitte</th><th class="num">Schluss</th><th>Grösster Verlust</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-    '<p class="spc-l">Start, Mitte, Schluss: Ø Hundertstel Rückstand pro Tor im jeweiligen Kursdrittel. <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der Schnitt der Schweizer:innen in diesem Lauf. Namen antippen für das Athletenprofil.</p></div>';
+    '<p class="spc-l">Ø Hundertstel pro Tor je Kursdrittel. <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der Schnitt der Schweizer:innen in diesem Lauf. Namen antippen für das Athletenprofil.</p></div>';
 }
 
 /* ───────────── Live-Daten aus monday.com ─────────────
@@ -2279,19 +2354,32 @@ function liveBadge(){
   var d=new Date(at),t=('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'. '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
   return '<span class="lvb'+(LIVE.src==='monday'?' on':'')+'"><i></i>'+(LIVE.src==='monday'?'Live aus monday':LIVE.src==='github'?'Aus monday':'monday-Stand')+' · '+t+'</span>';
 }
-/* Team FEA: Einsatzplanung aus dem Board */
+/* Team FEA: Einsatzplanung aus dem Board (aufklappbar, nach Monat gruppiert) */
 function livePlanCard(){
   if(!LIVE.plan.length) return '';
   var list=LIVE.plan.filter(function(p){ return S.season==='all'||spSeasonOf(p.a)===S.season; }).filter(function(p){ return S.g==='all'||!p.g||p.g===S.g; });
   if(!list.length) return '';
-  var who=function(arr,cls){ return arr.length?arr.map(function(n){return '<span class="lvp '+cls+'">'+avatarMini(n,cls)+h(n)+'</span>';}).join(''):'<span class="mu">–</span>'; };
-  var rows=list.map(function(p){ var e=p.ev.length?S.events.filter(function(x){return x.id===p.ev[0];})[0]:null;
-    return '<tr'+(e?' class="click" data-act="open" data-v="'+h(e.id)+'"':'')+'><td class="nw">'+dm(p.a)+(p.b!==p.a?'–'+dm(p.b):'')+'</td><td>'+(e?flag(e.nat):'')+'<b>'+h(p.name.replace(/^(WC|WM) Ski Alpin\s*/,''))+'</b>'+(p.g?gMark(p.g):'')+'</span></td><td>'+who(p.vo,'onsite')+'</td><td>'+who(p.cc,'cc')+'</td><td class="mu nw">'+h(p.mode||'')+'</td></tr>'; }).join('');
-  return '<section class="card"><div class="ch"><div><h2>Einsatzplanung</h2><p>Aus dem monday-Board «Sport Science Support», nur Ski Alpin. Änderungen in monday erscheinen hier automatisch.</p></div>'+liveBadge()+'</div>'+
-    '<div class="tw lvd"><table class="tbl lvt"><thead><tr><th>Datum</th><th>Einsatz</th><th>vor Ort</th><th>Command Center</th><th>Modus</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-    '<ul class="lvm">'+list.map(function(p){ var e=p.ev.length?S.events.filter(function(x){return x.id===p.ev[0];})[0]:null;
-      return '<li'+(e?' class="click" data-act="open" data-v="'+h(e.id)+'"':'')+'><div class="lvm-h"><span class="lvn">'+(e?flag(e.nat):'')+'<b>'+h(p.name.replace(/^(WC|WM) Ski Alpin\s*/,''))+'</b>'+(p.g?gMark(p.g):'')+'</span><span class="mu">'+dm(p.a)+(p.b!==p.a?'–'+dm(p.b):'')+'</span></div>'+
-        (p.vo.length?'<div class="lvm-r"><small>vor Ort</small>'+who(p.vo,'onsite')+'</div>':'')+(p.cc.length?'<div class="lvm-r"><small>CC</small>'+who(p.cc,'cc')+'</div>':'')+(!p.vo.length&&!p.cc.length?'<div class="lvm-r mu">noch niemand eingeplant</div>':'')+'</li>'; }).join('')+'</ul></section>';
+  var who=function(arr,cls){ return arr.length?arr.map(function(n){return '<span class="lvp">'+avatarMini(n,cls)+h(n)+'</span>';}).join(''):'<span class="mu">–</span>'; };
+  var clean=function(n){ return n.replace(/^(WC|WM) Ski Alpin\s*/,'').replace(/\s*\b(SPEED|TECH)\b\s*/,' ').replace(/\s+/g,' ').trim(); };
+  var t=today(),lastM='',rows='';
+  list.forEach(function(p){
+    var e=p.ev.length?S.events.filter(function(x){return x.id===p.ev[0];})[0]:null;
+    var mon=MON[pd(p.a).getMonth()]+' '+p.a.slice(0,4);
+    if(mon!==lastM){ rows+='<tr class="lvmo"><th colspan="5">'+mon+'</th></tr>'; lastM=mon; }
+    var kind=/SPEED/.test(p.name)?'<span class="lvk sp">Speed</span>':/TECH/.test(p.name)?'<span class="lvk te">Technik</span>':(!e?'<span class="lvk ot">Test</span>':'');
+    var mode=p.mode==='Remote'?'nur CC':p.mode==='vor Ort + CC'?'vor Ort + CC':p.mode||'';
+    rows+='<tr class="'+(e?'click':'')+(p.b<t?' past':'')+'"'+(e?' data-act="open" data-v="'+h(e.id)+'"':'')+'>'+
+      '<td class="nw lvdt">'+dm(p.a)+(p.b!==p.a?'–'+dm(p.b):'')+'</td>'+
+      '<td><div class="lvn">'+(e?flag(e.nat):'<span class="flag-ph"></span>')+'<b>'+h(clean(p.name))+'</b>'+(p.g?gMark(p.g):'')+kind+'</div></td>'+
+      '<td>'+who(p.vo,'onsite')+'</td><td>'+who(p.cc,'cc')+'</td><td class="nw mu lvmd">'+h(mode)+'</td></tr>';
+  });
+  var nVo=0,nCc=0; list.forEach(function(p){ nVo+=p.vo.length; nCc+=p.cc.length; });
+  var mob=list.map(function(p){ var e=p.ev.length?S.events.filter(function(x){return x.id===p.ev[0];})[0]:null;
+      return '<li'+(e?' class="click" data-act="open" data-v="'+h(e.id)+'"':'')+'><div class="lvm-h"><span class="lvn">'+(e?flag(e.nat):'')+'<b>'+h(clean(p.name))+'</b>'+(p.g?gMark(p.g):'')+'</span><span class="mu nw">'+dm(p.a)+(p.b!==p.a?'–'+dm(p.b):'')+'</span></div>'+
+        (p.vo.length?'<div class="lvm-r"><small>vor Ort</small>'+who(p.vo,'onsite')+'</div>':'')+(p.cc.length?'<div class="lvm-r"><small>CC</small>'+who(p.cc,'cc')+'</div>':'')+(!p.vo.length&&!p.cc.length?'<div class="lvm-r mu">noch niemand eingeplant</div>':'')+'</li>'; }).join('');
+  return '<details class="card lvc"><summary class="ch"><div><h2>Einsatzplanung aus monday</h2><p>'+list.length+' Einsätze · '+nVo+'× vor Ort · '+nCc+'× Command Center</p></div><span class="lvs">'+liveBadge()+'<span class="lvx" aria-hidden="true"></span></span></summary>'+
+    '<div class="tw lvd"><table class="tbl lvt srt" data-sid="lvt"><thead><tr><th>Datum</th><th>Einsatz</th><th>vor Ort</th><th>Command Center</th><th>Modus</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<ul class="lvm">'+mob+'</ul><p class="spc-l">Quelle: Board «Sport Science Support», nur Ski Alpin. Änderungen in monday erscheinen automatisch.</p></details>';
 }
 function spSeasonOf(d){ var y=+d.slice(0,4),m=+d.slice(5,7); return m>=7?y+'/'+String(y+1).slice(2):(y-1)+'/'+String(y).slice(2); }
 function avatarMini(n,cls){ return '<i class="av '+cls+'">'+h(initials(n))+'</i>'; }
@@ -2483,7 +2571,7 @@ function viewTeam(){
     staffOf(e).forEach(function(s){ var k=s.n+'|'+s.r; if(seen[k]) return; seen[k]=1; (P[s.n]=P[s.n]||{n:s.n,onsite:0,cc:0,ev:{}})[s.r]++; (P[s.n].ev[e.id]=P[s.n].ev[e.id]||{})[s.r]=1; });
   });
   var people=Object.keys(P).map(function(k){return P[k];}).sort(function(a,b){return (b.onsite+b.cc)-(a.onsite+a.cc)||a.n.localeCompare(b.n,'de');});
-  if(!people.length) return livePlanCard()+'<section class="card"><div class="empty"><b>Noch keine Einsätze erfasst</b>Im Event unter «Einsatz FEA» Personen eintragen. Sie erscheinen danach hier.</div></section>';
+  if(!people.length) return '<section class="card"><div class="empty"><b>Noch keine Einsätze erfasst</b>Im Event unter «Einsatz FEA» Personen eintragen. Sie erscheinen danach hier.</div></section>'+livePlanCard();
   var max=people.reduce(function(m,p){return Math.max(m,p.onsite+p.cc);},1);
   var bars='<div class="bars">'+people.map(function(p){
     return '<span class="nm">'+h(p.n)+'</span><span class="tr" role="img" aria-label="'+p.onsite+' vor Ort, '+p.cc+' Command Center">'+(p.onsite?'<i class="a" style="width:'+(p.onsite/max*100)+'%"></i>':'')+(p.cc?'<i class="b" style="width:'+(p.cc/max*100)+'%"></i>':'')+'</span><span class="num"><b>'+(p.onsite+p.cc)+'</b> · '+p.onsite+' vor Ort · '+p.cc+' CC</span>';
@@ -2495,8 +2583,8 @@ function viewTeam(){
       return '<tr><td class="stick">'+h(p.n)+'</td>'+evs.map(function(e){ var x=p.ev[e.id]||{}; return '<td class="c">'+(x.onsite?'<i class="dot onsite" title="vor Ort"></i>':'')+(x.cc?'<i class="dot cc" title="Command Center"></i>':'')+'</td>'; }).join('')+'<td class="c sum">'+(p.onsite+p.cc)+'</td></tr>';
     }).join('')+'</tbody></table></div>';
   var lg='<div class="legend"><span><i class="dot onsite"></i>vor Ort</span><span><i class="dot cc"></i>Command Center</span></div>';
-  return livePlanCard()+'<section class="card"><div class="ch"><div><h2>Einsätze pro Person</h2><p>Ein Einsatz ist eine Person an einem Event in einer Rolle. Saison '+h(S.season)+', nach den Filtern oben.</p></div></div>'+lg+bars+'</section>'+
-    '<section class="card"><div class="ch"><div><h2>Wer war wo</h2></div></div>'+mx+'</section>';
+  return '<section class="card"><div class="ch"><div><h2>Einsätze pro Person</h2><p>Ein Einsatz ist eine Person an einem Event in einer Rolle. Saison '+h(S.season)+', nach den Filtern oben.</p></div></div>'+lg+bars+'</section>'+
+    '<section class="card"><div class="ch"><div><h2>Wer war wo</h2></div></div>'+mx+'</section>'+livePlanCard();
 }
 
 /* ───────────── Analysen ───────────── */
@@ -2570,7 +2658,7 @@ function render(){
     html=ev?viewDetail(ev):S.tab==='team'?viewTeam():S.tab==='analysen'?viewAnalysen():S.tab==='speed'?viewSpeed():viewEvents();
   }
   v.innerHTML=html;
-  hydrateMon(v); hydrateEnc(v); if(S.tab==='events'&&!S.ev&&S.evView==='map') mountMap();
+  hydrateMon(v); hydrateEnc(v); sortTables(v); if(S.tab==='events'&&!S.ev&&S.evView==='map') mountMap();
   fitLists(v);
   var bh=document.querySelector('.bar'); if(bh) document.documentElement.style.setProperty('--barh',bh.offsetHeight+'px');
   if(fid){ var n=document.getElementById(fid); if(n){ n.focus({preventScroll:true}); if(ss!=null){ try{ n.setSelectionRange(ss,se); }catch(e){} } } }
@@ -2684,6 +2772,31 @@ document.addEventListener('click',function(ev){
   document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'&&!lb.hidden){ lb.hidden=true; lb.classList.remove('full'); } });
 })();
 document.addEventListener('toggle',function(ev){ var k=ev.target.getAttribute&&ev.target.getAttribute('data-fold'); if(k) S.fold[k]=ev.target.open; if(ev.target.open&&ev.target.classList&&ev.target.classList.contains('rep')) hydrateMon(ev.target.parentNode); if(ev.target.classList&&ev.target.classList.contains('fold')) fitLists(document); },true);
+/* Tabellen nach Spalte sortieren (Klick auf den Spaltenkopf) */
+S.sort=S.sort||{};
+function colIdx(th){ var i=0,c=th.previousElementSibling; while(c){ i+=c.colSpan||1; c=c.previousElementSibling; } return i; }
+function cellVal(td){ if(!td) return null; var t=(td.getAttribute('data-sv')||td.textContent||'').trim(); if(!t||t==='–'||t==='-') return null;
+  var m=t.replace(/−/g,'-').match(/^[+-]?\d+(?:[.,:]\d+)*/); if(m){ var x=m[0].replace(',','.'); if(x.indexOf(':')>0){ var p=x.split(':'); return +p[0]*60+parseFloat(p[1]); } return parseFloat(x); }
+  var d=t.match(/^(\d\d)\.(\d\d)\.(\d\d)?/); if(d) return t; return t.toLowerCase(); }
+function sortTables(root){
+  (root||document).querySelectorAll('table.srt[data-sid]').forEach(function(tb){
+    var st=S.sort[tb.getAttribute('data-sid')], heads=tb.tHead?tb.tHead.rows:[];
+    for(var r=0;r<heads.length;r++) for(var c=0;c<heads[r].cells.length;c++){ var th=heads[r].cells[c]; if((th.colSpan||1)===1&&th.textContent.trim()){ th.classList.add('sh'); th.classList.toggle('on',!!st&&st.c===colIdx(th)&&st.r===r); th.classList.toggle('asc',!!st&&st.d>0); } }
+    if(!st) return;
+    var body=tb.tBodies[0]; if(!body) return;
+    var rows=[].slice.call(body.rows).filter(function(r){ if(r.classList.contains('lvmo')){ r.hidden=true; return false; } return true; });
+    rows.sort(function(a,b){ var x=cellVal(a.cells[st.c]),y=cellVal(b.cells[st.c]); if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1;
+      if(typeof x==='number'&&typeof y==='number') return (x-y)*st.d; return String(x).localeCompare(String(y),'de')*st.d; });
+    rows.forEach(function(r){ body.appendChild(r); });
+  });
+}
+document.addEventListener('click',function(ev){
+  var th=ev.target.closest&&ev.target.closest('table.srt thead th.sh'); if(!th) return;
+  var tb=th.closest('table'),sid=tb.getAttribute('data-sid'),c=colIdx(th),r=th.parentNode.rowIndex,cur=S.sort[sid];
+  var first=cellVal((tb.tBodies[0]&&tb.tBodies[0].rows[0]||{cells:[]}).cells[c]);
+  S.sort[sid]={c:c,r:r,d:cur&&cur.c===c?-cur.d:(typeof first==='number'?1:1)};
+  sortTables(tb.parentNode);
+});
 var QT=null;
 document.addEventListener('input',function(ev){
   if(ev.target.id==='db-q'){ S.q=ev.target.value; clearTimeout(QT); QT=setTimeout(render,180); return; }
