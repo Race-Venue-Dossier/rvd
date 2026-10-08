@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 
 const TOKEN = process.env.MONDAY_TOKEN, PASS = process.env.RVD_PASS;
-if (!TOKEN || !PASS) { console.error('MONDAY_TOKEN oder RVD_PASS fehlt'); process.exit(1); }
+if (!TOKEN || !PASS) { console.log('Secrets MONDAY_TOKEN und RVD_PASS fehlen noch – Abgleich übersprungen.'); process.exit(0); }
 const BOARDS = {
   einsatz: { id: 18385700928, cols: ['zeitleiste', 'dup__of_responsible__1', 'personen__1', 'dup__of_sport__1', 'sport', 'disziplin__1', 'label', 'status'] },
   tech: { id: 7222612952, cols: ['datum', 'drop_down', 'dup__of_typ', 'drop_down7', 'dup__of_abschnitt_1', 'dup__of_sec_2', 'dup__of_sec_3', 'dup__of_sec_4', 'dup__of_sec_5', 'dup__of_sec_6', 'dup__of_sec_7', 'dup__of_sec_8', 'dup__of_sec_9', 'zahlen', 'numeric', 'zahlen1', 'numeric4', 'numeric0', 'numeric2', 'text3', 'text8', 'drop_down0', 'drop_down6', 'drop_down5'] },
