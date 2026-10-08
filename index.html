@@ -644,7 +644,29 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 ul.up,ul.dn{color:var(--ink-2)}
 ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
 .spf{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:14px}
-.spi{margin-bottom:12px}.spi h2{margin:0 0 4px}.spi>p{margin:0 0 12px;font-size:13px;color:var(--ink-2);max-width:80ch;line-height:1.5}.spi .spf{margin-bottom:0}
+.spi{margin-bottom:12px}.spi h2{margin:0}
+.spi-h{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;margin-bottom:6px}
+.seg.spa{height:38px}.seg.spa button{padding:0 14px;font-size:12.5px}
+@media (max-width:760px){.seg.spa{width:100%}.seg.spa button{flex:1;justify-content:center;padding:0 6px;font-size:11.5px}}
+.tbr{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;margin-top:5px}
+.tbl2{font-size:12px;color:var(--ink-2);font-weight:600}
+.tbr .spbr{margin-top:2px}
+.tvl .tt{fill:none;stroke:var(--tm);stroke-width:2;stroke-linejoin:round}.tvl .ttd{fill:var(--tm)}
+.tvl .tme{fill:none;stroke:var(--me);stroke-width:2.4;stroke-linejoin:round}.tvl .tmed{fill:var(--me);stroke:var(--surface);stroke-width:1.5}
+.tph td.hc{min-width:58px}
+.tgc td.hc{min-width:60px}.tgc td,.tgc th{white-space:nowrap}
+.tdv{display:flex;flex-direction:column;gap:3px}
+.tdv .spbh{margin:8px 0 2px}
+.tdr{display:grid;grid-template-columns:118px 36px minmax(0,1fr) 40px;align-items:center;gap:8px;font-size:12px;min-height:22px}
+.tdl{color:var(--ink-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdv1{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.tdt{position:relative;height:12px;background:linear-gradient(90deg,transparent calc(50% - .5px),var(--line-2) calc(50% - .5px),var(--line-2) calc(50% + .5px),transparent calc(50% + .5px))}
+.tdt i{position:absolute;top:1px;bottom:1px;border-radius:3px}
+.tdt i.dg{background:color-mix(in srgb,var(--good) 70%,transparent)}.tdt i.db{background:color-mix(in srgb,var(--bad) 70%,transparent)}
+.tdv2{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media (max-width:640px){.tdr{grid-template-columns:92px 30px minmax(0,1fr) 34px;gap:6px}}
+.sprm-more{display:none}.sprm-more>summary{cursor:pointer;font-size:13px;font-weight:700;padding:12px 0;color:var(--ink)}
+@media (max-width:640px){.sprm-more{display:block}}.spi>p{margin:0 0 12px;font-size:13px;color:var(--ink-2);max-width:80ch;line-height:1.5}.spi .spf{margin-bottom:0}
 @media (max-width:760px){.spi .spf .fg{width:100%}.spi>p{font-size:12.5px}}
 .sph th.grp{text-align:center;border-left:1px solid var(--line)}
 .sph tr.sub th{position:static;font-size:10px;text-transform:none;letter-spacing:0;font-weight:700}
@@ -905,11 +927,10 @@ ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
   function load(){
     var td=new TextDecoder();
     return Promise.all([
-      fetch('data/core.enc',{cache:'no-cache'}).then(function(r){ return r.arrayBuffer(); }).then(dec),
-      fetch('data/img.enc',{cache:'no-cache'}).then(function(r){ return r.arrayBuffer(); }).then(dec)
+      fetch('data/core.enc',{cache:'no-cache'}).then(function(r){ return r.arrayBuffer(); }).then(dec)
     ]).then(function(a){
       var core=JSON.parse(td.decode(a[0])); SEED=core.seed; window.__SPEED=core.speed;
-      window.__IMG=JSON.parse(td.decode(a[1]));
+      window.__IMG={}; window.__IMGLAZY=true;
     });
   }
   function done(){ var g=document.getElementById('gate'); if(g) g.remove(); readyRes(); }
@@ -1119,7 +1140,20 @@ function hydrateMon(root){
   for(var i=0;i<imgs.length;i++){ var m=monParts(imgs[i].getAttribute('data-mon')); if(m) (by[m.d]=by[m.d]||[]).push(imgs[i]); }
   Object.keys(by).forEach(function(d){ monLoad(d).then(function(b){ by[d].forEach(function(im){ var m=monParts(im.getAttribute('data-mon')); if(b[m.a]) im.src=b[m.a]; else im.closest('.shot').classList.add('miss'); }); }); });
 }
-function imgSrc(p){ return monParts(p)?monGet(p):((window.__IMG&&window.__IMG[p])||p); }
+function imgSrc(p){ return monParts(p)?monGet(p):((window.__IMG&&window.__IMG[p])||(window.__IMGLAZY?'':p)); }
+/* Web-Version (verschlüsselt): Bilder einzeln und erst bei Bedarf laden */
+var EIMG={};
+function encImg(p){ if(!EIMG[p]) EIMG[p]=window.__encFetch('img/'+p.replace(/\.webp$/,'.enc')).then(function(b){ return URL.createObjectURL(new Blob([b],{type:'image/webp'})); }).catch(function(e){ delete EIMG[p]; throw e; }); return EIMG[p]; }
+function imgAttr(p){ var u=imgSrc(p); return u?'src="'+h(u)+'"':'data-ei="'+h(p)+'"'; }
+var EIO=null;
+function hydrateEnc(root){
+  if(!window.__IMGLAZY) return;
+  var L=(root||document).querySelectorAll('img[data-ei]:not([src])'); if(!L.length) return;
+  var go=function(im){ var p=im.getAttribute('data-ei'); im.removeAttribute('data-ei'); encImg(p).then(function(u){ im.src=u; }).catch(function(){ var b=im.closest('.shot'); if(b) b.classList.add('miss'); }); };
+  if(!('IntersectionObserver' in window)){ L.forEach(go); return; }
+  if(!EIO) EIO=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ EIO.unobserve(e.target); go(e.target); } }); },{rootMargin:'600px 0px'});
+  L.forEach(function(im){ EIO.observe(im); });
+}
 var PDFU={};
 function pdfUrl(p){
   var b=window.__PDF&&window.__PDF[p]; if(!b) return '';
@@ -1356,7 +1390,7 @@ function hasPdf(p){ return !!(window.__encFetch||!window.__STANDALONE||(window._
 function gtgFig(x){
   var alt='Gate-to-Gate '+(DISC[x.disc]||'')+(x.run?' Lauf '+x.run:''),P=(x.pdf||[]).filter(function(q){return hasPdf(q.p);});
   var main=P.filter(function(q){return !q.v||/^Teil/.test(q.v);}); if(!main.length&&P.length) main=P.slice(0,1);
-  var pics=x.img.map(function(p,i){ var q=main[i]; return q?'<button class="shot" type="button" data-act="zoom" data-v="'+h(q.p)+'" title="PDF öffnen"><img loading="lazy" src="'+h(imgSrc(p))+'" alt="'+h(alt)+'"></button>':shotBtn(p,alt); }).join('');
+  var pics=x.img.map(function(p,i){ var q=main[i]; return q?'<button class="shot" type="button" data-act="zoom" data-v="'+h(q.p)+'" title="PDF öffnen"><img loading="lazy" '+imgAttr(p)+' alt="'+h(alt)+'"></button>':shotBtn(p,alt); }).join('');
   var more=P.filter(function(q){return main.indexOf(q)<0;});
   return '<figure class="gt"><figcaption><span class="kb2">Gate-to-Gate</span><b>'+h(DISC[x.disc]||x.t||'')+'</b>'+(x.run?'<span class="pill">Lauf '+x.run+'</span>':'')+(x.note?'<span class="mu">'+h(x.note)+'</span>':'')+'<span class="sp"></span>'+
     (main.length?main.map(function(q){return '<button class="btn" type="button" data-act="zoom" data-v="'+h(q.p)+'">PDF'+(q.v?' '+h(q.v):'')+'</button>';}).join(''):'<span class="mu">zum Vergrössern antippen</span>')+'</figcaption>'+pics+
@@ -1364,7 +1398,7 @@ function gtgFig(x){
 }
 function shotBtn(p,alt){
   if(monParts(p)){ var src=monGet(p); return '<button class="shot mon" type="button" data-act="zoom" data-v="'+h(p)+'" title="Vergrössern"><img data-mon="'+h(p)+'"'+(src?' src="'+h(src)+'"':'')+' alt="'+h(alt)+'"></button>'; }
-  return '<button class="shot" type="button" data-act="zoom" data-v="'+h(p)+'" title="Vergrössern"><img loading="lazy" src="'+h(imgSrc(p))+'" alt="'+h(alt)+'"></button>'; }
+  return '<button class="shot" type="button" data-act="zoom" data-v="'+h(p)+'" title="Vergrössern"><img loading="lazy" '+imgAttr(p)+' alt="'+h(alt)+'"></button>'; }
 function gMark(g){ return '<span class="g '+g+'" title="'+GN[g]+'">'+g+'</span>'; }
 function racePills(ev){
   var out=[],seen={};
@@ -1731,15 +1765,20 @@ function spark(st){
 function viewSpeed(){
   speedLoad();
   if(!SP) return '<section class="card"><div class="empty"><b>Sektordaten werden geladen</b>FIS-Zwischenzeiten und Pistenbedingungen.</div></section>';
+  var st=spState(); if(!st.area) st.area='speed';
+  var intro=function(inner){ return '<section class="card spi"><div class="spi-h"><h2>Athletenprofile</h2>'+seg('sp-a','spa',st.area,[['speed','Speed · DH/SG'],['tech','Technik · GS/SL']],'spa')+'</div><p>'+
+    (st.area==='tech'?'Wo verlieren die Schweizer Technik-Athlet:innen Zeit? Grundlage sind die Gate-to-Gate-Reports 2025/26 (Rückstand auf die Laufbestzeit pro Tor) und die Kursdaten jedes Tors: Gefälle, Drehung, Torart und Abstand.':'Zeitverlust der Schweizer Speed-Athlet:innen nach Streckenabschnitt und Bedingungen. Grundlage: FIS-Zwischenzeiten, Board «Slope Analysis SPEED» (Technisch, Mix, Gleiten) und Pistenbedingungen.')+
+    '</p><div class="filters spf">'+inner+'</div></section>'; };
+  if(st.area==='tech') return viewTech(st,intro);
   var st=spState(),races=spRaces(st),team=spTeam(races),top=spTop(races);
   if(!st.ath||team.indexOf(st.ath)<0) st.ath=team[0]||null;
   var stats={}; team.forEach(function(n){ stats[n]=spStats(n,races); });
   var tm={T:med(team.map(function(n){return stats[n].mT;}).filter(function(v){return v!=null;})),M:med(team.map(function(n){return stats[n].mM;}).filter(function(v){return v!=null;})),G:med(team.map(function(n){return stats[n].mG;}).filter(function(v){return v!=null;})),fp:med(team.map(function(n){return stats[n].mfp;}))};
-  var ctrl='<section class="card spi"><h2>Athletenprofile Speed</h2><p>Zeitverlust der Schweizer Speed-Athlet:innen nach Streckenabschnitt und Bedingungen. Grundlage: FIS-Zwischenzeiten, Board «Slope Analysis SPEED» (Technisch, Mix, Gleiten) und Pistenbedingungen.</p><div class="filters spf">'+
+  var ctrl=intro(
     '<div class="fg"><span class="lab">Geschlecht</span>'+seg('sp-g','spg',st.g,[['M','Männer'],['W','Frauen']])+'</div>'+
     '<div class="fg"><span class="lab">Saison</span>'+seg('sp-s','sps',st.season,[['2024/25','2024/25'],['2025/26','2025/26'],['all','Beide']])+'</div>'+
     '<div class="fg"><span class="lab">Daten</span>'+seg('sp-m','spm',st.mode,[['R','Rennen'],['A','Rennen und Trainings']])+'</div>'+
-    '<span class="count"><b>'+races.length+'</b> '+(st.mode==='R'?'Rennen':'Läufe')+' · '+races.filter(function(r){return r.st;}).length+' mit Streckencharakter</span></div></section>';
+    '<span class="count"><b>'+races.length+'</b> '+(st.mode==='R'?'Rennen':'Läufe')+' · '+races.filter(function(r){return r.st;}).length+' mit Streckencharakter</span>');
   if(!team.length) return ctrl+'<section class="card"><div class="empty"><b>Zu wenig Daten</b>Für diese Auswahl gibt es keine Schweizer Athlet:innen mit mindestens drei Läufen.</div></section>';
   /* Team-Übersicht */
   var COLS=[['T','Technisch','sec'],['M','Mix','sec'],['G','Gleiten','sec'],['kalt','Schnee kalt','snow'],['mittel','Schnee mittel','snow'],['mild','Schnee mild','snow'],['sonnig','Sonne','wx'],['bewölkt','Bewölkt','wx'],['Niederschlag','Schneefall','wx'],['hart/aggressiv','Piste hart','prep'],['kompakt','Piste kompakt','prep'],['weich/gesalzen','Piste weich','prep']];
@@ -1811,13 +1850,175 @@ function spProfile(name,s,tm,top,races){
       var tn=function(k){ return 'S'+(k+1)+(r.st?' '+STN[r.st[k]]:''); };
       var c=r.c||{},cs=[]; if(c.snow&&c.snow[0]!=null) cs.push(fC(c.snow[0])+' °C'); if(c.wx) cs.push(c.wx.join(', ')); if(c.prep) cs.push(c.prep.join(', '));
       return '<li><span class="rkb '+rkCls(a.rk)+'">'+a.rk+'</span><div><b>'+h(r.pl)+'</b> <span class="mu">'+h(r.lab)+' · '+dm(r.d)+r.d.slice(2,4)+'</span><span class="sprm-v">'+sg(a.fin-r.bf)+' s ('+pc(a.fp)+') · stark '+tn(bk)+' · Verlust '+tn(wk)+' '+sg(a.gap[wk])+'</span>'+(cs.length?'<small>'+h(cs.join(' · '))+'</small>':'')+'</div></li>'; }).join('')+'</ul>';
-  return '<section class="card spp"><div class="ch"><h2>'+h(name)+'</h2><span class="h3v">Athletenprofil · '+(S.sp.season==='all'?'2024/25 und 2025/26':S.sp.season)+'</span></div>'+
+  return '<section class="card spp" id="spProfile"><div class="ch"><h2>'+h(name)+'</h2><span class="h3v">Athletenprofil · '+(S.sp.season==='all'?'2024/25 und 2025/26':S.sp.season)+'</span></div>'+
     kpi+sw+'<div class="spg2"><div><p class="h3">Rückstand je Abschnittstyp</p>'+bars+'</div><div><p class="h3">Formkurve</p>'+chart+'</div></div>'+
     '<p class="h3" style="margin-top:18px">Alle Läufe</p>'+tbl+ml+'</section>';
 }
 
+/* ───────────── Technik: Gate-to-Gate-Analyse Riesenslalom und Slalom ─────────────
+   Daten: SP.tech (aus den Gate-to-Gate-Reports: Rückstand auf die Laufbestzeit pro Tor, plus Kursdaten pro Tor).
+   Kennzahl: Ø Rückstand pro Tor in Hundertstelsekunden. Kleiner = besser. */
+var TCAT=[
+  {k:'all',n:'Alle Tore',g:''},
+  {k:'flach',n:'flach',g:'Gelände'},{k:'mittel',n:'mittel',g:'Gelände'},{k:'steil',n:'steil',g:'Gelände'},
+  {k:'tw',n:'wenig',g:'Drehung'},{k:'tm',n:'mittel',g:'Drehung'},{k:'ts',n:'stark',g:'Drehung'},
+  {k:'off',n:'offen',g:'Tor'},{k:'fig',n:'Figur',g:'Tor'},{k:'rw',n:'Rhythmuswechsel',g:'Tor'},
+  {k:'st',n:'Start',g:'Abschnitt'},{k:'mi',n:'Mitte',g:'Abschnitt'},{k:'sc',n:'Schluss',g:'Abschnitt'}
+];
+var TCL={flach:'Flaches Gelände (unter 28 %)',mittel:'Mittleres Gelände (28–36 %)',steil:'Steiles Gelände (über 36 %)',
+  tw:'Wenig gedrehte Tore',tm:'Mittel gedrehte Tore',ts:'Stark gedrehte Tore',off:'Offene Tore',fig:'Figuren (Banane, Hairpin, Flush)',rw:'Rhythmuswechsel',
+  st:'Startteil (erstes Drittel)',mi:'Mittelteil',sc:'Schlussteil (letztes Drittel)',all:'Alle Tore'};
+var TOFF={GS:[6,8],SL:[2,3.2]};
+var TFIG=['Offen','Banane','Hairpin','Flush'];
+function tPrep(){
+  var T=SP&&SP.tech; if(!T||T._p) return T;
+  T.runs.forEach(function(r){
+    r.season=r.season||spSeason(r.d);
+    var n=r.ng,G=r.gates;
+    r.cat=[]; for(var i=0;i<n;i++){
+      var c={}; c.all=1;
+      var f=i/n; c[f<1/3?'st':f<2/3?'mi':'sc']=1;
+      if(G){ var g=G[i],o=TOFF[r.disc];
+        if(g[3]!=null) c[g[3]<28?'flach':g[3]<=36?'mittel':'steil']=1;
+        if(g[2]!=null) c[g[2]<o[0]?'tw':g[2]<=o[1]?'tm':'ts']=1;
+        c[g[0]>0?'fig':'off']=1;
+        var p=i?G[i-1]:null; if(p&&p[1]&&g[1]&&g[0]===0&&p[0]===0&&Math.abs(g[1]/p[1]-1)>0.12) c.rw=1;
+      }
+      r.cat.push(c);
+    }
+    r.rows.forEach(function(a){ a.tot=a.diff.reduce(function(s,x){return s+(x||0);},0); });
+  });
+  T._p=true; return T;
+}
+function tState(){ var st=spState(); if(!st.tg) st.tg='M'; if(!st.td) st.td='all'; return st; }
+function tRuns(st){ return SP.tech.runs.filter(function(r){ return r.g===st.tg&&(st.td==='all'||r.disc===st.td); }); }
+function tRes(st,name){ return SP.tech.res.filter(function(x){ return x.g===st.tg&&(st.td==='all'||x.disc===st.td)&&x.season==='2025/26'&&(!name||x.n===name); }).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;}); }
+/* Kennzahlen je Athlet:in */
+function tStats(name,runs){
+  var o={runs:[],sum:{},cnt:{},bins:[],binN:[]};
+  for(var b=0;b<10;b++){ o.bins.push(0); o.binN.push(0); }
+  runs.forEach(function(r){
+    var a=r.rows.filter(function(x){return x.n===name;})[0]; if(!a) return;
+    o.runs.push({r:r,a:a});
+    a.diff.forEach(function(d,i){ if(d==null) return; var c=r.cat[i];
+      for(var k in c){ o.sum[k]=(o.sum[k]||0)+d; o.cnt[k]=(o.cnt[k]||0)+1; }
+      var bi=Math.min(9,Math.floor(i/r.ng*10)); o.bins[bi]+=d; o.binN[bi]++; });
+  });
+  o.v={}; TCAT.forEach(function(c){ var n=o.cnt[c.k]||0; o.v[c.k]=n>=12?o.sum[c.k]/n*100:null; o.n=o.runs.length; });
+  o.prof=o.bins.map(function(s,i){ return o.binN[i]?s/o.binN[i]*100:null; });
+  o.tot=med(o.runs.map(function(x){return x.a.tot;}));
+  return o;
+}
+function hs(v){ return v==null?'–':(v<0?'−':'')+Math.abs(v).toFixed(1).replace('.',','); }
+function viewTech(st,intro){
+  tPrep(); tState();
+  var runs=tRuns(st),res=tRes(st);
+  var names={}; runs.forEach(function(r){ r.rows.forEach(function(a){ if(a.sui) names[a.n]=(names[a.n]||0)+1; }); });
+  var team=Object.keys(names).filter(function(n){return names[n]>=3;}).sort(function(a,b){return names[b]-names[a]||a.localeCompare(b);});
+  if(!st.tath||team.indexOf(st.tath)<0) st.tath=team[0]||null;
+  var stats={}; team.forEach(function(n){ stats[n]=tStats(n,runs); });
+  var tm={}; TCAT.forEach(function(c){ tm[c.k]=med(team.map(function(n){return stats[n].v[c.k];}).filter(function(v){return v!=null;})); });
+  var ctrl=intro('<div class="fg"><span class="lab">Geschlecht</span>'+seg('t-g','tg',st.tg,[['M','Männer'],['W','Frauen']])+'</div>'+
+    '<div class="fg"><span class="lab">Disziplin</span>'+seg('t-d','td',st.td,[['all','Beide'],['GS','Riesenslalom'],['SL','Slalom']])+'</div>'+
+    '<span class="count"><b>'+runs.length+'</b> Läufe mit Gate-to-Gate-Daten · '+runs.filter(function(r){return r.gates;}).length+' mit Kursdaten pro Tor</span>');
+  if(!team.length) return ctrl+'<section class="card"><div class="empty"><b>Zu wenig Daten</b>Für diese Auswahl gibt es keine Schweizer Athlet:innen mit mindestens drei Läufen in den Gate-to-Gate-Reports.</div></section>';
+  /* Bestwerte */
+  var LEAD=[['steil','Am stärksten im Steilen'],['fig','Am stärksten bei Figuren'],['sc','Am stärksten im Schlussteil']];
+  var lead='<div class="spk3">'+LEAD.map(function(L){ var rk=team.filter(function(n){return stats[n].v[L[0]]!=null&&stats[n].n>=6;}).sort(function(a,b){return stats[a].v[L[0]]-stats[b].v[L[0]];}).slice(0,3);
+    return '<div class="k3"><p class="h3">'+L[1]+'</p><ol>'+rk.map(function(n){ return '<li><button type="button" class="lnk" data-act="tath" data-v="'+h(n)+'">'+h(n)+'</button><span>'+hs(stats[n].v[L[0]])+'</span></li>'; }).join('')+'</ol><p class="spc-l">Ø Hundertstel Rückstand pro Tor, ab 6 Läufen. Team-Median: '+hs(tm[L[0]])+'</p></div>'; }).join('')+'</div>';
+  /* Team-Übersicht */
+  var COLS=TCAT.filter(function(c){return c.k!=='all';}),grp=[];
+  COLS.forEach(function(c){ if(!grp.length||grp[grp.length-1].g!==c.g) grp.push({g:c.g,n:0}); grp[grp.length-1].n++; });
+  var heat='<div class="tw"><table class="tbl sph tph"><thead><tr><th class="stick">Athlet:in</th><th class="num">Läufe</th><th class="num">Ø Rang</th><th>Letzte Rennen <small class="mu">Rang</small></th><th class="num grp">Ø pro Tor</th>'+
+    grp.map(function(x){return '<th class="grp" colspan="'+x.n+'">'+x.g+'</th>';}).join('')+'</tr>'+
+    '<tr class="sub"><th class="stick"></th><th></th><th></th><th></th><th class="num">Hundertstel</th>'+COLS.map(function(c){return '<th class="num">'+h(c.n)+'</th>';}).join('')+'</tr></thead><tbody>'+
+    team.map(function(n){ var s=stats[n],rr=tRes(st,n),rk=rr.filter(function(x){return x.rk;}).map(function(x){return x.rk;});
+      return '<tr class="click'+(n===st.tath?' sel':'')+'" data-act="tath" data-v="'+h(n)+'"><td class="stick"><b>'+h(n)+'</b></td><td class="num">'+s.n+'</td><td class="num">'+(rk.length?Math.round(med(rk)):'–')+'</td><td>'+tForm(rr)+'</td>'+
+        '<td class="num hc"><b>'+hs(s.v.all)+'</b></td>'+
+        COLS.map(function(c){ var v=s.v[c.k]; return '<td class="num hc" style="'+divBg(v,tm[c.k],2)+'" title="'+h(n+' · '+TCL[c.k]+': '+(v==null?'zu wenig Tore':hs(v)+' Hundertstel pro Tor ('+s.cnt[c.k]+' Tore)'))+'">'+(v==null?'<span class="na">–</span>':hs(v))+'</td>'; }).join('')+'</tr>'; }).join('')+
+    '</tbody></table></div>'+
+    '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Rang im Rennen (neuester rechts, A = Ausfall). Werte: Ø Rückstand pro Tor in Hundertstelsekunden auf die Laufbestzeit, ab 12 Toren. <span class="lg good"></span> besser als der Team-Median der Spalte <span class="lg bad"></span> schlechter.</p>'+
+    '<p class="spc-l">Gelände: Gefälle unter 28 %, 28–36 %, über 36 %. Drehung (Offset): RS unter 6 m, 6–8 m, über 8 m; SL unter 2 m, 2–3,2 m, über 3,2 m. Rhythmuswechsel: Torabstand ändert sich um mehr als 12 %.</p>';
+  return ctrl+lead+'<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.tg==='M'?'Männer':'Frauen')+'</h2><span class="h3v">Zeile antippen für das Profil</span></div>'+heat+'</section>'+
+    (st.tath?tProfile(st,st.tath,stats[st.tath],tm,runs):'');
+}
+function tForm(rr){
+  var L=rr.slice(-6); if(!L.length) return '';
+  return '<span class="frm">'+L.map(function(x){ var t=x.rk||'A'; return '<i class="'+(x.rk?rkCls(x.rk):'out')+'" title="'+h(dm(x.d)+x.d.slice(0,4)+' '+x.pl+' · '+(DISC[x.disc]||x.disc)+': '+(x.rk?'Rang '+x.rk+' '+x.dt:(STAT[x.s]||x.s)))+'">'+t+'</i>'; }).join('')+'</span>';
+}
+function tProfile(st,name,s,tm,runs){
+  var rr=tRes(st,name),rk=rr.filter(function(x){return x.rk;}).map(function(x){return x.rk;});
+  /* Stärken und Schwächen: Abweichung vom eigenen Schnitt und vom Team */
+  var base=s.v.all,pts=[];
+  TCAT.forEach(function(c){ if(c.k==='all') return; var v=s.v[c.k]; if(v==null||base==null) return; pts.push({k:c.k,v:v,d:v-base,dt:tm[c.k]==null?0:v-tm[c.k]}); });
+  pts.sort(function(a,b){return a.d-b.d;});
+  var thr=Math.max(0.25,(base||0)*0.15),strong=pts.filter(function(p){return p.d<=-thr;}).slice(0,3),weak=pts.filter(function(p){return p.d>=thr;}).slice(-3).reverse();
+  var li=function(p){ return '<li><i class="cnd" aria-hidden="true"></i><span><b>'+h(TCL[p.k])+'</b><span class="v">'+hs(p.v)+' Hundertstel pro Tor</span><small>eigener Schnitt '+hs(base)+' · Team '+hs(tm[p.k])+' · '+s.cnt[p.k]+' Tore</small></span></li>'; };
+  var sw='<div class="sw"><div class="swb up"><p class="swh">Stärken</p>'+(strong.length?'<ul>'+strong.map(li).join('')+'</ul>':'<p class="spc-l">Kein Bereich klar besser als der eigene Schnitt.</p>')+'</div>'+
+    '<div class="swb dn"><p class="swh">Schwächen</p>'+(weak.length?'<ul>'+weak.map(li).join('')+'</ul>':'<p class="spc-l">Kein Bereich klar schwächer als der eigene Schnitt.</p>')+'</div></div><p class="spc-l" style="margin:-10px 0 14px">Stärken und Schwächen gemessen am eigenen Schnitt pro Tor. Der Team-Vergleich steht jeweils darunter.</p>';
+  var t10=rk.filter(function(r){return r<=10;}).length;
+  var kpi='<div class="spkpi"><div><b>'+rr.length+'</b><span>Rennen 2025/26</span></div><div><b>'+(rk.length?Math.min.apply(null,rk)+'.':'–')+'</b><span>bester Rang</span></div><div><b>'+(rk.length?Math.round(med(rk))+'.':'–')+'</b><span>Rang im Median</span></div><div><b>'+t10+' / '+rr.length+'</b><span>Top 10</span></div><div><b>'+(s.tot==null?'–':'+'+s.tot.toFixed(2).replace('.',',')+' s')+'</b><span>Rückstand pro Lauf (Median)</span></div></div>';
+  /* Vergleich zum Team je Kategorie: Balken = Abweichung vom Team-Median */
+  var groups=['Gelände','Drehung','Tor','Abschnitt'],mx=0.5;
+  TCAT.forEach(function(c){ var v=s.v[c.k],t=tm[c.k]; if(v!=null&&t!=null) mx=Math.max(mx,Math.abs(v-t)); });
+  var bars='<div class="tdv">'+groups.map(function(g){
+    return '<p class="spbh">'+g+'</p>'+TCAT.filter(function(c){return c.g===g;}).map(function(c){
+      var v=s.v[c.k],t=tm[c.k],d=(v!=null&&t!=null)?v-t:null,w=d==null?0:Math.abs(d)/mx*50;
+      return '<div class="tdr" title="'+h(TCL[c.k]+': '+hs(v)+' (Team '+hs(t)+')')+'"><span class="tdl">'+h(c.n)+'</span><span class="tdv1">'+hs(v)+'</span><span class="tdt"><i class="'+(d==null?'':d<0?'dg':'db')+'" style="'+(d==null?'':d<0?'right:50%;width:'+w.toFixed(1)+'%':'left:50%;width:'+w.toFixed(1)+'%')+'"></i></span><span class="tdv2">'+(d==null?'':(d<0?'−':'+')+Math.abs(d).toFixed(1).replace('.',','))+'</span></div>'; }).join(''); }).join('')+
+    '<p class="spc-l">Zahl links: Ø Hundertstel pro Tor. Balken und Zahl rechts: Abweichung zum Team-Median. <span class="lg good"></span> schneller als das Team <span class="lg bad"></span> langsamer.</p></div>';
+  /* Verlauf im Lauf: wo geht die Zeit verloren */
+  var teamProf=[]; for(var b=0;b<10;b++){ var a=[]; tRunsTeamBins(runs,b,a); teamProf.push(a.length?a.reduce(function(x,y){return x+y;},0)/a.length*100:null); }
+  var W=window.innerWidth<640?380:680,H=190,pl=40,pr=10,pt=14,pb=34,all=s.prof.concat(teamProf).filter(function(v){return v!=null;});
+  var lo=Math.min(0,Math.floor(Math.min.apply(null,all))),hi=Math.max(1,Math.ceil(Math.max.apply(null,all)));
+  var X=function(i){ return pl+(i+0.5)/10*(W-pl-pr); },Y=function(v){ return pt+(hi-v)/(hi-lo)*(H-pt-pb); };
+  var ticks=[]; for(var v=lo;v<=hi;v+=Math.max(1,Math.ceil((hi-lo)/4))) ticks.push(v);
+  var grid=ticks.map(function(v){ return '<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v).toFixed(1)+'" y2="'+Y(v).toFixed(1)+'" class="gl'+(v===0?' z':'')+'"/><text x="'+(pl-6)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" class="ax">'+v+'</text>'; }).join('');
+  var line=function(arr,cls){ var p=[]; arr.forEach(function(v,i){ if(v!=null) p.push(X(i).toFixed(1)+','+Y(v).toFixed(1)); }); return '<polyline class="'+cls+'" points="'+p.join(' ')+'"/>'+arr.map(function(v,i){ return v==null?'':'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="3.5" class="'+cls+'d"><title>'+(i*10)+'–'+(i*10+10)+' % der Tore: '+hs(v)+' Hundertstel pro Tor</title></circle>'; }).join(''); };
+  var xl=['Start','','','','','','','','','Ziel'].map(function(t,i){ return t?'<text x="'+X(i).toFixed(1)+'" y="'+(H-pb+16)+'" text-anchor="middle" class="ax">'+t+'</text>':''; }).join('')+
+    '<text x="'+((pl+W-pr)/2).toFixed(1)+'" y="'+(H-pb+16)+'" text-anchor="middle" class="ax">Kursverlauf in Zehnteln</text>';
+  var prof='<div class="spl tvl"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Rückstand pro Tor entlang des Kurses">'+grid+line(teamProf,'tt')+line(s.prof,'tme')+xl+'</svg>'+
+    '<p class="spc-l"><span class="lg me"></span>'+h(shortN(name))+' <span class="lg tm"></span>Team SUI · Ø Rückstand pro Tor in Hundertstel, je Zehntel des Kurses. Höher = mehr Zeitverlust.</p></div>';
+  /* Läufe */
+  var L=s.runs.slice().sort(function(a,b){return a.r.d<b.r.d?1:a.r.d>b.r.d?-1:b.r.run-a.r.run;});
+  var rows=L.map(function(x){ var r=x.r,a=x.a,wi=0,wv=-9;
+    a.diff.forEach(function(d,i){ if(d!=null&&d>wv){wv=d;wi=i;} });
+    var thirds=['st','mi','sc'].map(function(k){ var sm=0,n=0; a.diff.forEach(function(d,i){ if(d!=null&&r.cat[i][k]){sm+=d;n++;} }); return {k:k,v:n?sm/n*100:null}; }).filter(function(t){return t.v!=null;}).sort(function(p,q){return p.v-q.v;});
+    var res=SP.tech.res.filter(function(z){return z.n===name&&z.d===r.d&&z.disc===r.disc;})[0];
+    var gt=r.gates&&r.gates[wi]?' '+TFIG[r.gates[wi][0]]:'';
+    return {r:r,a:a,html:'<tr><td class="nw">'+dm(r.d)+r.d.slice(2,4)+'</td><td>'+h(r.pl)+'</td><td class="nw">'+h(DSHORT[r.disc]||r.disc)+' · Lauf '+r.run+'</td><td class="num">'+(r.top?'<small class="mu" title="Laufbestzeit">'+h(shortN(r.top))+'</small> ':'')+'+'+a.tot.toFixed(2)+'</td><td class="num">'+hs(a.tot/a.diff.filter(function(d){return d!=null;}).length*100)+'</td><td class="nw">Tor '+(wi+1)+gt+' <small class="mu">+'+wv.toFixed(2)+'</small></td><td class="nw">'+(thirds.length?TCAT.filter(function(c){return c.k===thirds[0].k;})[0].n:'–')+'</td><td class="num">'+(res?(res.rk?'<span class="rkb '+rkCls(res.rk)+'">'+res.rk+'</span>':'<span class="mu">'+h(STAT[res.s]||res.s||'')+'</span>'):'')+'</td></tr>',
+      m:'<li><span class="rkb '+(res&&res.rk?rkCls(res.rk):'out')+'">'+(res&&res.rk?res.rk:'–')+'</span><div><b>'+h(r.pl)+'</b> <span class="mu">'+h(DISC[r.disc]||r.disc)+' · Lauf '+r.run+' · '+dm(r.d)+r.d.slice(2,4)+'</span><span class="sprm-v">+'+a.tot.toFixed(2)+' s auf die Laufbestzeit · grösster Verlust Tor '+(wi+1)+gt+' +'+wv.toFixed(2)+'</span>'+(thirds.length?'<small>stärkster Abschnitt: '+TCAT.filter(function(c){return c.k===thirds[0].k;})[0].n+'</small>':'')+'</div></li>'};
+  });
+  var tbl='<div class="tw tall sprd"><table class="tbl spr"><thead><tr><th>Datum</th><th>Ort</th><th>Lauf</th><th class="num">Rückstand Lauf</th><th class="num">Ø pro Tor</th><th>Grösster Verlust</th><th>Stärkster Abschnitt</th><th class="num">Rang Rennen</th></tr></thead><tbody>'+rows.map(function(x){return x.html;}).join('')+'</tbody></table></div><ul class="sprm">'+rows.slice(0,8).map(function(x){return x.m;}).join('')+'</ul>'+(rows.length>8?'<details class="sprm-more"><summary>Alle '+rows.length+' Läufe anzeigen</summary><ul class="sprm">'+rows.slice(8).map(function(x){return x.m;}).join('')+'</ul></details>':'');
+  return '<section class="card spp" id="spProfile"><div class="ch"><h2>'+h(name)+'</h2><span class="h3v">Athletenprofil Technik · '+(st.td==='all'?'Riesenslalom und Slalom':DISC[st.td])+' · 2025/26</span></div>'+
+    kpi+sw+'<div class="spg2"><div><p class="h3">Rückstand nach Gelände und Torart</p>'+bars+'</div><div><p class="h3">Wo geht die Zeit verloren?</p>'+prof+'</div></div>'+
+    '<p class="h3" style="margin-top:18px">Alle Läufe mit Gate-to-Gate-Daten</p>'+tbl+'</section>';
+}
+function tRunsTeamBins(runs,b,out){
+  runs.forEach(function(r){ r.rows.forEach(function(a){ if(!a.sui) return; a.diff.forEach(function(d,i){ if(d!=null&&Math.min(9,Math.floor(i/r.ng*10))===b) out.push(d); }); }); });
+}
+/* Event-Tag: Gate-to-Gate-Auswertung pro Lauf */
+function techRunsFor(ev,d){
+  if(!SP||!SP.tech) return [];
+  tPrep();
+  return SP.tech.runs.filter(function(r){ return r.g===ev.g&&r.d===d&&r.rows.some(function(a){return a.sui;}); }).sort(function(a,b){ return a.disc<b.disc?-1:a.disc>b.disc?1:a.run-b.run; });
+}
+function techCard(r){
+  var sui=r.rows.filter(function(a){return a.sui;}).sort(function(a,b){return a.tot-b.tot;});
+  var sec=function(a,k){ var sm=0,n=0; a.diff.forEach(function(d,i){ if(d!=null&&r.cat[i][k]){sm+=d;n++;} }); return n?sm/n*100:null; };
+  var all=[]; sui.forEach(function(a){ ['st','mi','sc'].forEach(function(k){ var v=sec(a,k); if(v!=null) all.push(v); }); });
+  var ref=med(all);
+  var rows=sui.map(function(a){ var wi=0,wv=-9; a.diff.forEach(function(x,i){ if(x!=null&&x>wv){wv=x;wi=i;} });
+    var gt=r.gates&&r.gates[wi]?' '+TFIG[r.gates[wi][0]]:'';
+    return '<tr><td class="stick"><button type="button" class="lnk" data-act="tprof" data-v="'+h(a.n)+'" data-g="'+r.g+'" data-d="'+r.disc+'">'+h(a.n)+'</button></td><td class="num">+'+a.tot.toFixed(2)+'</td>'+
+      ['st','mi','sc'].map(function(k){ var v=sec(a,k); return '<td class="num hc" style="'+divBg(v,ref,2)+'">'+hs(v)+'</td>'; }).join('')+
+      '<td class="nw">Tor '+(wi+1)+gt+' <small class="mu">+'+wv.toFixed(2)+'</small></td></tr>'; }).join('');
+  return '<div class="spc"><div class="spc-h"><span class="pill">'+h((DISC[r.disc]||r.disc)+' · Lauf '+r.run)+'</span><span class="cd-t">Gate-to-Gate-Auswertung · Rückstand pro Tor</span><span class="sp"></span>'+(r.top?'<span class="spc-n">Laufbestzeit: '+h(r.top)+'</span>':'')+'</div>'+
+    '<div class="tw"><table class="tbl spt tgc"><thead><tr><th class="stick">Athlet:in</th><th class="num">Rückstand Lauf</th><th class="num">Start</th><th class="num">Mitte</th><th class="num">Schluss</th><th>Grösster Verlust</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<p class="spc-l">Start, Mitte, Schluss: Ø Hundertstel Rückstand pro Tor im jeweiligen Kursdrittel. <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der Schnitt der Schweizer:innen in diesem Lauf. Namen antippen für das Athletenprofil.</p></div>';
+}
+
 function viewDetail(ev){
-  if(SPEED.indexOf(((ev.races||[])[0]||{}).disc)>=0||(ev.cond||[]).length) speedLoad();
+  speedLoad();
   var items=itemsOf(ev),st=staffOf(ev),c=cov(items),notes=entriesOf(ev,'note');
   var stat=status(ev);
   var head='<section class="card dhero"><div class="dhead"><div>'+
@@ -1884,7 +2085,7 @@ function viewDetail(ev){
         '<span class="mini" aria-label="Vorhanden">'+KINDS.filter(function(k){return cc[k.k];}).map(function(k){return '<span>'+h(k.s)+(cc[k.k]>1?'<b>'+cc[k.k]+'</b>':'')+'</span>';}).join('')+'</span></div></div><div class="body">'+
       ((s.length||w.length)?'<div class="notes">'+(s.length?'<div><p class="h3">Kurzfazit</p><ul>'+s.map(function(x){return '<li>'+h(x)+'</li>';}).join('')+'</ul></div>':'')+(w.length?'<div><p class="h3">Wetter und Piste</p><ul>'+w.map(function(x){return '<li>'+h(x)+'</li>';}).join('')+'</ul></div>':'')+'</div>':'')+
       condCard((ev.cond||[]).filter(function(c){return c.d===d;}))+
-      speedRacesFor(ev,d).map(sectorCard).join('')+
+      speedRacesFor(ev,d).map(sectorCard).join('')+techRunsFor(ev,d).map(techCard).join('')+
       resHtml+
       Object.keys(nd).map(function(dc){ return ksCard(ev,d,ksN.filter(function(x){return (x.disc||'')===dc;})); }).join('')+
       (gtgI.length?'<div class="ggrid">'+gtgI.map(gtgFig).join('')+'</div>':'')+
@@ -1997,7 +2198,7 @@ function render(){
     html=ev?viewDetail(ev):S.tab==='team'?viewTeam():S.tab==='analysen'?viewAnalysen():S.tab==='speed'?viewSpeed():viewEvents();
   }
   v.innerHTML=html;
-  hydrateMon(v);
+  hydrateMon(v); hydrateEnc(v);
   fitLists(v);
   var bh=document.querySelector('.bar'); if(bh) document.documentElement.style.setProperty('--barh',bh.offsetHeight+'px');
   if(fid){ var n=document.getElementById(fid); if(n){ n.focus({preventScroll:true}); if(ss!=null){ try{ n.setSelectionRange(ss,se); }catch(e){} } } }
@@ -2068,18 +2269,23 @@ document.addEventListener('click',function(ev){
   var act=el.getAttribute('data-act'),v=el.getAttribute('data-v');
   if(act!=='askdel'&&act!=='del') S.confirm=null;
   switch(act){
-    case 'zoom': var lb=document.getElementById('lb'),li=document.getElementById('lbImg'),lp=document.getElementById('lbPdf'),lj=document.getElementById('lbJs'),pu=pdfUrl(v),isPdf=/\.pdf$/i.test(v); lb.classList.remove('full'); lb.classList.toggle('pdf',isPdf&&!pu); li.hidden=lp.hidden=lj.hidden=true; lp.removeAttribute('src'); if(pu){ lp.hidden=false; lp.src=pu; } else if(isPdf&&window.__encFetch){ lj.hidden=false; lj.innerHTML='<div class="lbmsg">PDF wird geladen …</div>'; lb.hidden=false; window.__encFetch(v.replace(/\.pdf$/,'.enc')).then(function(b){ lj.hidden=true; lj.innerHTML=''; lp.hidden=false; lp.src=URL.createObjectURL(new Blob([b],{type:'application/pdf'})); }).catch(function(){ lj.innerHTML='<div class="lbmsg">Das PDF konnte nicht geladen werden.</div>'; }); break; } else if(isPdf){ lj.hidden=false; lb.hidden=false; showPdfJs(v,lj); break; } else { li.hidden=false; li.src=imgSrc(v); } lb.hidden=false; break;
+    case 'zoom': var lb=document.getElementById('lb'),li=document.getElementById('lbImg'),lp=document.getElementById('lbPdf'),lj=document.getElementById('lbJs'),pu=pdfUrl(v),isPdf=/\.pdf$/i.test(v); lb.classList.remove('full'); lb.classList.toggle('pdf',isPdf&&!pu); li.hidden=lp.hidden=lj.hidden=true; lp.removeAttribute('src'); if(pu){ lp.hidden=false; lp.src=pu; } else if(isPdf&&window.__encFetch){ lj.hidden=false; lj.innerHTML='<div class="lbmsg">PDF wird geladen …</div>'; lb.hidden=false; window.__encFetch(v.replace(/\.pdf$/,'.enc')).then(function(b){ lj.hidden=true; lj.innerHTML=''; lp.hidden=false; lp.src=URL.createObjectURL(new Blob([b],{type:'application/pdf'})); }).catch(function(){ lj.innerHTML='<div class="lbmsg">Das PDF konnte nicht geladen werden.</div>'; }); break; } else if(isPdf){ lj.hidden=false; lb.hidden=false; showPdfJs(v,lj); break; } else { li.hidden=false; var iu=imgSrc(v); if(iu) li.src=iu; else if(window.__IMGLAZY){ li.removeAttribute('src'); encImg(v).then(function(u){ li.src=u; }); } } lb.hidden=false; break;
     case 'theme': setTheme(document.documentElement.getAttribute('data-ks')!=='dark'); break;
     case 'tab': S.tab=v; S.ev=null; S.form=null; remember(); render(); window.scrollTo(0,0); break;
     case 'season': S.season=v; S.venue=''; S.ev=null; remember(); render(); break;
     case 'g': S.g=v; remember(); render(); break;
     case 'logout': try{ localStorage.removeItem('rvd-k'); }catch(e){} location.reload(); break;
-    case 'spprof': var spp=spState(); spp.g=el.getAttribute('data-g')||spp.g; spp.season=el.getAttribute('data-s')||spp.season; spp.mode='A'; spp.ath=v; S.ev=null; S.tab='speed'; remember(); render(); window.scrollTo(0,0); setTimeout(function(){ var pf=document.querySelectorAll('#view .card')[1]; if(pf) pf.scrollIntoView({block:'start'}); },50); break;
+    case 'spprof': var spp=spState(); spp.g=el.getAttribute('data-g')||spp.g; spp.season=el.getAttribute('data-s')||spp.season; spp.mode='A'; spp.ath=v; S.ev=null; S.tab='speed'; remember(); render(); window.scrollTo(0,0); setTimeout(function(){ var pf=document.getElementById('spProfile'); if(pf) pf.scrollIntoView({block:'start'}); },50); break;
     case 'jump': var dj=document.getElementById('day-'+v); if(dj) dj.scrollIntoView({behavior:'smooth',block:'start'}); break;
     case 'spg': spState().g=v; spState().ath=null; render(); break;
     case 'sps': spState().season=v; render(); break;
     case 'spm': spState().mode=v; render(); break;
-    case 'spath': spState().ath=v; render(); var pf=document.querySelectorAll('#view .card')[1]; if(pf) pf.scrollIntoView({behavior:'smooth',block:'start'}); break;
+    case 'spath': spState().ath=v; render(); var pf=document.getElementById('spProfile'); if(pf) pf.scrollIntoView({behavior:'smooth',block:'start'}); break;
+    case 'tath': spState().tath=v; render(); var pf2=document.getElementById('spProfile'); if(pf2) pf2.scrollIntoView({behavior:'smooth',block:'start'}); break;
+    case 'spa': spState().area=v; remember(); render(); break;
+    case 'tprof': var tq=spState(); tq.area='tech'; tq.tg=el.getAttribute('data-g')||tq.tg; tq.td='all'; tq.tath=v; S.ev=null; S.tab='speed'; remember(); render(); window.scrollTo(0,0); setTimeout(function(){ var pf=document.getElementById('spProfile'); if(pf) pf.scrollIntoView({block:'start'}); },50); break;
+    case 'tg': spState().tg=v; spState().tath=null; render(); break;
+    case 'td': spState().td=v; render(); break;
     case 'grp': S.grp=v; remember(); render(); break;
     case 'kind': S.kind=v; render(); break;
     case 'gl': S.gl[el.getAttribute('data-k')]=+v; render(); break;
