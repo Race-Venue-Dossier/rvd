@@ -2534,6 +2534,8 @@ function drawMarkers(L){
 var VALIAS={garmischpartenkirchen:'garmisch',andorra:'soldeu',grandvalira:'soldeu',lillehammer:'kvitfjell',hafjell:'kvitfjell',saalbachhinterglemm:'saalbach',cortina:'cortinadampezzo',copper:'coppermountain'};
 function vkey(n){ var f=lfold(String(n||'').split(/[\/,(]/)[0]).replace(/ /g,''); return VALIAS[f]||f; }
 var SPDD={DH:1,SG:1},TECD={GS:1,SL:1};
+/* Zurückgetreten: nicht mehr in der Vorschau (Resultate und Profile bleiben) */
+var VRET={'Lara Gut-Behrami':1,'Niels Hintermann':1};
 function vSetter(id,run){ var c=SP&&SP.cs&&SP.cs[String(id)]; if(!c||!c.r) return null; return c.r.filter(function(x){return x[0]===(run||1);})[0]||(run>1?null:c.r[0])||null; }
 function vSetterTxt(x){ return x?h(x[1])+(x[2]&&x[2]!=='FIS'?' <small class="mu">'+h(x[2])+'</small>':x[2]==='FIS'?' <small class="mu">FIS</small>':''):''; }
 /* FIS-Rennnummer zu einem Lauf (Geschlecht, Datum, Disziplin) */
@@ -2604,7 +2606,7 @@ function vSpeedPart(ev,k,prev){
   var hereR=here.filter(function(r){return !r.tr;}); if(hereR.length) here=hereR;
   var cnt={T:0,M:0,G:0},tot=0; here.forEach(function(r){ r.st.forEach(function(t){ cnt[t]++; tot++; }); });
   var last=pool.reduce(function(m,r){return r.season>m?r.season:m;},'');
-  var team=spTeam(pool).filter(function(n){ return pool.some(function(r){ return r.season===last&&r.rows.some(function(a){return a.n===n;}); }); });
+  var team=spTeam(pool).filter(function(n){ return !VRET[n]&&pool.some(function(r){ return r.season===last&&r.rows.some(function(a){return a.n===n;}); }); });
   if(!team.length) return '';
   var stats={}; team.forEach(function(n){ stats[n]=spStats(n,pool); });
   var tm={}; ['T','M','G'].forEach(function(t){ tm[t]=med(team.map(function(n){return stats[n]['m'+t];}).filter(function(v){return v!=null;})); });
@@ -2640,8 +2642,8 @@ function vTechPart(ev,k,prev,dc){
   /* Norm je Athlet:in und Lauf */
   var nr={},np={}; runs.forEach(function(r){ r.rows.forEach(function(a){ if(a.nat!=='SUI') return; (nr[a.n+'|'+r.run]=nr[a.n+'|'+r.run]||[]).push(a.rk); (np[a.n]=np[a.n]||[]).push(a.rk); }); });
   nr=vNorm(nr); np=vNorm(np);
-  var team=Object.keys(np).filter(function(n){return np[n]!=null;});
-  hist.forEach(function(o){ (o.sui||[]).forEach(function(a){ if(team.indexOf(a.n)<0&&a.rk) team.push(a.n); }); });
+  var team=Object.keys(np).filter(function(n){return np[n]!=null&&!VRET[n];});
+  hist.forEach(function(o){ (o.sui||[]).forEach(function(a){ if(team.indexOf(a.n)<0&&a.rk&&!VRET[a.n]) team.push(a.n); }); });
   if(!team.length) return '';
   var lab={},chips=[],TOL={nfig:dc==='SL'?2:1,pit:2,off:dc==='SL'?0.15:0.4};
   var cls=function(f,v){ return v==null?null:v>=thr[f]+TOL[f]?'hi':v<=thr[f]-TOL[f]?'lo':'mid'; };
