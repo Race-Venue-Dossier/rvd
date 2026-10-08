@@ -574,6 +574,48 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .gt .shot img{max-height:520px;width:100%;object-fit:contain;background:#fff;aspect-ratio:auto 16/9}
 .gtv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
 .gtv .mu{margin-right:2px}
+.dbf{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;margin-bottom:14px}
+.dbf .grow{flex:0 1 280px;min-width:200px}.dbf .inp{height:36px}
+.dbl{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.dbr{display:grid;grid-template-columns:64px minmax(160px,1fr) repeat(var(--nk),minmax(52px,74px)) 22px;align-items:center;gap:6px;padding:7px 12px}
+.dbh{background:var(--surface-2);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+.dbh .dbc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dbc{text-align:center}
+.dbm{margin:0;padding:10px 12px 4px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface);border-top:1px solid var(--line)}
+.dbl .dbm:nth-child(2){border-top:0}
+.dbg{border-top:1px solid var(--row-line)}
+.dbm+.dbg{border-top:0}
+.dbg>summary{list-style:none;cursor:pointer}
+.dbg>summary::-webkit-details-marker{display:none}
+.dbg>summary:hover{background:var(--bg)}
+.dbg[open]>summary{background:var(--surface-2)}
+.dbd{font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;line-height:1.15}
+.dbd small{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.dbe{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dbe b{font-size:13.5px;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dbe>span{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dbn{font-style:normal;display:inline-flex;min-width:24px;height:22px;padding:0 6px;border-radius:6px;align-items:center;justify-content:center;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--kc,var(--ink-2)) 14%,var(--surface));color:var(--ink)}
+.dbz{font-style:normal;color:var(--line-2)}
+.k-res{--kc:#2f6fd0}.k-ks{--kc:#7a4cc2}.k-gtg{--kc:#DA291C}.k-sek{--kc:#d98b1c}.k-gps{--kc:#15803d}.k-vid{--kc:#14181f}.k-met{--kc:#2f7fb8}.k-div{--kc:#7b8494}
+.dbx::before{content:"";display:block;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 auto;transition:transform .15s}
+.dbg[open] .dbx::before{transform:rotate(-135deg)}
+.dbb{padding:4px 12px 12px 82px;background:var(--surface-2);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.dbb ul{list-style:none;margin:0;padding:0;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.dbb li{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 10px;border-top:1px solid var(--row-line);font-size:13px}
+.dbb li:first-child{border-top:0}
+.dbk{font-size:10.5px;font-weight:750;justify-self:start;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--kc) 12%,var(--surface));color:var(--ink-2);border:1px solid color-mix(in srgb,var(--kc) 30%,var(--line))}
+@media (max-width:760px){
+  .dbh{display:none}
+  .dbg>summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:9px 10px}
+  .dbg>summary .dbd{flex:0 0 48px;order:0}.dbg>summary .dbe{flex:1 1 0;order:0}.dbg>summary .dbx{flex:0 0 14px;order:1}
+  .dbg>summary .dbc{display:none;order:2}
+  .dbg>summary .dbc:has(.dbn){display:inline-flex}
+  .dbg>summary::after{content:"";order:1;flex-basis:100%;height:0}
+  .dbn{font-size:11px;height:20px}
+  .dbn::after{content:attr(data-l);margin-left:4px;font-weight:600;color:var(--ink-2)}
+  .dbb{padding:4px 10px 12px}
+  .dbb li{grid-template-columns:minmax(0,1fr) auto;gap:3px 8px}.dbb li .dbk{grid-column:1/-1}
+}
 .agl{display:flex;flex-direction:column;gap:10px}
 @media (min-width:1100px){.agl{display:block;columns:2;column-gap:12px}.ag{break-inside:avoid;margin-bottom:12px}}
 .ag{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
@@ -2140,6 +2182,7 @@ function viewTeam(){
 }
 
 /* ───────────── Analysen ───────────── */
+var DBS={res:'Resultate',ks:'Kurs',gtg:'GtG',sek:'Sektoren',gps:'GPS',vid:'Video',met:'Meteo',div:'Weitere'};
 function viewAnalysen(){
   var list=filtered(),rows=[];
   list.forEach(function(e){ itemsOf(e).forEach(function(it){ rows.push({e:e,it:it}); }); });
@@ -2149,24 +2192,35 @@ function viewAnalysen(){
   var chips='<div class="chipsel" role="group" aria-label="Art der Analyse" id="f-kind">'+[{k:'all',s:'Alle',c:all}].concat(KINDS.map(function(k){return {k:k.k,s:k.n,c:counts[k.k]||0};})).map(function(o){
     return '<button type="button" data-act="kind" data-v="'+o.k+'" aria-pressed="'+(S.kind===o.k)+'">'+h(o.s)+' <b>'+o.c+'</b></button>';
   }).join('')+'</div>';
-  /* gruppiert nach Event und Tag */
+  /* Suche */
+  var q=(S.q||'').trim().toLowerCase();
+  if(q) rows=rows.filter(function(r){ var it=r.it; return (r.e.name+' '+(it.t||'')+' '+(it.note||'')+' '+(DISC[it.disc]||'')+' '+(KIND[it.k]||KIND.div).n+' '+GN[r.e.g]).toLowerCase().indexOf(q)>=0; });
+  /* eine Zeile pro Event und Tag */
   var groups=[],gi={};
   rows.forEach(function(r){ var key=r.e.id+'|'+(r.it.d||''); if(!gi[key]){ gi[key]={e:r.e,d:r.it.d||'',items:[]}; groups.push(gi[key]); } gi[key].items.push(r.it); });
-  var grp=groups.map(function(g){
-    var discs={}; g.items.forEach(function(it){ if(it.disc) discs[it.disc]=1; });
-    return '<section class="ag"><button type="button" class="ag-h" data-act="goto" data-v="'+h(g.e.id)+'" data-d="'+h(g.d)+'">'+
-      '<span class="ag-d">'+(g.d?'<small>'+WD[pd(g.d).getDay()]+'</small>'+dm(g.d)+g.d.slice(2,4):'–')+'</span>'+
-      '<span class="ag-e"><b>'+flag(g.e.nat)+h(g.e.name)+'</b><span>'+gMark(g.e.g)+GN[g.e.g]+(Object.keys(discs).length?' · '+Object.keys(discs).map(function(x){return h(DISC[x]||x);}).join(', '):'')+'</span></span>'+
-      '<span class="ag-n">'+g.items.length+' ›</span></button><ul>'+
-      g.items.map(function(it){ var k=KIND[it.k]||KIND.div,t=it.t||'',gen=!t||/^(Resultat|Kurssetzung|Gate-to-Gate-Analyse$|Gate-to-Gate-Report$|GPS-Bericht$|Sektoranalyse$|Meteo)/.test(t)&&!/lange|Kurve|Coach/i.test(t);
+  var KS=S.kind==='all'?KINDS.filter(function(k){return counts[k.k];}):KINDS.filter(function(k){return k.k===S.kind;});
+  var head='<div class="dbr dbh" style="--nk:'+KS.length+'"><span>Datum</span><span>Event</span>'+KS.map(function(k){return '<span class="dbc" title="'+h(k.n)+'">'+h(DBS[k.k]||k.s)+'</span>';}).join('')+'<span></span></div>';
+  var lastM='';
+  var body=groups.map(function(g){
+    var c={},discs={}; g.items.forEach(function(it){ c[it.k]=(c[it.k]||0)+1; if(it.disc) discs[it.disc]=1; });
+    var mon=g.d?MON[pd(g.d).getMonth()]+' '+g.d.slice(0,4):'';
+    var mh=mon!==lastM?'<p class="dbm">'+mon+'</p>':''; lastM=mon;
+    var det=g.items.map(function(it){ var k=KIND[it.k]||KIND.div,t=it.t||'',gen=!t||/^(Resultat|Kurssetzung|Gate-to-Gate-Analyse$|Gate-to-Gate-Report$|GPS-Bericht$|Sektoranalyse$|Meteo)/.test(t)&&!/lange|Kurve|Coach/i.test(t);
         var dr=(it.disc?(DISC[it.disc]||it.disc):'')+(it.run?(it.disc?' · ':'')+'Lauf '+it.run:'');
-        var title=gen?(dr||k.n):t;
-        return '<li class="click" data-act="goto" data-v="'+h(g.e.id)+'" data-d="'+h(g.d)+'"><span class="pill">'+h(k.s)+'</span><span class="ag-t">'+h(title)+(it.note?' <span class="sub">· '+h(it.note)+'</span>':'')+'</span><span class="ag-m">'+(gen?'':(it.disc?h(DSHORT[it.disc]||it.disc):'')+(it.run?' · L'+it.run:''))+'</span></li>'; }).join('')+'</ul></section>';
+        return '<li><span class="dbk k-'+it.k+'">'+h(k.s)+'</span><span class="ag-t">'+h(gen?(dr||k.n):t)+(it.note?' <span class="sub">· '+h(it.note)+'</span>':'')+'</span><span class="ag-m">'+(gen?'':h(dr))+'</span></li>'; }).join('');
+    return mh+'<details class="dbg"'+(q?' open':'')+'><summary class="dbr" style="--nk:'+KS.length+'">'+
+      '<span class="dbd"><small>'+(g.d?WD[pd(g.d).getDay()]:'')+'</small>'+(g.d?dm(g.d):'–')+'</span>'+
+      '<span class="dbe"><b>'+flag(g.e.nat)+h(g.e.name)+'</b><span>'+gMark(g.e.g)+(Object.keys(discs).map(function(x){return h(DISC[x]||x);}).join(', ')||GN[g.e.g])+'</span></span>'+
+      KS.map(function(k){ var n=c[k.k]||0; return '<span class="dbc">'+(n?'<i class="dbn k-'+k.k+'" data-l="'+h(kpl(k.k,n))+'">'+n+'</i>':'<i class="dbz">·</i>')+'</span>'; }).join('')+
+      '<span class="dbx" aria-hidden="true"></span></summary>'+
+      '<div class="dbb"><ul>'+det+'</ul><button type="button" class="btn" data-act="goto" data-v="'+h(g.e.id)+'" data-d="'+h(g.d)+'">Im Event öffnen ›</button></div></details>';
   }).join('');
-  return '<section class="card"><div class="ch"><div><h2>Datenbank</h2><p>Alle Einträge im Dossier: '+rows.length+' an '+groups.length+' Renntagen, neueste zuerst. Antippen öffnet den Tag im Event.</p></div></div>'+
-    '<div class="fg" style="margin-bottom:12px"><span class="lab">Art</span>'+chips+'</div>'+
-    (rows.length?'<div class="agl">'+grp+'</div>'
-      :'<div class="empty"><b>Keine Analysen für diese Auswahl</b>Im Event über «+ Analyse» einen Link oder eine Datei ablegen.</div>')+'</section>';
+  var mob=groups.length;
+  return '<section class="card"><div class="ch"><div><h2>Datenbank</h2><p>Alle Einträge im Dossier: '+rows.length+' an '+groups.length+' Renntagen, neueste zuerst. Zeile antippen zeigt die Einträge.</p></div></div>'+
+    '<div class="dbf"><div class="fg grow"><label class="lab" for="db-q">Suchen</label><input class="inp" id="db-q" type="search" placeholder="Ort, Athlet:in, Titel …" value="'+h(S.q||'')+'" autocomplete="off"></div>'+
+    '<div class="fg"><span class="lab">Art</span>'+chips+'</div></div>'+
+    (rows.length?'<div class="dbl">'+head+body+'</div>'
+      :'<div class="empty"><b>Keine Einträge für diese Auswahl</b>Suche oder Filter anpassen.</div>')+'</section>';
 }
 
 /* ───────────── Rendern ───────────── */
@@ -2311,7 +2365,9 @@ document.addEventListener('click',function(ev){
   document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'&&!lb.hidden){ lb.hidden=true; lb.classList.remove('full'); } });
 })();
 document.addEventListener('toggle',function(ev){ var k=ev.target.getAttribute&&ev.target.getAttribute('data-fold'); if(k) S.fold[k]=ev.target.open; if(ev.target.open&&ev.target.classList&&ev.target.classList.contains('rep')) hydrateMon(ev.target.parentNode); if(ev.target.classList&&ev.target.classList.contains('fold')) fitLists(document); },true);
+var QT=null;
 document.addEventListener('input',function(ev){
+  if(ev.target.id==='db-q'){ S.q=ev.target.value; clearTimeout(QT); QT=setTimeout(render,180); return; }
   var k=ev.target.getAttribute&&ev.target.getAttribute('data-draft'); if(k) S.draft[k]=ev.target.value;
 });
 document.addEventListener('change',function(ev){
