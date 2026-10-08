@@ -121,7 +121,7 @@ select.sel:focus,input.inp:focus,textarea.inp:focus{outline:none;border-color:va
 /* ---------- Kennzahlen ---------- */
 .kpis{display:grid;grid-template-columns:1.5fr repeat(5,minmax(0,1fr));gap:10px}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.kpis{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 2px 6px;scroll-padding-inline:2px}.kpis::-webkit-scrollbar{display:none}.kpi{flex:0 0 42%;scroll-snap-align:start}.kpi:first-child{flex-basis:58%}}
 .kpi{background:var(--surface);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
 .kpi .k{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .kpi .v{font-size:20px;font-weight:760;letter-spacing:-.02em;line-height:1.05;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
@@ -350,6 +350,7 @@ h1 .flag{width:1.25em;height:.84em;border-radius:3px}
 .pod{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;max-width:520px;margin-inline:auto;width:100%}
 .podc{display:flex;flex-direction:column}
 .podc .pod{flex:1;min-height:230px}
+@media (max-width:640px){.podc .pod{min-height:180px}.podc .pd.r1 .step{font-size:24px}}
 .pd{justify-content:flex-end}
 .pd .who b{font-size:13.5px}
 .pd .who .flag{width:30px;height:20px}
@@ -443,7 +444,7 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .tbl.gl{font-size:12px}
 .tbl.gl td,.tbl.gl th{text-align:right;padding:5px 7px}
 .tbl.gl th{font-size:10px}
-.tbl.gl td.bar{min-width:60px;font-weight:650;background:linear-gradient(90deg,transparent var(--a,0%),var(--c) var(--a,0%),var(--c) var(--b,0%),transparent var(--b,0%));background-origin:content-box;background-clip:content-box;background-repeat:no-repeat;background-size:100% 18px;background-position:center}
+.tbl.gl td.bar{min-width:60px;font-weight:650;background:linear-gradient(90deg,transparent var(--a,0%),var(--c) var(--a,0%),var(--c) var(--b,0%),transparent var(--b,0%));background-origin:content-box;background-clip:content-box;background-repeat:no-repeat;background-size:calc(100% - 50px) 16px;background-position:left center;min-width:110px}
 .tbl.gl .gd{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
 .tbl.gl .st{font-size:11px;color:var(--muted)}
 .tbl.gl .st.ok{color:var(--line-2)}
@@ -463,6 +464,12 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .vd a.vf:hover .play{background:var(--red)}
 .vd figcaption{padding:7px 10px;font-size:12px;font-weight:650;line-height:1.3}
 .vd figcaption small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.vd:has(> a.vf){display:flex;align-items:center}
+.vd > a.vf{flex:0 0 72px;width:72px;aspect-ratio:4/3;font-size:0;gap:0}
+.vd > a.vf .play{width:32px;height:32px}
+.vd > a.vf .play::before{border-left-width:10px;border-top-width:6px;border-bottom-width:6px;margin-left:3px}
+.vd:has(> a.vf) figcaption{flex:1;min-width:0;padding:8px 12px}
+.vd:has(> a.vf):hover{border-color:var(--line-2)}
 /* ---------- Event-Liste ---------- */
 .evmon{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
 .evmon:first-of-type{margin-top:4px}
@@ -490,7 +497,12 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .evteam{display:flex;align-items:center;gap:10px;justify-self:end}
 .evgo{font-size:24px;line-height:1;color:var(--muted);transition:transform .15s}
 @media (max-width:640px){
-  .evcard{grid-template-columns:60px minmax(0,1fr);gap:10px 12px;padding:11px 12px;align-items:start}
+  .evchips{gap:2px 0}
+  .evc{background:none;border:0;padding:0;font-size:12px;color:var(--muted);font-weight:500}
+  .evc b{color:var(--ink-2);font-weight:700}
+  .evc:not(:last-child)::after{content:"·";margin:0 6px;color:var(--line-2)}
+  .evc.sp{color:var(--muted)}
+  .evcard{grid-template-columns:60px minmax(0,1fr);gap:8px 12px;padding:11px 12px;align-items:start}
   .evdate b{font-size:13px}
   .evteam{grid-column:2;justify-self:start}
   .evgo{display:none}
@@ -525,7 +537,17 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .rb.me .rb-l{color:var(--ink);font-weight:800}
 .ravg{position:absolute;left:0;right:0;border-top:1.5px dashed var(--ink-2);pointer-events:none;opacity:.55}
 .ravg em{position:absolute;right:0;top:-16px;font-style:normal;font-size:10.5px;font-weight:750;color:var(--ink-2);background:var(--surface);padding:0 4px}
-@media (max-width:760px){.rrow{grid-template-columns:1fr;gap:12px}.rb{min-width:38px}}
+.rb-l .ls{display:none}
+.kc-m{display:none;padding:10px 12px;gap:10px;flex-direction:column}
+.kc-mr{border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.kc-mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:13.5px}
+.kc-mr dl{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px}
+.kc-mr dl div{min-width:0}
+.kc-mr dt{font-size:10.5px;color:var(--muted);font-weight:600}
+.kc-mr dd{margin:0;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.kc-mf{margin:7px 0 0;font-size:12px;color:var(--ink-2)}
+@media (max-width:640px){.kc-sum{display:none}.kc-m{display:flex}}
+@media (max-width:760px){.rrow{grid-template-columns:1fr;gap:12px}.rb{min-width:0}.rbars{gap:3px;min-width:0}.rb-l .lf{display:none}.rb-l .ls{display:inline}.rb-l{font-size:9px;text-overflow:clip}.rb-d{display:none}.rb-v{font-size:10.5px}}
 .daynav{position:sticky;top:calc(var(--barh,62px) + env(safe-area-inset-top,0px));z-index:30;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:14px -4px 0;padding:8px 4px;background:var(--bg);box-shadow:0 6px 10px -8px rgba(20,24,31,.25)}
 .daynav::-webkit-scrollbar{display:none}
 .daynav .dn{all:unset;cursor:pointer;flex:0 0 auto;display:flex;flex-direction:column;gap:1px;padding:6px 11px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:12px;font-weight:650;color:var(--ink);white-space:nowrap}
@@ -549,15 +571,28 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .gt figcaption{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
 .gt figcaption .sp{flex:1}
 .gt figcaption .mu{font-size:11px}
-.gt .shot img{max-height:520px;width:100%;object-fit:contain;background:#fff}
+.gt .shot img{max-height:520px;width:100%;object-fit:contain;background:#fff;aspect-ratio:auto 16/9}
 .gtv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
 .gtv .mu{margin-right:2px}
-.anl{display:none;list-style:none;margin:0;padding:0;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.anl li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;padding:10px 12px;border-top:1px solid var(--row-line);cursor:pointer}
-.anl li:first-child{border-top:none}
-.anl-t{font-size:13.5px;font-weight:650;min-width:0;overflow-wrap:anywhere}
-.anl-m{grid-column:1/-1;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-@media (max-width:640px){.anl{display:flex}.antbl{display:none}}
+.agl{display:flex;flex-direction:column;gap:10px}
+@media (min-width:1100px){.agl{display:block;columns:2;column-gap:12px}.ag{break-inside:avoid;margin-bottom:12px}}
+.ag{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.ag-h{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;background:var(--surface-2);border:0;border-bottom:1px solid var(--line);padding:9px 12px;color:var(--ink);cursor:pointer;font:inherit}
+.ag-h:hover{background:var(--bg)}
+.ag-d{font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;line-height:1.15}
+.ag-d small{display:block;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.ag-e{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ag-e b{font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-e>span{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ag-n{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.ag ul{list-style:none;margin:0;padding:0}
+.ag li{display:grid;grid-template-columns:118px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--row-line);cursor:pointer;font-size:13px}
+.ag li:first-child{border-top:0}
+.ag li:hover{background:var(--bg)}
+.ag li .pill{justify-self:start}
+.ag-t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.ag-m{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.ag li{grid-template-columns:96px minmax(0,1fr) auto;gap:6px;padding:8px 10px}.ag li .pill{font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ag-t{font-size:13px}.ag-h{grid-template-columns:52px minmax(0,1fr) auto}}
 /* ---------- Mobile ---------- */
 @media (max-width:760px){
   .card.filters,.spf{flex-direction:column;align-items:stretch;gap:7px}
@@ -609,6 +644,8 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 ul.up,ul.dn{color:var(--ink-2)}
 ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
 .spf{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;margin-bottom:14px}
+.spi{margin-bottom:12px}.spi h2{margin:0 0 4px}.spi>p{margin:0 0 12px;font-size:13px;color:var(--ink-2);max-width:80ch;line-height:1.5}.spi .spf{margin-bottom:0}
+@media (max-width:760px){.spi .spf .fg{width:100%}.spi>p{font-size:12.5px}}
 .sph th.grp{text-align:center;border-left:1px solid var(--line)}
 .sph tr.sub th{position:static;font-size:10px;text-transform:none;letter-spacing:0;font-weight:700}
 .sph td.hc{min-width:66px}
@@ -705,6 +742,7 @@ ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
 .k3 li span{float:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-2)}
 .lnk{all:unset;cursor:pointer;font-weight:650;color:var(--ink)}
 .lnk:hover{text-decoration:underline}
+@media (pointer:coarse){.lnk{padding-block:6px}.spfz summary{padding:10px 0}}
 .lnk:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 /* ---------- Berichte ---------- */
 .rep{border-top:1px solid var(--row-line)}
@@ -828,7 +866,7 @@ ul.up li::marker{color:var(--ok)} ul.dn li::marker{color:var(--loss)}
         <li><b style="background:#E6B400"></b>Resultate und Nationen</li>
         <li><b style="background:#e63a2e"></b>Kurssetzung und Gate-to-Gate</li>
         <li><b style="background:#2aa3d6"></b>GPS- und Trainingsberichte</li>
-        <li><b style="background:#d98b1c"></b>Sektoranalyse und Speed-Profile</li>
+        <li><b style="background:#d98b1c"></b>Sektoranalysen und Athletenprofile</li>
       </ul>
     </div>
   </div>
@@ -960,8 +998,8 @@ var GTG_BASE='https://gate-to-gate.github.io/gtg-app/';
 var TABS=[
   {id:'events',n:'Events',i:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
   {id:'team',n:'Team FEA',i:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 010 6.4M18 14.8c2 .7 3.2 2.4 3.6 5.2"/>'},
-  {id:'speed',n:'Speed-Profile',i:'<path d="M3 20h18M5 20l5-9 4 5 3-6 2 10"/><circle cx="10" cy="6" r="1.6"/>'},
-  {id:'analysen',n:'Analysen',i:'<path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5"/>'}
+  {id:'speed',n:'Athletenprofile',i:'<path d="M3 20h18M5 20l5-9 4 5 3-6 2 10"/><circle cx="10" cy="6" r="1.6"/>'},
+  {id:'analysen',n:'Datenbank',i:'<ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'}
 ];
 
 /* ───────────── Zustand ───────────── */
@@ -1137,6 +1175,8 @@ function podium(top){
     }).join('')+'<div class="step" aria-label="Rang '+L[0].r+'">'+L[0].r+'</div></div>';
   }).join('')+'</div>';
 }
+var SHV={"Val d'Isère":'Isère','Val Gardena':'Gröden','Val Gardena/Gröden':'Gröden','Alta Badia':'Badia','Madonna di Campiglio':'Mad.','Crans-Montana':'Crans','Crans Montana':'Crans','St. Moritz':'StMo.','Copper Mountain':'Copp.','Beaver Creek':'Beav.','Kranjska Gora':'Kran.','Garmisch-Partenkirchen':'Garm.'};
+function shortV(n){ n=String(n).trim(); if(SHV[n]) return SHV[n]; var w=n.split(/[\s-]/)[0]; return w.length>5?w.slice(0,4)+'.':w; }
 function suiList(x){
   if(!(x.sui||[]).length) return '<p class="sub">Niemand aus der Schweiz am Start.</p>';
   return '<ol class="sl">'+x.sui.map(function(a){
@@ -1196,7 +1236,7 @@ function trend(ev){
     }).join('');
     var H=96,bars=pts.map(function(p){
       var hgt=Math.max(3,p.v/max*H);
-      return '<div class="rb'+(p.me?' me':'')+'" title="'+h(p.n+' '+dm(p.d)+': '+p.v+' Punkte SUI')+'"><span class="rb-v">'+p.v+'</span><i style="height:'+hgt.toFixed(0)+'px"></i><span class="rb-l">'+h(p.n.split('/')[0])+'</span><span class="rb-d">'+dm(p.d)+'</span></div>';
+      return '<div class="rb'+(p.me?' me':'')+'" title="'+h(p.n+' '+dm(p.d)+': '+p.v+' Punkte SUI')+'"><span class="rb-v">'+p.v+'</span><i style="height:'+hgt.toFixed(0)+'px"></i><span class="rb-l"><span class="lf">'+h(p.n.split('/')[0])+'</span><span class="ls">'+h(shortV(p.n.split('/')[0]))+'</span></span><span class="rb-d">'+dm(p.d)+'</span></div>';
     }).join('');
     var avgY=(avg/max*H).toFixed(0);
     return '<div class="rrow"><div class="rrow-h"><p class="h3">'+h(DISC[dc]||dc)+'</p>'+tiles+'</div>'+
@@ -1288,9 +1328,12 @@ function ksCard(ev,d,list){
   var sumRows=list.map(function(it,i){ var m=ms[i];
     return '<tr><td class="l"><b>'+(it.run?'Lauf '+it.run:'Kurs')+'</b></td><td>'+m.n+'</td><td>'+f2(m.d)+'</td><td>'+f2(m.o)+'</td><td>'+(m.a==null?'–':f1(m.a))+'</td><td>'+(m.pitch==null?'–':Math.round(m.pitch))+'</td><td>'+Math.round(m.len)+'</td><td class="l">'+fig(m)+'</td>'+
       '<td>'+((it.doc||it.pdf)?'<button class="btn" type="button" data-act="zoom" data-v="'+h(it.doc||it.pdf)+'">'+(it.doc?'PDF ansehen':'Tabelle ansehen')+'</button>':'')+'</td></tr>'; }).join('');
+  var sumM='<div class="kc-m">'+list.map(function(it,i){ var m=ms[i];
+    var kv=[['Tore',m.n],['Ø Distanz',f2(m.d)+' m'],['Ø Offset',f2(m.o)+' m'],['Ø Winkel',m.a==null?'–':f1(m.a)+'°'],['Ø Gefälle',m.pitch==null?'–':Math.round(m.pitch)+' %'],['Länge',Math.round(m.len)+' m']];
+    return '<div class="kc-mr"><div class="kc-mh"><b>'+(it.run?'Lauf '+it.run:'Kurs')+'</b>'+((it.doc||it.pdf)?'<button class="btn" type="button" data-act="zoom" data-v="'+h(it.doc||it.pdf)+'">'+(it.doc?'PDF':'Tabelle')+'</button>':'')+'</div><dl>'+kv.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>';}).join('')+'</dl>'+(fig(m)!=='–'?'<p class="kc-mf">Figuren: '+fig(m)+'</p>':'')+'</div>'; }).join('')+'</div>';
   var open=function(k){ var f=S.fold[k+'|'+key]; return f===false||(f==null&&window.innerWidth<=760)?'':' open'; };
   return '<article class="kc"><header class="kc-h"><span class="kb2">Kurssetzung</span><h4>'+h(DISC[list[0].disc]||'')+'</h4></header>'+
-    '<div class="tw kc-sum"><table class="tbl"><thead><tr><th class="l"></th><th>Tore</th><th>Ø Distanz m</th><th>Ø Offset m</th><th>Ø Winkel °</th><th>Ø Gefälle %</th><th>Länge m</th><th class="l">Figuren</th><th></th></tr></thead><tbody>'+sumRows+'</tbody></table></div>'+
+    '<div class="tw kc-sum"><table class="tbl"><thead><tr><th class="l"></th><th>Tore</th><th>Ø Distanz m</th><th>Ø Offset m</th><th>Ø Winkel °</th><th>Ø Gefälle %</th><th>Länge m</th><th class="l">Figuren</th><th></th></tr></thead><tbody>'+sumRows+'</tbody></table></div>'+sumM+
     '<div class="kc-2">'+
       '<details class="fold" data-fold="plan|'+h(key)+'"'+open('plan')+'><summary>Kurssetzung</summary><div class="fold-b"><p class="cap">Plan in Metern, Start oben. Ringe: <span style="color:var(--fig-b)">Banane</span>, <span style="color:var(--fig-h)">Hairpin</span>, <span style="color:var(--fig-f)">Flush</span>.</p>'+
         '<div class="plans">'+list.map(function(it){ return '<div><p class="h3">'+(it.run?'Lauf '+it.run:'Kurs')+'</p>'+ksPlan(it,{s:s,yr:yr,xmin:xmin,xmax:xmax,w:w})+'</div>'; }).join('')+'</div></div></details>'+
@@ -1415,7 +1458,7 @@ function viewEvents(){
     '</article>';
   });
   if(lastMon) rows+='</div>';
-  html+='<section class="card"><div class="ch"><div><h2>Events</h2><p>Event anklicken für die Detailansicht mit Resultaten, Kurssetzungen, Berichten und Videos. Pro Event siehst du, welche Inhalte schon da sind und wer vom FEA-Team im Einsatz ist.</p></div>'+
+  html+='<section class="card"><div class="ch"><div><h2>Events</h2><p>Event antippen für Resultate, Kurssetzungen, Berichte und Videos. Die Kreise zeigen, wer vom FEA-Team im Einsatz war.</p></div>'+
     '<div class="legend"><span><i class="dot onsite"></i>vor Ort</span><span><i class="dot cc"></i>Command Center</span></div></div>'+
     (list.length?rows:'<div class="empty"><b>Keine Events für diese Auswahl</b>Filter oben anpassen.</div>')+'</section>';
   if(S.meta&&S.meta.fisSynced){
@@ -1646,7 +1689,7 @@ function sectorCard(r){
 }
 function fmtT(s){ var m=Math.floor(s/60),x=(s-m*60).toFixed(2); return m?m+':'+(x<10?'0':'')+x:x; }
 
-/* ───────────── Tab «Speed-Profile» ───────────── */
+/* ───────────── Tab «Athletenprofile» ───────────── */
 function spState(){ if(!S.sp) S.sp={g:'M',season:'2025/26',mode:'R',ath:null}; return S.sp; }
 function spRaces(st){
   return SP.races.filter(function(r){ return r.g===st.g&&(st.season==='all'||r.season===st.season)&&(st.mode==='A'||!r.tr); });
@@ -1692,11 +1735,11 @@ function viewSpeed(){
   if(!st.ath||team.indexOf(st.ath)<0) st.ath=team[0]||null;
   var stats={}; team.forEach(function(n){ stats[n]=spStats(n,races); });
   var tm={T:med(team.map(function(n){return stats[n].mT;}).filter(function(v){return v!=null;})),M:med(team.map(function(n){return stats[n].mM;}).filter(function(v){return v!=null;})),G:med(team.map(function(n){return stats[n].mG;}).filter(function(v){return v!=null;})),fp:med(team.map(function(n){return stats[n].mfp;}))};
-  var ctrl='<div class="filters spf">'+
+  var ctrl='<section class="card spi"><h2>Athletenprofile Speed</h2><p>Zeitverlust der Schweizer Speed-Athlet:innen nach Streckenabschnitt und Bedingungen. Grundlage: FIS-Zwischenzeiten, Board «Slope Analysis SPEED» (Technisch, Mix, Gleiten) und Pistenbedingungen.</p><div class="filters spf">'+
     '<div class="fg"><span class="lab">Geschlecht</span>'+seg('sp-g','spg',st.g,[['M','Männer'],['W','Frauen']])+'</div>'+
     '<div class="fg"><span class="lab">Saison</span>'+seg('sp-s','sps',st.season,[['2024/25','2024/25'],['2025/26','2025/26'],['all','Beide']])+'</div>'+
     '<div class="fg"><span class="lab">Daten</span>'+seg('sp-m','spm',st.mode,[['R','Rennen'],['A','Rennen und Trainings']])+'</div>'+
-    '<span class="count"><b>'+races.length+'</b> '+(st.mode==='R'?'Rennen':'Läufe')+' · '+races.filter(function(r){return r.st;}).length+' mit Streckencharakter</span></div>';
+    '<span class="count"><b>'+races.length+'</b> '+(st.mode==='R'?'Rennen':'Läufe')+' · '+races.filter(function(r){return r.st;}).length+' mit Streckencharakter</span></div></section>';
   if(!team.length) return ctrl+'<section class="card"><div class="empty"><b>Zu wenig Daten</b>Für diese Auswahl gibt es keine Schweizer Athlet:innen mit mindestens drei Läufen.</div></section>';
   /* Team-Übersicht */
   var COLS=[['T','Technisch','sec'],['M','Mix','sec'],['G','Gleiten','sec'],['kalt','Schnee kalt','snow'],['mittel','Schnee mittel','snow'],['mild','Schnee mild','snow'],['sonnig','Sonne','wx'],['bewölkt','Bewölkt','wx'],['Niederschlag','Schneefall','wx'],['hart/aggressiv','Piste hart','prep'],['kompakt','Piste kompakt','prep'],['weich/gesalzen','Piste weich','prep']];
@@ -1905,19 +1948,23 @@ function viewAnalysen(){
   var chips='<div class="chipsel" role="group" aria-label="Art der Analyse" id="f-kind">'+[{k:'all',s:'Alle',c:all}].concat(KINDS.map(function(k){return {k:k.k,s:k.n,c:counts[k.k]||0};})).map(function(o){
     return '<button type="button" data-act="kind" data-v="'+o.k+'" aria-pressed="'+(S.kind===o.k)+'">'+h(o.s)+' <b>'+o.c+'</b></button>';
   }).join('')+'</div>';
-  var body=rows.map(function(r){
-    var it=r.it,k=KIND[it.k]||KIND.div;
-    return '<tr class="click" data-act="goto" data-v="'+h(r.e.id)+'" data-d="'+h(it.d||'')+'"><td>'+(it.d?dm(it.d)+it.d.slice(0,4):'–')+'</td>'+
-      '<td><button class="evname" type="button" data-act="goto" data-v="'+h(r.e.id)+'" data-d="'+h(it.d||'')+'">'+flag(r.e.nat)+h(r.e.name)+'</button></td><td class="c">'+gMark(r.e.g)+'</td>'+
-      '<td>'+(it.disc?h(DSHORT[it.disc]||it.disc):'–')+(it.run?' L'+it.run:'')+'</td>'+
-      '<td><span class="pill">'+h(k.s)+'</span></td>'+
-      '<td class="wrap">'+h(it.t||k.n)+(it.note?' <span class="sub">· '+h(it.note)+'</span>':'')+(it.by?' <span class="sub">· <span data-uid="'+h(it.by)+'"></span></span>':'')+'</td>'+
-      '<td class="c"><span class="btn">Ansehen</span></td></tr>';
+  /* gruppiert nach Event und Tag */
+  var groups=[],gi={};
+  rows.forEach(function(r){ var key=r.e.id+'|'+(r.it.d||''); if(!gi[key]){ gi[key]={e:r.e,d:r.it.d||'',items:[]}; groups.push(gi[key]); } gi[key].items.push(r.it); });
+  var grp=groups.map(function(g){
+    var discs={}; g.items.forEach(function(it){ if(it.disc) discs[it.disc]=1; });
+    return '<section class="ag"><button type="button" class="ag-h" data-act="goto" data-v="'+h(g.e.id)+'" data-d="'+h(g.d)+'">'+
+      '<span class="ag-d">'+(g.d?'<small>'+WD[pd(g.d).getDay()]+'</small>'+dm(g.d)+g.d.slice(2,4):'–')+'</span>'+
+      '<span class="ag-e"><b>'+flag(g.e.nat)+h(g.e.name)+'</b><span>'+gMark(g.e.g)+GN[g.e.g]+(Object.keys(discs).length?' · '+Object.keys(discs).map(function(x){return h(DISC[x]||x);}).join(', '):'')+'</span></span>'+
+      '<span class="ag-n">'+g.items.length+' ›</span></button><ul>'+
+      g.items.map(function(it){ var k=KIND[it.k]||KIND.div,t=it.t||'',gen=!t||/^(Resultat|Kurssetzung|Gate-to-Gate-Analyse$|Gate-to-Gate-Report$|GPS-Bericht$|Sektoranalyse$|Meteo)/.test(t)&&!/lange|Kurve|Coach/i.test(t);
+        var dr=(it.disc?(DISC[it.disc]||it.disc):'')+(it.run?(it.disc?' · ':'')+'Lauf '+it.run:'');
+        var title=gen?(dr||k.n):t;
+        return '<li class="click" data-act="goto" data-v="'+h(g.e.id)+'" data-d="'+h(g.d)+'"><span class="pill">'+h(k.s)+'</span><span class="ag-t">'+h(title)+(it.note?' <span class="sub">· '+h(it.note)+'</span>':'')+'</span><span class="ag-m">'+(gen?'':(it.disc?h(DSHORT[it.disc]||it.disc):'')+(it.run?' · L'+it.run:''))+'</span></li>'; }).join('')+'</ul></section>';
   }).join('');
-  return '<section class="card"><div class="ch"><div><h2>Alle Analysen</h2><p>'+rows.length+' Einträge, neueste zuerst. Ein Klick öffnet den Tag im Event.</p></div></div>'+
-    '<div class="fg" style="margin-bottom:12px"><span class="lab">Art der Analyse</span>'+chips+'</div>'+
-    (rows.length?'<ul class="anl">'+rows.slice(0,300).map(function(r){ var it=r.it,k=KIND[it.k]||KIND.div; return '<li class="click" data-act="goto" data-v="'+h(r.e.id)+'" data-d="'+h(it.d||'')+'"><span class="pill">'+h(k.s)+'</span><span class="anl-t">'+h(it.t||k.n)+'</span><span class="anl-m">'+(it.d?dm(it.d)+it.d.slice(2,4):'')+' · '+flag(r.e.nat)+h(r.e.name)+' · '+GN[r.e.g]+(it.disc?' · '+h(DISC[it.disc]||it.disc):'')+(it.run?' · Lauf '+it.run:'')+'</span></li>'; }).join('')+'</ul>':'')+
-    (rows.length?'<div class="tw tall antbl"><table class="tbl"><thead><tr><th>Datum</th><th>Event</th><th class="c">M/W</th><th>Disz.</th><th>Art</th><th>Titel</th><th class="c"></th></tr></thead><tbody>'+body+'</tbody></table></div>'
+  return '<section class="card"><div class="ch"><div><h2>Datenbank</h2><p>Alle Einträge im Dossier: '+rows.length+' an '+groups.length+' Renntagen, neueste zuerst. Antippen öffnet den Tag im Event.</p></div></div>'+
+    '<div class="fg" style="margin-bottom:12px"><span class="lab">Art</span>'+chips+'</div>'+
+    (rows.length?'<div class="agl">'+grp+'</div>'
       :'<div class="empty"><b>Keine Analysen für diese Auswahl</b>Im Event über «+ Analyse» einen Link oder eine Datei ablegen.</div>')+'</section>';
 }
 
