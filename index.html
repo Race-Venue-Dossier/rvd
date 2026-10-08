@@ -488,7 +488,7 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .evmon{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
 .evmon:first-of-type{margin-top:0}
 .evlist{display:flex;flex-direction:column;gap:8px}
-.evcard{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+.evcard{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
 .evcard:hover{border-color:var(--ink-2);box-shadow:0 4px 16px rgba(20,24,31,.08)}
 .evcard:hover .evname{color:var(--red)}
 .evcard:hover .evgo,.evcard:focus-within .evgo{background:var(--red);border-color:var(--red);color:#fff}.evcard:hover .evgo b{transform:translateX(2px)}
@@ -497,7 +497,7 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 .evdate{display:flex;flex-direction:column;gap:1px;line-height:1.15}
 .evdate small{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .evdate b{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
-.evmain{min-width:0;display:flex;flex-direction:column;gap:5px}
+.evmain{min-width:0;display:flex;flex-direction:column;gap:3px}
 .evtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .evcard .evname{font-size:15.5px;font-weight:750}
 .evcard .evname::after{display:none}
@@ -527,6 +527,7 @@ svg.plan text.lbl{font-size:10.5px;font-weight:700;fill:var(--ink)}
 /* ---------- Event-Detail (einspaltig) ---------- */
 .dhero{background:linear-gradient(180deg,var(--surface) 0%,var(--surface) 100%);border-top:4px solid var(--red)}
 .ovgrid{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.dhero.cmp .dstaff{display:none}
 .dstaff{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-start;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .dstaff .dsg{min-width:0}
 .dstaff .plist{display:flex;flex-wrap:wrap;gap:6px 16px}
@@ -2356,7 +2357,8 @@ function viewTechAll(st,ctrl0){
   if(!team.length) return ctrl+'<section class="card"><div class="empty"><b>Zu wenig Daten</b>Für diese Auswahl gibt es keine Schweizer Athlet:innen mit mindestens drei Läufen.</div></section>';
   var stats={}; team.forEach(function(n){ stats[n]=spStats(n,races); });
   var tm={T:null,M:null,G:null,fp:med(team.map(function(n){return stats[n].mfp;}))},top={T:null,M:null,G:null};
-  return spAll({g:st.tg,ath:st.ath,season:'all'},ctrl,races,team,stats,tm,top,TCW);
+  var pts=st.tsea==='all'?'':ptsCard(st.tg,st.td==='all'?['GS','SL']:[st.td],[st.tsea],'tprof');
+  return spAll({g:st.tg,ath:st.ath,season:'all'},ctrl+pts,races,team,stats,tm,top,TCW);
 }
 function tRuns(st){ return SP.tech.runs.filter(function(r){ return r.g===st.tg&&(st.td==='all'||r.disc===st.td); }); }
 function tRes(st,name){ return SP.tech.res.filter(function(x){ return x.g===st.tg&&(st.td==='all'||x.disc===st.td)&&x.season==='2025/26'&&(!name||x.n===name); }).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;}); }
@@ -2422,8 +2424,7 @@ function viewTech(st,intro){
     '</tbody></table></div>'+
     '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i><i class="dnf">×</i><i class="dnq">–</i></span> Rang (× Ausfall, – nicht im 2. Lauf) · Ø Hundertstel pro Tor · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als Team-Median.</p>'+
     '<p class="spc-l">Gelände &lt;28 / 28–36 / &gt;36 % · Drehung RS &lt;6 / 6–8 / &gt;8 m, SL &lt;2 / 2–3,2 / &gt;3,2 m · Rhythmuswechsel: Torabstand ±12 %.</p>';
-  var pss={}; (SP.tr||[]).forEach(function(r){ if(r.g===st.tg) pss[spSeason(r.d)]=1; }); pss['2025/26']=1; var psl=Object.keys(pss).sort(); if(!st.tps||!pss[st.tps]) st.tps=psl[psl.length-1];
-  return ctrl+ptsCard(st.tg,st.td==='all'?['GS','SL']:[st.td],[st.tps],'tprof',seg('t-ps','tps',st.tps,psl.map(function(x){return [x,x];}),'pss'))+lead+ktCard+setterTech(st)+'<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.tg==='M'?'Männer':'Frauen')+': Rückstand pro Tor</h2><span class="h3v">Zeile antippen für das Profil</span></div>'+heat+'</section>'+
+  return ctrl+ptsCard(st.tg,st.td==='all'?['GS','SL']:[st.td],['2025/26'],'tprof')+lead+ktCard+setterTech(st)+'<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.tg==='M'?'Männer':'Frauen')+': Rückstand pro Tor</h2><span class="h3v">Zeile antippen für das Profil</span></div>'+heat+'</section>'+
     (st.tath?tProfile(st,st.tath,stats[st.tath],tm,runs):'');
 }
 function tForm(rr){
@@ -3357,7 +3358,7 @@ function viewDetail(ev){
   }
   var di=navList.map(function(x){return x.d;}).indexOf(dk),prev=navList[di-1],next=navList[di+1];
   var pn='<div class="dpn">'+(prev?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+prev.d+'">‹ '+WD[pd(prev.d).getDay()]+' '+dm(prev.d)+' '+h(prev.t)+'</button>':'<span></span>')+(next?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+next.d+'">'+WD[pd(next.d).getDay()]+' '+dm(next.d)+' '+h(next.t)+' ›</button>':'<span></span>')+'</div>';
-  return head+nav+'<div class="days">'+dayMap[dk]+'</div>'+pn+vnote;
+  return head.replace('<section class="card dhero">','<section class="card dhero cmp">')+nav+'<div class="days">'+dayMap[dk]+'</div>'+pn+vnote;
 }
 
 /* ───────────── Team ───────────── */
@@ -3406,7 +3407,7 @@ function viewAnalysen(){
   var lastM='';
   var body=groups.map(function(g){
     var c={},discs={}; g.items.forEach(function(it){ c[it.k]=(c[it.k]||0)+1; if(it.disc) discs[it.disc]=1; });
-    var mon=g.d?MON[pd(g.d).getMonth()]+' '+g.d.slice(0,4):'';
+    var md=g.d||g.e.frm,mon=MON[pd(md).getMonth()]+' '+md.slice(0,4);
     var mh=mon!==lastM?'<p class="dbm">'+mon+'</p>':''; lastM=mon;
     var det=g.items.map(function(it){ var k=KIND[it.k]||KIND.div,t=it.t||'',gen=!t||/^(Resultat|Kurssetzung|Gate-to-Gate-Analyse$|Gate-to-Gate-Report$|GPS-Bericht$|Sektoranalyse$|Meteo)/.test(t)&&!/lange|Kurve|Coach/i.test(t);
         var dr=(it.disc?(DISC[it.disc]||it.disc):'')+(it.run?(it.disc?' · ':'')+'Lauf '+it.run:'');
