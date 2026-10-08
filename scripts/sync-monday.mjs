@@ -1,5 +1,6 @@
-// Holt die monday-Boards «Sport Science Support» (Einsatzplanung) und «Slope Analysis TECH»
-// und legt sie verschlüsselt als data/live.enc ab. Läuft als GitHub Action (siehe .github/workflows/monday-sync.yml).
+// Holt die monday-Boards «Sport Science Support» (Einsatzplanung), «Slope Analysis TECH» und «RVD Sync»
+// (Event-Inhalte: Kurssetzungen, Gate-to-Gate, Videos, Links, Dateien) und legt sie verschlüsselt als data/live.enc ab.
+// Dateien aus «RVD Sync» werden einmalig heruntergeladen und verschlüsselt unter monasset/<id>.enc abgelegt. Läuft als GitHub Action (siehe .github/workflows/monday-sync.yml).
 // Benötigte Repository-Secrets: MONDAY_TOKEN (monday API-Token), RVD_PASS (Passwort der Seite).
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -39,8 +40,43 @@ async function board(b) {
   return items;
 }
 
+// ── RVD Sync (Board 18434554343, Unterelemente 18434562036) ──
+const RVD = 18434554343, RVD_SUB = 18434562036;
+const PCOLS = ['text_mm7y6990', 'timerange_mm7ynrqk', 'color_mm7y4pr', 'color_mm7y6xtz', 'long_text_mm7yahaq'];
+const SCOLS = ['status', 'date0', 'dropdown_mm7yqjaj', 'color_mm7y3pqp', 'file_mm7ys0e2', 'link_mm7yseny', 'long_text_mm7ya2cv'];
+const SUBQ = `id name updated_at parent_item{ id } column_values(ids:$sc){ id text value ... on FileValue{ files{ ... on FileAssetValue{ asset{ id name file_extension file_size public_url } } } } }`;
+async function rvdBoard() {
+  const parents = {};
+  for (const it of await board({ id: RVD, cols: PCOLS })) {
+    const cv = it.column_values;
+    parents[it.id] = { id: it.id, name: it.name, url: it.url, grp: it.group && it.group.title, did: cv.text_mm7y6990 || '', span: cv.timerange_mm7ynrqk || '', g: cv.color_mm7y4pr || '', cat: cv.color_mm7y6xtz || '', info: cv.long_text_mm7yahaq || '', sub: [] };
+  }
+  let d = await gql(`query($id:[ID!],$sc:[String!]){ boards(ids:$id){ items_page(limit:200){ cursor items{ ${SUBQ} } } } }`, { id: [RVD_SUB], sc: SCOLS });
+  let page = d.boards[0].items_page;
+  for (;;) {
+    for (const it of page.items) {
+      const p = it.parent_item && parents[it.parent_item.id]; if (!p) continue;
+      const cv = {}, files = [];
+      for (const c of it.column_values) { cv[c.id] = c.text || ''; if (c.files) for (const f of c.files) if (f.asset) files.push(f.asset); }
+      let link = null;
+      try { const lv = JSON.parse((it.column_values.find(c => c.id === 'link_mm7yseny') || {}).value || 'null'); if (lv && lv.url) link = { u: lv.url, t: lv.text || '' }; } catch (e) {}
+      p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, note: cv.long_text_mm7ya2cv, link,
+        files: files.map(a => ({ id: a.id, n: a.name, ext: (a.file_extension || '').replace(/^\./, '').toLowerCase(), size: +a.file_size || 0, url: a.public_url })) });
+    }
+    if (!page.cursor) break;
+    d = await gql(`query($c:String!,$sc:[String!]){ next_items_page(limit:200,cursor:$c){ cursor items{ ${SUBQ} } } }`, { c: page.cursor, sc: SCOLS });
+    page = d.next_items_page;
+  }
+  return Object.values(parents).filter(p => p.sub.length || p.info);
+}
+
 const out = {};
 for (const [k, b] of Object.entries(BOARDS)) out[k] = { items: await board(b) };
+out.rvd = { items: await rvdBoard() };
+// Dateien: Download-Adressen gelten nur eine Stunde, deshalb werden sie einmalig geholt und verschlüsselt im Repo abgelegt.
+const MAXA = 40 * 1024 * 1024;
+const assets = [];
+for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) { f.ok = f.size <= MAXA && !!f.ext; if (f.ok) assets.push({ ...f }); delete f.url; }
 const body = JSON.stringify(out);
 const hash = crypto.createHash('sha256').update(body).digest('hex');
 const hf = 'data/live.sha';
@@ -55,6 +91,15 @@ dc.setAuthTag(chk.subarray(chk.length - 16));
 const ok = Buffer.concat([dc.update(chk.subarray(12, chk.length - 16)), dc.final()]).toString();
 if (ok !== 'rvd-ok') { console.error('RVD_PASS passt nicht zu key.json'); process.exit(1); }
 
+fs.mkdirSync('monasset', { recursive: true });
+const enc = (buf) => { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', k, iv); return Buffer.concat([iv, c.update(buf), c.final(), c.getAuthTag()]); };
+let nA = 0;
+for (const f of assets) {
+  const fp = 'monasset/' + f.id + '.enc';
+  if (fs.existsSync(fp)) continue;
+  try { const r = await fetch(f.url); if (!r.ok) throw new Error(r.status); fs.writeFileSync(fp, enc(Buffer.from(await r.arrayBuffer()))); nA++; }
+  catch (e) { console.log('Datei nicht geladen', f.id, f.n, String(e).slice(0, 80)); f.ok = false; }
+}
 out.at = Date.now();
 const iv = crypto.randomBytes(12);
 const c = crypto.createCipheriv('aes-256-gcm', k, iv);
@@ -62,4 +107,4 @@ const ct = Buffer.concat([c.update(JSON.stringify(out)), c.final(), c.getAuthTag
 fs.mkdirSync('data', { recursive: true });
 fs.writeFileSync('data/live.enc', Buffer.concat([iv, ct]));
 fs.writeFileSync(hf, hash + '\n');
-console.log('aktualisiert:', out.einsatz.items.length, 'Einsätze,', out.tech.items.length, 'Läufe TECH');
+console.log('aktualisiert:', out.einsatz.items.length, 'Einsätze,', out.tech.items.length, 'Läufe TECH,', out.rvd.items.length, 'Events RVD Sync,', nA, 'neue Dateien');
