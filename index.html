@@ -2006,19 +2006,33 @@ function fisUrl(ev){ var m=/^(\d{4})-(\d+)-/.exec(ev&&ev.id||''); return m?'http
 function fisLink(ev){ var u=fisUrl(ev); return u?'<a class="fisl" href="'+h(u)+'" target="_blank" rel="noopener" data-act="ext" title="Offizielle Resultate und Startlisten bei der FIS">FIS ↗</a>':''; }
 var PHT={'Beaver Creek':'Beaver Creek Resort','Copper Mountain':'Copper Mountain (Colorado)','Dachstein West / Gosau':'Gosau','Gurgl':'Obergurgl','Killington':'Killington Ski Resort','Kvitfjell / Hafjell':'Kvitfjell','Levi':'Levi (Finnland)','Narvik (TBC)':'Narvik','Saalbach':'Saalbach-Hinterglemm','Sun Valley':'Sun Valley (Idaho)','Tarvisio':'Tarvis','Tremblant':'Mont-Tremblant','Val Gardena/Gröden':'Gröden','Val di Fassa':'Fassatal','Lake Louise':'Lake Louise Ski Resort'};
 var PH={};
-try{ PH=JSON.parse(localStorage.getItem('rvd-ph')||'{}')||{}; }catch(e){ PH={}; }
+try{ PH=JSON.parse(localStorage.getItem('rvd-ph2')||'{}')||{}; localStorage.removeItem('rvd-ph'); }catch(e){ PH={}; }
 function phBox(ev,cls){ if(!navigator.onLine&&!PH[ev.name]) return ''; return '<div class="evph'+(cls?' '+cls:'')+'" data-ph="'+h(ev.name)+'" aria-hidden="true"></div>'; }
 function phApply(el,p){ if(!p||!p.img){ el.remove(); return; } el.style.backgroundImage='url("'+p.img.replace(/"/g,'%22')+'")'; el.classList.add('on');
   if(!el.querySelector('a')) el.insertAdjacentHTML('beforeend','<a href="'+h(p.page)+'" target="_blank" rel="noopener" data-act="ext" title="Foto aus Wikipedia (freie Lizenz, Details auf der Bildseite)">Foto: Wikipedia</a>'); }
+/* Nur echte Fotos: keine Lagekarten, Wappen, Flaggen, Logos oder Grafiken */
+var PHBAD=/map|karte|lagekarte|locat|locator|position|wappen|coat|flag|flagge|logo|emblem|grenze|bezirk|gemeinde|district|municipal|relief|topo|svg|png$|diagram|plan\b|signature/i;
+function phPick(items){
+  for(var i=0;i<(items||[]).length;i++){ var x=items[i]; if(x.type!=='image'||!x.srcset||!x.srcset.length) continue;
+    var t=String(x.title||''); if(!/\.jpe?g$/i.test(t)||PHBAD.test(t)) continue;
+    var s=x.srcset[x.srcset.length-1].src; return s.indexOf('//')===0?'https:'+s:s; }
+  return null;
+}
+var PHL={};
 function hydratePh(root){
   [].slice.call(root.querySelectorAll('.evph[data-ph]')).forEach(function(el){
     var n=el.getAttribute('data-ph'); if(PH[n]!==undefined){ phApply(el,PH[n]); return; }
-    var t=PHT[n]||n.replace(/\s*\(.*\)/,'').split('/')[0].trim();
-    var get=function(lang){ return fetch('https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_'))).then(function(r){ return r.ok?r.json():null; }); };
-    get('de').then(function(j){ return j&&j.thumbnail?j:get('en'); }).then(function(j){
-      var p=j&&(j.originalimage||j.thumbnail)?{img:(j.thumbnail&&j.thumbnail.width>=600?j.thumbnail.source:(j.originalimage||j.thumbnail).source),page:j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page||''}:null;
-      if(p&&/\.svg/i.test(p.img)) p=null;
-      PH[n]=p; try{ localStorage.setItem('rvd-ph',JSON.stringify(PH)); }catch(e){}
+    if(PHL[n]) return; PHL[n]=1;
+    var t=encodeURIComponent((PHT[n]||n.replace(/\s*\(.*\)/,'').split('/')[0].trim()).replace(/ /g,'_'));
+    var J=function(u){ return fetch(u).then(function(r){ return r.ok?r.json():null; },function(){ return null; }); };
+    /* 1. Titelbild, wenn es ein Foto ist; 2. sonst das erste Foto aus dem Artikel (de, dann en) */
+    var tryLang=function(lang){ return J('https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+t).then(function(j){
+      if(!j) return null; var page=j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page||'';
+      var o=j.originalimage&&j.originalimage.source||'';
+      if(o&&/\.jpe?g$/i.test(o)&&!PHBAD.test(decodeURIComponent(o.split('/').pop()))) return {img:(j.thumbnail&&j.thumbnail.width>=600?j.thumbnail.source:o),page:page};
+      return J('https://'+lang+'.wikipedia.org/api/rest_v1/page/media-list/'+t).then(function(m){ var img=m&&phPick(m.items); return img?{img:img,page:page}:null; }); }); };
+    tryLang('de').then(function(p){ return p||tryLang('en'); }).then(function(p){
+      PH[n]=p||null; try{ localStorage.setItem('rvd-ph2',JSON.stringify(PH)); }catch(e){}
       document.querySelectorAll('.evph[data-ph="'+n.replace(/"/g,'\\"')+'"]').forEach(function(x){ phApply(x,p); });
     }).catch(function(){ el.remove(); });
   });
