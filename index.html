@@ -1009,9 +1009,18 @@ html[lang="en"] .rep[open] summary .src b::before{content:"close"}
 @media (prefers-reduced-motion:reduce){.tab,.btn,.seg button{transition:none}}
 
 /* Vorschau, Jahresvergleich, Kurssetzer */
-.card.vsc{background:color-mix(in srgb,var(--pv) 6%,var(--surface));border:1px solid color-mix(in srgb,var(--pv) 28%,var(--line));box-shadow:inset 4px 0 0 var(--pv)}
+.card.vsc{background:color-mix(in srgb,var(--pv) 6%,var(--surface));border:1px solid color-mix(in srgb,var(--pv) 28%,var(--line))}
 .vsc .tw{background:var(--surface)}
 .vkick.jv{background:var(--ink-2)}
+/* Vorschau/Jahresvergleich: Kopf als farbiges Band */
+.card.vsc,.card.jvc{overflow:hidden}
+.vsc>.ch,.jvc>.ch{margin:-18px -20px 14px;padding:12px 20px;background:var(--pv);color:#fff;align-items:center}
+.jvc>.ch{background:var(--ink-2)}
+.vsc>.ch h2,.jvc>.ch h2{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
+.vsc>.ch .h3v,.jvc>.ch .h3v{float:none;color:#fff;opacity:.85;font-size:11.5px;font-weight:600}
+.vsc>.ch .vkick,.jvc>.ch .vkick{background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:4px 9px;margin:0;vertical-align:0}
+@media (max-width:760px){.vsc>.ch,.jvc>.ch{margin:-14px -12px 12px;padding:10px 12px}.vsc>.ch h2,.jvc>.ch h2{font-size:18px}}
+
 .vkick{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--pv);padding:3px 8px;border-radius:6px;margin-right:10px;vertical-align:2px}
 .vsp+.vsp{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .vbar{display:flex;height:24px;border-radius:7px;overflow:hidden;margin:6px 0 10px;font-size:10.5px;font-weight:700;color:#fff;max-width:640px}
