@@ -23,6 +23,21 @@ def note(msg):
     print(('::notice title=FIS-PDF::' if TEST else '') + msg)
 
 
+def pdfinfo(p):
+    b = open(p, 'rb').read()
+    if not b.startswith(b'%PDF'):
+        return 'keine PDF-Datei, %d Bytes, Anfang %r' % (len(b), b[:60])
+    try:
+        d = pymupdf.open(p)
+        heads = []
+        for pg in d:
+            t = [l.strip() for l in pg.get_text().split('\n') if l.strip()]
+            heads.append(next((l for l in t if l.isupper() and len(l) > 12), t[0] if t else ''))
+        return '%d Seiten: %s' % (len(d), ' / '.join(sorted(set(heads)))[:300])
+    except Exception as e:
+        return 'PDF-Fehler %s' % str(e)[:80]
+
+
 def tsec(s):
     s = s.strip()
     if ':' in s:
@@ -267,7 +282,7 @@ def main():
             if t['disc'] in ('DH', 'SG', 'DHT'):
                 m = sec_parse(p)
                 if not m or not m['ath']:
-                    note('%s %s: noch keine Analyse im PDF' % (rid, t['disc'])); continue
+                    note('%s %s: noch keine Analyse im PDF (%s)' % (rid, t['disc'], pdfinfo(p))); continue
                 r = speed_race(rid, m, B)
                 if t.get('pl'): r['pl'] = t['pl']
                 res['races'].append(r)
@@ -275,7 +290,7 @@ def main():
             elif t['disc'] in ('GS', 'SL'):
                 ath = tech_parse(p)
                 if not ath:
-                    note('%s %s: noch keine Analyse im PDF' % (rid, t['disc'])); continue
+                    note('%s %s: noch keine Analyse im PDF (%s)' % (rid, t['disc'], pdfinfo(p))); continue
                 runs = tech_runs(rid, tech_meta(p, t), ath)
                 if not runs:
                     note('%s: keine Laufzeiten' % rid); continue
