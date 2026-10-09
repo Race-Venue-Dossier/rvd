@@ -98,6 +98,16 @@ async function fisSync(rvdItems) {
       return all.join(' ');
     };
     const wantG = p.did.slice(-1);
+    // PDFs «Results, Analysis, Standings» in der Event-Übersicht: dem Rennen davor zuordnen
+    const pdfOf = {}, pos = [...eh.matchAll(/raceid=(\d+)/g)].map(x => [x.index, x[1]]);
+    for (const a of eh.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
+      const hr = (a[1].match(/href="([^"]+)"/) || [])[1]; if (!hr) continue;
+      const near = strip(a[0] + eh.slice(a.index + a[0].length, a.index + a[0].length + 200));
+      if (!/Analysis/i.test(near) || /raceid=/.test(hr)) continue;
+      const prev = pos.filter(x => x[0] < a.index).pop(); if (!prev || pdfOf[prev[1]]) continue;
+      const u = ent(hr); pdfOf[prev[1]] = u.startsWith('http') ? u : 'https://www.fis-ski.com' + u;
+    }
+    if (TEST) console.log('::notice title=FIS-PDF-Links::' + (Object.entries(pdfOf).map(([k, v]) => k + ' → ' + v.slice(0, 90)).join(' | ') || 'keine'));
     for (const rid of ids) {
       const info = rowInfo(rid);
       const gm = info.match(/\b(?:WC|EC|WSC|OWG|NAC|FIS)\s+([MW])\b/), ig = gm ? gm[1] : /\bWomen\b|\bLadies\b/.test(info) ? 'W' : /\bMen\b/.test(info) ? 'M' : '';
@@ -116,18 +126,7 @@ async function fisSync(rvdItems) {
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       // PDF «Results, Analysis, Standings» (Zwischenzeiten) für die automatische Sektoranalyse
-      let pdf = '';
-      const cand = [];
-      for (const a of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
-        const hr = (a[1].match(/href="([^"]+)"/) || [])[1]; if (!hr) continue;
-        const ga = (a[1].match(/data-ga-download="([^"]*)"/) || [])[1] || '';
-        const after = strip(html.slice(a.index, a.index + a[0].length + 300));
-        if (!ga && !/\.pdf/i.test(hr)) continue;
-        cand.push({ hr: ent(hr), ga, txt: after.slice(0, 80) });
-      }
-      const pick = cand.find(c => /Analysis/i.test(c.txt)) || cand.find(c => /Analysis/i.test(c.ga));
-      if (pick) pdf = pick.hr.startsWith('http') ? pick.hr : 'https://www.fis-ski.com' + pick.hr;
-      if (TEST && kind === 'res' && !Object.keys(res).length) console.log('::notice title=FIS-Links::' + cand.map(c => (c.ga || '-') + ' → ' + c.hr.slice(0, 70) + ' «' + c.txt.slice(0, 40) + '»').join(' | ').slice(0, 900));
+      const pdf = pdfOf[rid] || '';
       res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep, pdf };
       if (kind === 'res' && pdf && /^(DH|SG|DHT|GS|SL)$/.test(disc)) FIS_PDF.push({ rid, url: pdf, d, g, disc, did: p.did, pl: (p.name || '').split('·')[0].replace(/\s*\(.*\)/, '').trim() });
       const msg = ['FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI'].join(' ');
