@@ -1452,7 +1452,7 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
   function showMail(){
     var w=document.getElementById('gate-mw'); if(!w){ document.addEventListener('DOMContentLoaded',showMail); return; }
     w.hidden=false; var un=document.getElementById('gate-un'); if(un){ un.remove(); }
-    var gp=document.getElementById('gate-p'); if(gp) gp.textContent='Melde dich mit deinem Gate-to-Gate-Login an (E-Mail und Passwort). Du siehst die Events und Analysen deiner Gruppe.';
+    var gp=document.getElementById('gate-p'); if(gp) gp.hidden=true;
     var m=document.getElementById('gate-mail'); if(m&&window.matchMedia('(min-width:861px)').matches) m.focus();
   }
   document.addEventListener('DOMContentLoaded',function(){
