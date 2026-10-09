@@ -43,7 +43,7 @@ async function board(b) {
 // ── RVD Sync (Board 18434554343, Unterelemente 18434562036) ──
 const RVD = 18434554343, RVD_SUB = 18434562036;
 const PCOLS = ['text_mm7y6990', 'timerange_mm7ynrqk', 'color_mm7y4pr', 'color_mm7y6xtz', 'long_text_mm7yahaq', 'dropdown_mm7zsj09'];
-const SCOLS = ['status', 'date0', 'dropdown_mm7yqjaj', 'color_mm7y3pqp', 'file_mm7ys0e2', 'link_mm7yseny', 'long_text_mm7ya2cv', 'dropdown_mm7zem4t', 'color_mm7zkayz'];
+const SCOLS = ['status', 'date0', 'dropdown_mm7yqjaj', 'color_mm7y3pqp', 'file_mm7ys0e2', 'link_mm7yseny', 'long_text_mm7ya2cv', 'dropdown_mm7zem4t', 'color_mm7zkayz', 'person'];
 const SUBQ = `id name updated_at parent_item{ id } column_values(ids:$sc){ id text value ... on FileValue{ files{ ... on FileAssetValue{ asset{ id name file_extension file_size public_url } } } } }`;
 async function rvdBoard() {
   const parents = {};
@@ -62,10 +62,10 @@ async function rvdBoard() {
       try { const lv = JSON.parse((it.column_values.find(c => c.id === 'link_mm7yseny') || {}).value || 'null'); if (lv && lv.url) link = { u: lv.url, t: lv.text || '' }; } catch (e) {}
       // Vorlage ohne Inhalt (keine Datei, kein Link, keine Notiz): nur für «offene Analysen» mitgeben
       if (!files.length && !link && !(cv.long_text_mm7ya2cv || '').trim()) {
-        p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, st: cv.color_mm7zkayz || '', ath: cv.dropdown_mm7zem4t || '', e: 1, files: [] });
+        p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, st: cv.color_mm7zkayz || '', ath: cv.dropdown_mm7zem4t || '', who: cv.person || '', e: 1, files: [] });
         continue;
       }
-      p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, note: cv.long_text_mm7ya2cv, link, st: cv.color_mm7zkayz || '', ath: cv.dropdown_mm7zem4t || '',
+      p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, note: cv.long_text_mm7ya2cv, link, st: cv.color_mm7zkayz || '', ath: cv.dropdown_mm7zem4t || '', who: cv.person || '',
         files: files.map(a => ({ id: a.id, n: a.name, ext: (a.file_extension || '').replace(/^\./, '').toLowerCase(), size: +a.file_size || 0, url: a.public_url })) });
     }
     if (!page.cursor) break;
