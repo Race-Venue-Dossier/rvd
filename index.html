@@ -1951,7 +1951,7 @@ function startersOf(ev){ var m=(LIVE.ath&&LIVE.ath[ev.id])||[]; return m.length?
 function startersSrc(ev){ return (LIVE.ath&&LIVE.ath[ev.id]&&LIVE.ath[ev.id].length)?'monday':fisStarters(ev).length?'FIS-Startliste':''; }
 /* FIS: Startliste publiziert / Resultate SUI direkt von der FIS (Abgleich alle 15 Minuten rund um die Renntage) */
 function fisLine(ev){ var L=fisRacesOf(ev).filter(function(r){return r.kind!=='none';}); if(!L.length) return '';
-  return '<div class="fisr">'+L.map(function(r){ var sui=(r.rows||[]).filter(function(a){return a.nat==='SUI';}),lab=(DSHORT[r.disc]||r.disc||'Rennen')+(r.d?' '+dm(r.d):'');
+  return '<div class="fisr">'+L.map(function(r){ var sui=(r.rows||[]).filter(function(a){return a.nat==='SUI';}),lab=(r.disc==='DHT'?'Training':(DSHORT[r.disc]||r.disc||'Rennen'))+(r.d?' '+dm(r.d):'');
     if(r.kind==='start') return '<span class="fisc st"><b>'+h(lab)+'</b> Startliste · '+sui.length+' SUI</span>';
     var top=sui.filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}).slice(0,4).map(function(a){ return '<i class="'+rkCls(a.rk)+'">'+a.rk+'</i>'+h(fisName(a.n).split(' ').slice(-1)[0]); }).join(' ');
     return '<span class="fisc"><b>'+h(lab)+'</b> '+(top||'<span class="mu">kein SUI-Rang</span>')+'</span>'; }).join('')+'<small class="mu">live von der FIS</small></div>'; }
