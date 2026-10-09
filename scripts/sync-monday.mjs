@@ -117,11 +117,17 @@ async function fisSync(rvdItems) {
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       // PDF «Results, Analysis, Standings» (Zwischenzeiten) für die automatische Sektoranalyse
       let pdf = '';
+      const cand = [];
       for (const a of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
-        if (!/Analysis/i.test(strip(a[2]))) continue;
         const hr = (a[1].match(/href="([^"]+)"/) || [])[1]; if (!hr) continue;
-        pdf = ent(hr).startsWith('http') ? ent(hr) : 'https://www.fis-ski.com' + ent(hr); break;
+        const ga = (a[1].match(/data-ga-download="([^"]*)"/) || [])[1] || '';
+        const after = strip(html.slice(a.index, a.index + a[0].length + 300));
+        if (!ga && !/\.pdf/i.test(hr)) continue;
+        cand.push({ hr: ent(hr), ga, txt: after.slice(0, 80) });
       }
+      const pick = cand.find(c => /Analysis/i.test(c.txt)) || cand.find(c => /Analysis/i.test(c.ga));
+      if (pick) pdf = pick.hr.startsWith('http') ? pick.hr : 'https://www.fis-ski.com' + pick.hr;
+      if (TEST && kind === 'res' && !Object.keys(res).length) console.log('::notice title=FIS-Links::' + cand.map(c => (c.ga || '-') + ' → ' + c.hr.slice(0, 70) + ' «' + c.txt.slice(0, 40) + '»').join(' | ').slice(0, 900));
       res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep, pdf };
       if (kind === 'res' && pdf && /^(DH|SG|DHT|GS|SL)$/.test(disc)) FIS_PDF.push({ rid, url: pdf, d, g, disc, did: p.did, pl: (p.name || '').split('·')[0].replace(/\s*\(.*\)/, '').trim() });
       const msg = ['FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI'].join(' ');
