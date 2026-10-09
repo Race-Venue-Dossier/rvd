@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
+    inputs:
+      fis_test:
+        description: 'Nur FIS testen: Dossier-ID eines vergangenen Events (z. B. 2026-57999-M), speichert nichts'
+        required: false
+        default: ''
   push:
     branches: [main]
     paths-ignore: ['data/live.enc', 'data/live.sha', 'monasset/**']
@@ -25,6 +30,7 @@ jobs:
         env:
           MONDAY_TOKEN: ${{ secrets.MONDAY_TOKEN }}
           RVD_PASS: ${{ secrets.RVD_PASS }}
+          FIS_TEST: ${{ inputs.fis_test }}
         run: node scripts/sync-monday.mjs
       - name: Änderungen speichern
         run: |

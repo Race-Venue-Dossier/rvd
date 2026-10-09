@@ -40,6 +40,76 @@ async function board(b) {
   return items;
 }
 
+// ───────────── FIS ─────────────
+const UA = { 'User-Agent': 'Swiss-Ski FEA Race Venue Dossier (internal; contact via swiss-ski.ch)', 'Accept-Language': 'en' };
+async function robotsOk(path) {
+  const r = await fetch('https://www.fis-ski.com/robots.txt', { headers: UA });
+  if (!r.ok) return true;
+  const lines = (await r.text()).split(/\r?\n/); let applies = false; const dis = [];
+  for (const l of lines) {
+    const m = l.match(/^\s*([A-Za-z-]+)\s*:\s*(.*)$/); if (!m) continue;
+    const k = m[1].toLowerCase(), v = m[2].trim();
+    if (k === 'user-agent') applies = v === '*';
+    else if (k === 'disallow' && applies && v) dis.push(v);
+  }
+  return !dis.some(d => path.startsWith(d.replace(/\*.*$/, '')));
+}
+const ent = s => s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n));
+const strip = s => ent(s.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+const DISCS = [['Downhill Training', 'DHT'], ['Training', 'DHT'], ['Super G', 'SG'], ['Super-G', 'SG'], ['Giant Slalom', 'GS'], ['Parallel', 'PAR'], ['Slalom', 'SL'], ['Downhill', 'DH'], ['Alpine combined', 'AC'], ['Team Combined', 'TC']];
+const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+function parseRows(html) {
+  const rows = [];
+  const re = /<a[^>]*class="[^"]*table-row[^"]*"[^>]*>([\s\S]*?)<\/a>/g; let m;
+  while ((m = re.exec(html))) {
+    const inner = m[1];
+    const nat = (inner.match(/country__name-short[^>]*>\s*([A-Z]{3})\s*</) || [])[1] || '';
+    const cells = [...inner.matchAll(/<div[^>]*class="([^"]*)"[^>]*>([^<]*)<\/div>/g)].map(c => ({ c: c[1], t: ent(c[2]).trim() })).filter(c => c.t);
+    const name = (cells.find(c => /justify-left/.test(c.c) && /[A-Za-z]{2}/.test(c.t) && !/^\d/.test(c.t)) || {}).t || '';
+    if (!name || !nat) continue;
+    const nums = cells.map(c => c.t);
+    const rk = /^\d+$/.test(nums[0]) && /bold|pr-1/.test(cells[0].c) ? +nums[0] : null;
+    const times = nums.filter(t => /^(\d+:)?\d{1,2}\.\d\d$/.test(t));
+    const diff = nums.find(t => /^\+\d/.test(t)) || '';
+    rows.push({ n: name, nat, rk, t: times[times.length - 1] || '', diff });
+  }
+  return rows;
+}
+async function fisSync(rvdItems) {
+  const today = new Date(); const day = d => new Date(d + 'T12:00:00Z');
+  const TEST = (process.env.FIS_TEST || '').trim();  // Test über «Run workflow»: Dossier-ID eines vergangenen Events
+  const near = rvdItems.filter(p => {
+    if (TEST) return p.did === TEST;
+    const m = (p.span || '').match(/(\d{4}-\d\d-\d\d)\s*-\s*(\d{4}-\d\d-\d\d)/); if (!m || !/^\d{4}-\d+-[MW]$/.test(p.did || '')) return false;
+    return (day(m[1]) - today) / 864e5 <= 2 && (today - day(m[2])) / 864e5 <= 1;
+  });
+  if (!near.length) { console.log('FIS: keine Events in der Nähe'); return {}; }
+  if (!(await robotsOk('/DB/general/'))) { console.log('FIS: robots.txt erlaubt den Abruf nicht'); return {}; }
+  const res = {};
+  for (const p of near) {
+    const [season, eid] = p.did.split('-');
+    const evUrl = `https://www.fis-ski.com/DB/general/event-details.html?sectorcode=AL&eventid=${eid}&seasoncode=${season}`;
+    const eh = await (await fetch(evUrl, { headers: UA })).text();
+    const ids = [...new Set([...eh.matchAll(/results\.html\?sectorcode=AL(?:&amp;|&)raceid=(\d+)/g)].map(x => x[1]))];
+    for (const rid of ids) {
+      await new Promise(r => setTimeout(r, 800));
+      const html = await (await fetch(`https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=${rid}`, { headers: UA })).text();
+      const head = strip((html.match(/<h1[\s\S]*?<\/h1>/) || [''])[0] + ' ' + (html.match(/event-header__subtitle[\s\S]{0,400}/) || [''])[0] + ' ' + (html.match(/<title>[\s\S]*?<\/title>/) || [''])[0]);
+      const g = /\b(Women|Ladies)\b/i.test(head) ? 'W' : /\bMen\b/i.test(head) ? 'M' : '';
+      const disc = (DISCS.find(d => new RegExp(d[0], 'i').test(head)) || [])[1] || '';
+      const dm = head.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{4})/i);
+      const d = dm ? `${dm[3]}-${String(MONTHS[dm[2].toLowerCase().slice(0, 3)]).padStart(2, '0')}-${dm[1].padStart(2, '0')}` : '';
+      const rows = parseRows(html);
+      const ranked = rows.some(r => r.rk);
+      const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
+      const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
+      res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep };
+      console.log('FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI');
+    }
+  }
+  return res;
+}
+
 // ── RVD Sync (Board 18434554343, Unterelemente 18434562036) ──
 const RVD = 18434554343, RVD_SUB = 18434562036;
 const PCOLS = ['text_mm7y6990', 'timerange_mm7ynrqk', 'color_mm7y4pr', 'color_mm7y6xtz', 'long_text_mm7yahaq', 'dropdown_mm7zsj09'];
@@ -88,6 +158,10 @@ const assets = [];
 for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) {
   f.dup = skipN.has(f.n) || skipI.has(String(f.id));
   f.ok = !f.dup && f.size <= MAXA && !!f.ext; if (f.ok) assets.push({ ...f }); delete f.url; }
+// ── FIS: Startlisten und Resultate rund um die Renntage (nur Events von 2 Tagen vorher bis 1 Tag nachher) ──
+// Hält sich an robots.txt, wenige Abrufe pro Lauf, speichert nur Schweizer Zeilen und das Podest.
+out.fis = await fisSync(out.rvd.items).catch(e => { console.log('FIS übersprungen:', String(e).slice(0, 120)); return {}; });
+if (process.env.FIS_TEST) { console.log('FIS-Test beendet, nichts gespeichert'); process.exit(0); }
 const body = JSON.stringify(out);
 const hash = crypto.createHash('sha256').update(body).digest('hex');
 const hf = 'data/live.sha';
@@ -119,3 +193,4 @@ fs.mkdirSync('data', { recursive: true });
 fs.writeFileSync('data/live.enc', Buffer.concat([iv, ct]));
 fs.writeFileSync(hf, hash + '\n');
 console.log('aktualisiert:', out.einsatz.items.length, 'Einsätze,', out.tech.items.length, 'Läufe TECH,', out.rvd.items.length, 'Events RVD Sync,', nA, 'neue Dateien');
+
