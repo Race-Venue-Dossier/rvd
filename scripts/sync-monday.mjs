@@ -93,10 +93,9 @@ async function fisSync(rvdItems) {
     const ids = [...new Set([...eh.matchAll(/results\.html\?sectorcode=AL(?:&amp;|&)raceid=(\d+)/g)].map(x => x[1]))];
     // Zeile zum Rennen in der Event-Übersicht: Datum, Disziplin, Geschlecht
     const rowInfo = rid => {
-      const a = eh.match(new RegExp('<a[^>]*raceid=' + rid + '[^>]*>([\\s\\S]*?)</a>'));
-      let t = a ? strip(a[1]) : '';
-      if (!/\d{1,2}\s+[A-Z][a-z]{2}/.test(t)) { const i = eh.indexOf('raceid=' + rid); t = strip(eh.slice(Math.max(0, i - 2500), i + 300)); }
-      return t;
+      const all = [...eh.matchAll(new RegExp('<a[^>]*raceid=' + rid + '[^0-9][^>]*>([\\s\\S]*?)</a>', 'g'))].map(x => strip(x[1])).filter(Boolean);
+      if (TEST) console.log('::notice title=FIS-Anker::' + rid + ' · ' + all.map(x => x.slice(0, 120)).join(' | ').slice(0, 600));
+      return all.join(' ');
     };
     const wantG = p.did.slice(-1);
     for (const rid of ids) {
