@@ -9,6 +9,10 @@ on:
         description: 'Nur FIS testen: Dossier-ID eines vergangenen Events (z. B. 2026-57999-M), speichert nichts'
         required: false
         default: ''
+      fis_redo:
+        description: 'Ältere Rennen neu auswerten: raceid|datum|M/W|GS/SL|Ort; … (speichert)'
+        required: false
+        default: ''
   push:
     branches: [main]
     paths-ignore: ['data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**']
@@ -20,7 +24,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: ${{ inputs.fis_redo && 40 || 5 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,6 +35,7 @@ jobs:
           MONDAY_TOKEN: ${{ secrets.MONDAY_TOKEN }}
           RVD_PASS: ${{ secrets.RVD_PASS }}
           FIS_TEST: ${{ inputs.fis_test }}
+          FIS_REDO: ${{ inputs.fis_redo }}
         run: node scripts/sync-monday.mjs
       - name: FIS-PDFs auswerten (Zwischenzeiten)
         if: hashFiles('fispdf/todo.json') != ''

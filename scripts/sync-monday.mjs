@@ -191,10 +191,28 @@ for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) {
 // ── FIS: Startlisten und Resultate rund um die Renntage (nur Events von 2 Tagen vorher bis 1 Tag nachher) ──
 // Hält sich an robots.txt, wenige Abrufe pro Lauf, speichert nur Schweizer Zeilen und das Podest.
 out.fis = await fisSync(out.rvd.items).catch(e => { console.log('FIS übersprungen:', String(e).slice(0, 120)); return {}; });
+// Nachauswertung älterer Rennen über «Run workflow» (fis_redo = «raceid|datum|M/W|GS/SL|Ort;…»), z. B. wenn mehr Athlet:innen gespeichert werden sollen
+const REDO = (process.env.FIS_REDO || '').split(';').map(x => x.trim()).filter(Boolean).map(x => { const [rid, d, g, disc, pl] = x.split('|'); return { rid, d, g, disc, pl: pl || '' }; });
+if (REDO.length && !process.env.FIS_TEST && (await robotsOk('/DB/general/'))) {
+  let ok = 0; const miss = [];
+  for (const t of REDO) {
+    await new Promise(r => setTimeout(r, 800));
+    const html = await (await fetch(`https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=${t.rid}`, { headers: UA })).text().catch(() => '');
+    let url = '';
+    for (const m of html.matchAll(/<[a-z]+\b([^>]*data-ga-download="[^"]*"[^>]*)>/gi)) {
+      const at = m[1], lab = (at.match(/data-ga-download="([^"]*)"/) || [])[1] || '';
+      const u = (at.match(/data-link="([^"]+)"/) || at.match(/href="([^"]+\.pdf[^"]*)"/i) || [])[1];
+      if (u && /Analysis/i.test(lab)) { url = ent(u); break; }
+    }
+    if (!url) { miss.push(t.rid); continue; }
+    FIS_PDF.push({ ...t, url: url.startsWith('http') ? url : 'https://www.fis-ski.com' + url, redo: 1 }); ok++;
+  }
+  console.log('::notice title=FIS-Nachauswertung::' + ok + ' von ' + REDO.length + ' PDFs gefunden' + (miss.length ? ' · ohne PDF: ' + miss.slice(0, 20).join(', ') : ''));
+}
 // Neue PDFs für scripts/fis_pdf.py vormerken (schon ausgewertete stehen in data/fissec_done.json)
 {
   let done = []; try { done = JSON.parse(fs.readFileSync('data/fissec_done.json', 'utf8')); } catch (e) {}
-  const todo = FIS_PDF.filter(t => process.env.FIS_TEST || !done.includes(String(t.rid)));
+  const todo = FIS_PDF.filter(t => process.env.FIS_TEST || t.redo || !done.includes(String(t.rid)));
   fs.mkdirSync('fispdf', { recursive: true });
   fs.writeFileSync('fispdf/todo.json', JSON.stringify(todo));
   if (todo.some(t => /^(DH|SG|DHT)$/.test(t.disc))) {

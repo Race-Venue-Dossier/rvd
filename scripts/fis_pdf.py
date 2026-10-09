@@ -243,7 +243,7 @@ def tech_runs(rid, meta, ath):
         for k in range(n + 1):
             b = min(rows, key=lambda x: x[4][k][0]); best.append([b[4][k][0], b[0], b[1]])
         bf = min(x[3] for x in rows)
-        a2 = [[x[0], x[1], x[2], x[3], [round(x[4][k][0] - best[k][0], 2) for k in range(n + 1)], [x[4][k][1] for k in range(n + 1)]] for x in rows if x[2] <= 3 or x[1] == 'SUI']
+        a2 = [[x[0], x[1], x[2], x[3], [round(x[4][k][0] - best[k][0], 2) for k in range(n + 1)], [x[4][k][1] for k in range(n + 1)]] for x in rows if x[2] <= 5 or x[1] == 'SUI']
         out.append(dict(id=int(rid), d=meta['d'], g=meta['g'], disc=meta['disc'], run=rn, pl=meta['pl'], lab=DISCN[meta['disc']] + ' · ' + str(rn) + '. Lauf',
                         n=n + 1, best=best, bf=bf, a=a2, auto=1))
     return out
