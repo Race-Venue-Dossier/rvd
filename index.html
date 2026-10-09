@@ -131,9 +131,9 @@ select.sel:focus,input.inp:focus,textarea.inp:focus{outline:none;border-color:va
 
 /* ---------- Kennzahlen ---------- */
 .kpis{display:grid;grid-template-columns:1.5fr repeat(5,minmax(0,1fr));gap:10px}
-.kpis.nl{grid-template-columns:repeat(5,minmax(0,1fr))}
+.kpis.nl{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:1100px) and (min-width:641px){.kpis.nl{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (max-width:1100px) and (min-width:641px){.kpis.nl{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}}
 @media (max-width:640px){.kpis{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 2px 6px;scroll-padding-inline:2px}.kpis::-webkit-scrollbar{display:none}.kpi{flex:0 0 42%;scroll-snap-align:start}.kpi:first-child{flex-basis:58%}}
 .kpi{background:var(--surface);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
 .kpi .k{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
@@ -1315,7 +1315,7 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
 #gate p{margin:0;font-size:13.5px;line-height:1.55;color:var(--muted,#6b7785)}
 #gate label.gl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#3a4350)}
 #gate .gpw{position:relative;margin-top:6px}
-#gate input[type=password],#gate input[type=text]{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line-2,#c3cad4);padding:0 48px 0 14px;font-size:16px;background:var(--surface,#fff);color:var(--ink,#14181f);box-sizing:border-box}
+#gate input[type=password],#gate input[type=text],#gate input[type=email]{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line-2,#c3cad4);padding:0 48px 0 14px;font-size:16px;background:var(--surface,#fff);color:var(--ink,#14181f);box-sizing:border-box}
 #gate input:focus{outline:none;border-color:var(--ink,#14181f);box-shadow:0 0 0 4px var(--red-soft,rgba(218,41,28,.12))}
 #gate .geye{position:absolute;right:6px;top:6px;width:36px;height:36px;border:0;border-radius:9px;background:transparent;color:var(--muted,#6b7785);cursor:pointer;display:flex;align-items:center;justify-content:center}
 #gate .geye:hover{background:var(--surface-2,#f8fafc);color:var(--ink,#14181f)}
@@ -1354,8 +1354,10 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
   <div class="gside">
     <form class="gbox" id="gate-f" autocomplete="on">
       <div class="glogo"><svg viewBox="-0.89671641 -0.89671641 136.68413282 31.68397982" role="img" aria-label="Swiss-Ski"><path d="M 45.17,4.5 44.85,4.34 44.54,4.26 44.31,4.03 44.07,3.79 43.92,3.47 43.76,3.15 l 0,-0.4 0.08,-0.48 0.08,-0.56 0.23,-0.48 0.31,-0.4 0.39,-0.32 0.47,-0.24 0.47,-0.16 0.55,-0.08 0.31,0 0.39,0.08 0.31,0.16 0.23,0.24 0.23,0.24 0.16,0.32 0.08,0.32 0,0.32 0,0.56 -0.16,0.56 -0.23,0.48 -0.31,0.4 -0.39,0.32 -0.39,0.24 -0.55,0.16 -0.47,0.08 -0.39,0 z" fill="#e3001b"/><path d="m 38.52,29.53 4.3,-20.56 3.44,0 -4.3,20.56 -3.44,0 z" fill="#e3001b"/><path d="m 28.11,29.53 -0.78,-13.39 -0.16,-2.31 0,-1.75 -0.78,1.83 -1.1,2.31 -6.5,13.31 -2.35,0 -0.31,-20.56 2.35,0 -0.08,12.83 -0.08,4.46 0.86,-1.99 1.17,-2.39 6.26,-12.91 2.5,0 0.7,12.91 0.08,2.47 0.08,1.83 0.7,-1.83 1.02,-2.55 5.48,-12.83 2.35,0 -9,20.56 -2.43,0 z" fill="#e3001b"/><path d="m 5.41,29.85 -0.78,0 L 3.85,29.77 3.14,29.61 2.44,29.37 1.73,28.97 1.11,28.58 0.56,28.02 0.09,27.38 0.01,27.22 l 1.1,-1.04 0.16,0.24 0.31,0.56 0.39,0.48 0.47,0.32 0.55,0.32 0.55,0.24 0.63,0.08 0.55,0.08 0.7,0.08 0.86,-0.08 0.86,-0.24 0.86,-0.32 0.7,-0.56 0.55,-0.56 0.31,-0.4 0.16,-0.4 0.16,-0.4 0.16,-0.4 0.08,-0.48 0,-0.56 -0.08,-0.8 L 9.87,22.68 9.56,22.04 9.17,21.48 8.62,20.92 7.99,20.37 6.66,19.33 5.33,18.29 4.79,17.66 4.24,17.1 3.77,16.38 3.38,15.66 3.22,14.87 3.06,13.91 3.14,13.35 3.22,12.79 3.38,12.24 3.61,11.68 3.85,11.2 4.16,10.8 4.55,10.4 4.94,10 5.33,9.68 5.8,9.37 6.27,9.13 6.74,8.97 7.84,8.65 l 1.1,-0.08 0.7,0 0.7,0.08 0.63,0.16 0.7,0.24 0.63,0.32 0.55,0.4 0.47,0.56 0.47,0.56 0.08,0.16 -1.1,0.96 -0.08,-0.24 -0.31,-0.48 -0.39,-0.4 -0.47,-0.32 -0.47,-0.32 -0.47,-0.16 -0.55,-0.16 -0.55,-0.08 -0.55,0 -0.86,0.08 -0.78,0.16 -0.78,0.32 -0.63,0.48 -0.55,0.56 -0.39,0.72 -0.23,0.72 -0.08,0.48 0,0.48 0,0.64 0.16,0.64 0.23,0.56 0.39,0.48 0.39,0.48 0.55,0.48 1.17,1.04 1.49,1.12 0.7,0.64 0.63,0.72 0.55,0.72 0.39,0.8 0.16,0.48 0.16,0.48 0.08,0.48 0,0.56 -0.08,0.64 -0.08,0.64 -0.16,0.56 -0.23,0.56 -0.31,0.56 -0.31,0.48 -0.39,0.4 -0.39,0.4 -0.47,0.32 -0.47,0.32 -0.55,0.32 -0.55,0.16 -0.55,0.24 -0.55,0.08 -0.63,0.08 -0.55,0 z" fill="#e3001b"/><path d="m 52.37,29.85 -1.64,0 -1.57,-0.24 -0.78,-0.24 -0.78,-0.24 -0.7,-0.24 -0.7,-0.4 1.8,-3.91 0.94,0.56 1.02,0.4 1.1,0.32 0.63,0.08 0.55,0 0.55,0 0.55,-0.08 0.47,-0.16 0.47,-0.24 0.39,-0.24 0.31,-0.4 0.16,-0.48 0.08,-0.56 0,-0.4 -0.16,-0.32 -0.16,-0.4 -0.31,-0.32 -0.31,-0.4 -0.47,-0.4 -1.25,-0.8 -1.25,-0.96 -0.63,-0.56 -0.55,-0.56 -0.47,-0.64 -0.39,-0.8 -0.23,-0.88 -0.08,-0.96 0,-0.72 0.16,-0.72 0.16,-0.72 0.23,-0.64 0.23,-0.56 0.39,-0.64 0.39,-0.48 0.47,-0.48 0.47,-0.4 0.63,-0.4 0.63,-0.32 0.7,-0.32 0.7,-0.24 0.78,-0.16 0.86,-0.08 0.86,0 1.57,0.08 1.41,0.24 0.7,0.16 0.63,0.24 0.7,0.24 0.63,0.32 -1.72,3.75 -0.86,-0.48 -0.94,-0.4 -1.1,-0.24 -1.1,-0.08 -0.7,0.08 -0.63,0.08 -0.47,0.24 -0.39,0.24 -0.23,0.32 -0.23,0.32 -0.08,0.32 -0.08,0.4 0.08,0.48 0.24,0.4 0.23,0.4 0.31,0.4 0.86,0.64 0.78,0.56 1.41,0.96 0.7,0.56 0.55,0.64 0.55,0.72 0.39,0.8 0.16,0.4 0.16,0.48 0.08,0.56 0,0.56 0,0.8 -0.16,0.8 -0.23,0.72 -0.31,0.64 -0.31,0.64 -0.47,0.56 -0.47,0.56 -0.47,0.48 -0.63,0.4 -0.63,0.4 -0.63,0.32 -0.7,0.24 -0.63,0.16 -0.78,0.16 -0.7,0.08 -0.7,0 z" fill="#e3001b"/><path d="m 68.18,29.85 -1.64,0 -1.64,-0.24 -0.86,-0.16 -0.78,-0.16 -0.78,-0.24 -0.7,-0.32 1.88,-5.02 0.86,0.48 1.02,0.4 1.02,0.32 1.02,0.08 0.55,-0.08 0.47,0 0.47,-0.16 0.31,-0.16 0.31,-0.16 0.23,-0.32 0.16,-0.32 0,-0.4 0,-0.24 -0.08,-0.32 -0.23,-0.24 -0.23,-0.24 -0.7,-0.56 -1.1,-0.72 -1.17,-0.88 -0.63,-0.56 -0.47,-0.56 -0.47,-0.64 -0.39,-0.72 -0.23,-0.8 -0.08,-0.96 0.08,-0.88 0.08,-0.8 0.23,-0.8 0.23,-0.72 0.39,-0.64 0.39,-0.64 0.47,-0.56 0.55,-0.48 0.55,-0.48 0.7,-0.4 0.7,-0.32 0.7,-0.24 0.78,-0.24 0.86,-0.16 0.86,-0.08 0.86,0 1.72,0.08 1.57,0.16 1.57,0.4 1.49,0.48 -1.88,4.86 -0.86,-0.48 -0.94,-0.4 -1.1,-0.32 -1.1,-0.08 -0.55,0.08 -0.47,0.08 -0.39,0.16 -0.31,0.16 -0.16,0.24 -0.23,0.24 -0.08,0.24 0,0.24 0.08,0.4 0.08,0.32 0.23,0.24 0.31,0.32 0.78,0.56 0.86,0.56 1.33,0.88 0.63,0.56 0.55,0.64 0.47,0.64 0.39,0.8 0.23,0.88 0.08,0.48 0.08,0.48 -0.08,0.96 -0.16,0.88 -0.23,0.8 -0.31,0.8 -0.39,0.64 -0.55,0.64 -0.47,0.56 -0.63,0.48 -0.63,0.4 -0.7,0.4 -0.78,0.24 -0.7,0.24 -0.78,0.24 -0.86,0.08 -0.78,0.08 -0.86,0 z" fill="#e3001b"/><path d="m 112.7,29.53 -2.66,-7.33 -1.17,1.67 0,5.66 -8.37,0 0,-28.69 8.37,0 0,14.91 3.99,-7.17 9.94,0 -6.03,8.53 6.18,12.43 -10.25,0 z" fill="#e3001b"/><path d="m 87.51,29.85 -1.72,0 -1.72,-0.16 -1.72,-0.24 -1.64,-0.4 1.02,-5.66 1.02,0.4 1.17,0.24 1.1,0.24 1.17,0.08 0.47,-0.08 0.39,0 0.31,-0.16 0.31,-0.16 0.23,-0.16 0.16,-0.16 0.08,-0.24 0.08,-0.32 -0.08,-0.32 -0.08,-0.24 -0.16,-0.24 -0.23,-0.16 -0.55,-0.32 -0.55,-0.16 -1.49,-0.48 -0.78,-0.32 -0.78,-0.4 -0.78,-0.56 -0.63,-0.64 -0.55,-0.72 -0.39,-0.88 -0.16,-0.48 -0.16,-0.48 -0.08,-0.56 0,-0.56 0,-0.8 0.16,-0.72 0.16,-0.72 0.31,-0.72 0.31,-0.64 0.47,-0.64 0.47,-0.56 0.55,-0.56 0.7,-0.48 0.7,-0.4 0.78,-0.32 0.86,-0.32 0.94,-0.24 0.94,-0.16 1.1,-0.16 1.1,0 1.57,0.08 1.64,0.16 1.64,0.24 1.72,0.32 -0.94,5.26 -1.1,-0.32 -1.17,-0.24 -1.1,-0.16 -1.25,-0.08 -0.7,0.08 -0.31,0.16 -0.23,0.08 -0.16,0.16 -0.16,0.24 0,0.16 -0.08,0.24 0.08,0.24 0.08,0.24 0.23,0.32 0.47,0.24 0.47,0.24 1.33,0.4 1.02,0.4 1.02,0.4 0.86,0.56 0.78,0.56 0.39,0.4 0.31,0.32 0.23,0.48 0.23,0.4 0.16,0.48 0.16,0.56 0.08,0.56 0,0.64 0,0.96 -0.16,0.88 -0.23,0.88 -0.31,0.72 -0.47,0.72 -0.47,0.64 -0.55,0.64 -0.63,0.48 -0.7,0.48 -0.78,0.4 -0.86,0.4 -0.86,0.24 -0.94,0.24 -1.02,0.16 -1.02,0.08 -1.1,0 z" fill="#e3001b"/><path d="m 129.14,7.21 -0.94,-0.24 -0.78,-0.24 -0.7,-0.48 -0.55,-0.48 -0.39,-0.64 -0.23,-0.72 -0.08,-0.72 0,-0.72 0.23,-0.64 0.39,-0.64 0.47,-0.56 0.7,-0.48 0.78,-0.32 1.02,-0.24 1.1,-0.08 1.1,0.08 0.94,0.16 0.78,0.32 0.7,0.48 0.47,0.48 0.39,0.64 0.23,0.72 0.08,0.8 -0.08,0.8 -0.23,0.72 -0.39,0.56 -0.55,0.56 -0.7,0.4 -0.78,0.32 -0.94,0.16 -1.02,0.08 -1.02,-0.08 z" fill="#e3001b"/><path d="m 125.62,8.56 0,20.97 9.06,0 0,-20.97 z" fill="#ffffff"/><path d="m 125.62,8.56 0,20.97 9.06,0 0,-7 -1.09,0 0,2.69 -2.34,0 0,-2.69 -2.66,0 0,-2.31 2.66,0 0,-2.72 2.34,0 0,2.72 1.09,0 0,-11.66 -9.06,0 z" fill="#e3001b"/></svg></div>
-      <div><h2 id="gate-t">Anmelden</h2><p>Die Inhalte sind verschlüsselt. Mit dem Team-Passwort öffnet sich das Dossier.</p></div>
-      <input type="text" name="username" value="rvd" autocomplete="username" hidden>
+      <div><h2 id="gate-t">Anmelden</h2><p id="gate-p">Die Inhalte sind verschlüsselt. Mit dem Team-Passwort öffnet sich das Dossier.</p></div>
+      <input type="text" name="username" value="rvd" autocomplete="username" id="gate-un" hidden>
+      <div id="gate-mw" hidden><label class="gl" for="gate-mail">E-Mail</label>
+        <div class="gpw"><input type="email" id="gate-mail" autocomplete="username" inputmode="email" spellcheck="false" autocapitalize="off"></div></div>
       <div><label class="gl" for="gate-pw">Passwort</label>
         <div class="gpw"><input type="password" id="gate-pw" autocomplete="current-password" required>
           <button type="button" class="geye" id="gate-eye" aria-label="Passwort anzeigen" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
@@ -1370,10 +1372,26 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
 (function(){
   window.__STANDALONE=true;
   var KEY=null,SEED=null,ready,readyRes;
+  /* Persönliche Logins (gleiche wie Gate-to-Gate): data/keyring.json enthält pro Person die Schlüssel ihrer Bereiche,
+     verschlüsselt mit ihrem Passwort. Admins bekommen den Hauptschlüssel (alles wie bisher), Coaches nur ihre Bereiche. */
+  var ACC=null,AK={},ASSETS={},KR=null;
+  window.__RVD_ACC={admin:true,segs:['MS','MT','WS','WT'],name:''};
   ready=new Promise(function(r){ readyRes=r; });
   function b64(s){ var b=atob(s),u=new Uint8Array(b.length); for(var i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u; }
   function dec(buf){ var u=new Uint8Array(buf); return crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(0,12)},KEY,u.slice(12)); }
-  window.__encFetch=function(path){ return ready.then(function(){ return fetch(path,{cache:'no-cache'}); }).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(dec); };
+  function decK(k,buf){ var u=new Uint8Array(buf); return crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(0,12)},k,u.slice(12)); }
+  function getBuf(p){ return fetch(p,{cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); }); }
+  var TE=new TextEncoder(),TD=new TextDecoder();
+  function segFetch(path){
+    var c='c:'+ACC.c;
+    if(path==='data/live.enc') return getBuf('data/seg/'+ACC.c+'-live.enc').then(function(b){ return decK(AK[c],b); });
+    if(path==='data/fissec.enc') return getBuf('data/seg/'+ACC.c+'-sec.enc').then(function(b){ return decK(AK[c],b); });
+    var ss=ASSETS[path]; if(!ss||!ss.length) return Promise.reject(new Error('kein Zugriff'));
+    var one=function(sg){ return getBuf('seg/'+sg+'/'+path).then(function(b){ return decK(AK[sg],b); }); };
+    if(/^mon\//.test(path)&&ss.length>1) return Promise.all(ss.map(one)).then(function(L){ var o={}; L.forEach(function(b){ var j=JSON.parse(TD.decode(b)); for(var k in j) o[k]=j[k]; }); return TE.encode(JSON.stringify(o)).buffer; });
+    return one(ss[0]);
+  }
+  window.__encFetch=function(path){ return ready.then(function(){ return ACC&&!ACC.a?segFetch(path):getBuf(path).then(dec); }); };
   var kj=fetch('key.json',{cache:'no-cache'}).then(function(r){ return r.json(); });
   function derive(pw){
     return kj.then(function(k){
@@ -1385,6 +1403,9 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
   function check(key){ return kj.then(function(k){ KEY=key; return dec(b64(k.check)); }).then(function(b){ if(new TextDecoder().decode(b)!=='rvd-ok') throw new Error('x'); return key; }); }
   function load(){
     var td=new TextDecoder();
+    if(ACC&&!ACC.a) return getBuf('data/seg/'+ACC.c+'.gz.enc').then(function(b){ return decK(AK['c:'+ACC.c],b); })
+      .then(function(b){ return new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); })
+      .then(function(b){ var core=JSON.parse(td.decode(b)); SEED=core.seed; window.__SPEED=core.speed; ASSETS=core.assets||{}; window.__IMG={}; window.__IMGLAZY=true; });
     return Promise.all([
       (window.DecompressionStream
         ?fetch('data/core.gz.enc',{cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(dec).then(function(b){ return new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); })
@@ -1399,10 +1420,40 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
   if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
   function netState(){ document.documentElement.classList.toggle('offline',navigator.onLine===false); }
   window.addEventListener('online',netState); window.addEventListener('offline',netState); netState();
+  /* Persönliches Login: Schlüssel aus dem Schlüsselbund entpacken */
+  function sha(t){ return crypto.subtle.digest('SHA-256',TE.encode(t)).then(function(d){ return Array.prototype.map.call(new Uint8Array(d),function(x){return ('0'+x.toString(16)).slice(-2);}).join(''); }); }
+  function useAcc(p){
+    ACC=p; window.__RVD_ACC={admin:!!p.a,segs:p.s||[],name:p.n||''};
+    var imp=function(b){ return crypto.subtle.importKey('raw',b64(b),{name:'AES-GCM'},true,['decrypt']); };
+    if(p.a) return imp(p.m).then(check);
+    var ks=Object.keys(p.k||{}); return Promise.all(ks.map(function(n){ return imp(p.k[n]).then(function(k){ AK[n]=k; }); }));
+  }
+  function unwrap(mail,pw){
+    return sha(String(mail||'').trim().toLowerCase()).then(function(id){
+      var u=KR&&KR.u&&KR.u[id]; if(!u) throw new Error('x');
+      return crypto.subtle.importKey('raw',TE.encode(pw),'PBKDF2',false,['deriveKey']).then(function(base){
+        return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(u.s),iterations:KR.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+      }).then(function(k){ return decK(k,b64(u.w).buffer); }).then(function(b){ return JSON.parse(TD.decode(b)); });
+    });
+  }
   function remember(key){ return crypto.subtle.exportKey('raw',key).then(function(raw){ var s='',u=new Uint8Array(raw); for(var i=0;i<u.length;i++) s+=String.fromCharCode(u[i]); try{ localStorage.setItem('rvd-k',btoa(s)); }catch(e){} }); }
-  var saved=null; try{ saved=localStorage.getItem('rvd-k'); }catch(e){}
-  if(saved){
-    crypto.subtle.importKey('raw',b64(saved),{name:'AES-GCM'},true,['decrypt']).then(check).then(load).then(done).catch(function(){ try{ localStorage.removeItem('rvd-k'); }catch(e){} KEY=null; });
+  var saved=null,savedU=null; try{ saved=localStorage.getItem('rvd-k'); savedU=JSON.parse(localStorage.getItem('rvd-u')||'null'); }catch(e){}
+  /* Gibt es persönliche Logins (data/keyring.json), gilt das Team-Passwort nicht mehr */
+  var krP=fetch('data/keyring.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }).then(function(j){ KR=j&&j.u&&Object.keys(j.u).length?j:null; return KR; });
+  krP.then(function(kr){
+    if(kr){
+      try{ localStorage.removeItem('rvd-k'); }catch(e){}
+      if(savedU) useAcc(savedU).then(load).then(done).catch(function(){ try{ localStorage.removeItem('rvd-u'); }catch(e){} ACC=null; AK={}; showMail(); });
+      else showMail();
+    } else if(saved){
+      crypto.subtle.importKey('raw',b64(saved),{name:'AES-GCM'},true,['decrypt']).then(check).then(load).then(done).catch(function(){ try{ localStorage.removeItem('rvd-k'); }catch(e){} KEY=null; });
+    }
+  });
+  function showMail(){
+    var w=document.getElementById('gate-mw'); if(!w){ document.addEventListener('DOMContentLoaded',showMail); return; }
+    w.hidden=false; var un=document.getElementById('gate-un'); if(un){ un.remove(); }
+    var gp=document.getElementById('gate-p'); if(gp) gp.textContent='Melde dich mit deinem Gate-to-Gate-Login an (E-Mail und Passwort). Du siehst die Events und Analysen deiner Gruppe.';
+    var m=document.getElementById('gate-mail'); if(m&&window.matchMedia('(min-width:861px)').matches) m.focus();
   }
   document.addEventListener('DOMContentLoaded',function(){
     var gl=document.getElementById('gate-lang'); if(gl) gl.addEventListener('click',function(){ if(window.toggleLang) window.toggleLang(); });
@@ -1414,8 +1465,10 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
       ev.preventDefault();
       var b=document.getElementById('gate-b'),e=document.getElementById('gate-e'),g=document.getElementById('gate');
       b.disabled=true; b.textContent='Wird geöffnet …'; e.textContent=''; g.classList.remove('shake');
-      derive(pw.value).then(check).then(function(key){ return (document.getElementById('gate-rm').checked?remember(key):Promise.resolve()).then(load); }).then(done)
-        .catch(function(){ KEY=null; b.disabled=false; b.innerHTML='Dossier öffnen <span aria-hidden="true">→</span>'; e.textContent='Passwort stimmt nicht. Bitte nochmals versuchen.'; void g.offsetWidth; g.classList.add('shake'); pw.select(); });
+      var rm=document.getElementById('gate-rm').checked;
+      krP.then(function(){ return KR?unwrap(document.getElementById('gate-mail').value,pw.value).then(function(p){ return useAcc(p).then(function(){ if(rm){ try{ localStorage.setItem('rvd-u',JSON.stringify(p)); }catch(e){} } }).then(load); })
+        :derive(pw.value).then(check).then(function(key){ return (rm?remember(key):Promise.resolve()).then(load); }); }).then(done)
+        .catch(function(){ KEY=null; b.disabled=false; b.innerHTML='Dossier öffnen <span aria-hidden="true">→</span>'; e.textContent=KR?'E-Mail oder Passwort stimmt nicht – oder dieses Login hat keinen Zugang zum Dossier.':'Passwort stimmt nicht. Bitte nochmals versuchen.'; void g.offsetWidth; g.classList.add('shake'); pw.select(); });
     });
   });
   /* Datenschicht wie in der HTML-Datei: Events aus den entschlüsselten Daten, eigene Einträge im Browser-Speicher */
@@ -1437,7 +1490,7 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
   var db={ collection:coll, doc:function(p){ return {
     get:function(){ return ready.then(function(){ return {exists:p==='meta/app',data:function(){return SEED.meta;}}; }); },
     delete:function(){ var id=p.split('/')[1]; entries=entries.filter(function(e){return e.id!==id;}); save(); notify('entries'); return Promise.resolve(); } }; } };
-  var user={ me:function(){return Promise.resolve({id:null,name:''});}, can:function(){return Promise.resolve(true);}, profiles:function(){return Promise.resolve({});} };
+  var user={ me:function(){return ready.then(function(){ return {id:null,name:(window.__RVD_ACC||{}).name||''}; });}, can:function(){return ready.then(function(){ return !!(window.__RVD_ACC||{}).admin; });}, profiles:function(){return Promise.resolve({});} };
   window.claude={ use:function(n){ return Promise.resolve(n==='db'?db:n==='user'?user:null); } };
 })();
 </script>
@@ -1547,6 +1600,11 @@ function itemsOf(ev){
     return {k:KIND[x.k]?x.k:'div',t:x.t,d:x.d,disc:x.disc,run:x.run,url:x.url,asset:x.asset,fname:x.fname,src:x.asset?'Datei':'',_id:x.id,by:x.by,at:x.at};
   }));
 }
+/* Zugriff (persönliches Login): Admins sehen alles; Coaches nur ihre Bereiche (MS, MT, WS, WT), keine FEA-Seiten */
+function acc(){ return window.__RVD_ACC||{admin:true,segs:['MS','MT','WS','WT']}; }
+function isAdm(){ return !!acc().admin; }
+function accG(){ var o={}; acc().segs.forEach(function(s){ o[s[0]]=1; }); return ['M','W'].filter(function(g){return o[g];}); }
+function accA(){ var o={}; acc().segs.forEach(function(s){ o[s[1]]=1; }); return ['S','T'].filter(function(a){return o[a];}); }
 function staffOf(ev){
   var ls=liveStaffOf(ev);
   return (ls||ev.staff||[]).concat(entriesOf(ev,'staff').map(function(x){ return {n:x.n,r:x.r==='cc'?'cc':'onsite',note:x.note||'',_id:x.id}; }));
@@ -1910,7 +1968,7 @@ function avatars(st){
 
 /* ───────────── Rahmen ───────────── */
 function renderTabs(){
-  document.getElementById('tabs').innerHTML=TABS.map(function(t){
+  document.getElementById('tabs').innerHTML=TABS.filter(function(t){ return isAdm()||(t.id!=='team'&&t.id!=='analysen'); }).map(function(t){
     return '<button class="tab" role="tab" type="button" data-act="tab" data-v="'+t.id+'" aria-selected="'+(S.tab===t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+t.i+'</svg>'+t.n+'</button>';
   }).join('');
   var m=S.meta&&S.meta.fisSynced? 'FIS-Kalender: Stand '+dm(S.meta.fisSynced)+S.meta.fisSynced.slice(0,4) : '';
@@ -1923,13 +1981,14 @@ function renderFilters(){
   /* Team FEA: nur Saisons mit Einsätzen anbieten */
   var sea=seasons();
   if(S.tab==='team'){ var withStaff={}; S.events.forEach(function(e){ if(staffOf(e).length) withStaff[e.season]=1; }); var ss=sea.filter(function(x){return withStaff[x];}); if(ss.length){ sea=ss; if(sea.indexOf(S.season)<0) S.season=sea[0]; } }
+  if(accG().length<2) S.g='all'; if(accA().length<2) S.grp='all';
   var list=filtered();
   var venues={}; S.events.forEach(function(e){ if(e.season===S.season) venues[e.name]=1; });
   var vs=Object.keys(venues).sort(function(a,b){return a.localeCompare(b,'de');});
   el.innerHTML=
     '<div class="fg"><span class="lab">Saison</span>'+seg('f-season','season',S.season,sea.map(function(s){return [s,s];}))+'</div>'+
-    '<div class="fg"><span class="lab">Geschlecht</span>'+seg('f-g','g',S.g,[['all','Alle'],['M','Männer'],['W','Frauen']])+'</div>'+
-    '<div class="fg"><span class="lab">Bereich</span>'+seg('f-grp','grp',S.grp,[['all','Alle'],['tech','Tech'],['speed','Speed']])+'</div>'+
+    (accG().length>1?'<div class="fg"><span class="lab">Geschlecht</span>'+seg('f-g','g',S.g,[['all','Alle'],['M','Männer'],['W','Frauen']])+'</div>':'')+
+    (accA().length>1?'<div class="fg"><span class="lab">Bereich</span>'+seg('f-grp','grp',S.grp,[['all','Alle'],['tech','Tech'],['speed','Speed']])+'</div>':'')+
     '<div class="fg grow"><label for="f-venue">Ort</label><select class="sel" id="f-venue" data-chg="venue"><option value="">Alle Orte</option>'+vs.map(function(v){return '<option'+(v===S.venue?' selected':'')+'>'+h(v)+'</option>';}).join('')+'</select></div>'+
     '<span class="count"><b>'+list.length+'</b> Events</span>';
 }
@@ -1957,9 +2016,9 @@ function kpis(list,noLead){ /* noLead: «Als Nächstes» steht schon darüber, d
   function tile(k,v,s){ return '<div class="kpi"><span class="k">'+k+'</span><span class="v">'+v+'</span><span class="s">'+s+'</span></div>'; }
   if(noLead&&next) lead='';
   return '<section class="kpis'+(lead?'':' nl')+'" aria-label="Kennzahlen">'+lead+
-    tile('Events',list.length,nM+' Männer · '+nW+' Frauen')+
+    tile('Events',list.length,accG().length>1?nM+' Männer · '+nW+' Frauen':(nM?'Männer':'Frauen'))+
     tile('Rennen',run.length,tr+' Trainings'+(xx?' · '+xx+' abgesagt':''))+
-    tile('Einsätze FEA',(staffN.onsite+staffN.cc),staffN.onsite+' vor Ort · '+staffN.cc+' Command Center')+
+    (isAdm()?tile('Einsätze FEA',(staffN.onsite+staffN.cc),staffN.onsite+' vor Ort · '+staffN.cc+' Command Center'):'')+
     tile('Analysen',items,'an '+withItems+' von '+list.length+' Events')+
     tile('Gate-to-Gate',gtg,ks+' Kurssetzungen')+
     '</section>';
@@ -2144,7 +2203,7 @@ function weekCard(list){
     }catch(e){ VHI_COLLECT=null; } }
   return '<section class="card wkc" data-act="open" data-v="'+h(ev.id)+'">'+phBox(ev,'wk')+'<div class="wk-top"><div class="wk-l"><small class="wk-k">'+(live?'Jetzt':'Als Nächstes')+'</small>'+
       '<h2>'+flag(ev.nat)+h(ev.name)+'</h2><div class="wk-m">'+gMark(ev.g)+'<span>'+GN[ev.g]+'</span><span>'+span(ev.frm,ev.to)+'</span>'+racePills(ev)+fisLink(ev)+'</div></div>'+cd+'</div>'+
-    '<div class="wk-row"><div><small>Vor Ort</small>'+ppl(on,'onsite')+'</div><div><small>Command Center</small>'+ppl(cc,'cc')+'</div>'+
+    '<div class="wk-row">'+(isAdm()?'<div><small>Vor Ort</small>'+ppl(on,'onsite')+'</div><div><small>Command Center</small>'+ppl(cc,'cc')+'</div>':'')+
       (startersOf(ev).length?'<div><small>Am Start</small><span>'+startersOf(ev).length+' Athlet:innen</span></div>':'')+
       (met?'<div class="wk-met"><small>Wetter (monday)</small><span>'+h(String(met.note).replace(/\s+/g,' ').slice(0,120))+(String(met.note).length>120?' …':'')+'</span></div>':'')+'</div>'+wxStrip(ev,'wk')+hi+'</section>';
 }
@@ -2171,18 +2230,18 @@ function viewEvents(){
       '<div class="evmain"><div class="evtop"><button class="evname" type="button" data-act="open" data-v="'+h(e.id)+'">'+flag(e.nat)+h(e.name)+'</button>'+(champ?'<span class="chb">'+(e.cat==='WSC'?'WM '+e.frm.slice(0,4):'Olympia '+e.frm.slice(0,4))+'</span>':'')+state+'</div>'+
         '<div class="evmeta">'+gMark(e.g)+'<span>'+GN[e.g]+'</span>'+(e.cat!=='WC'?'<span class="pill">'+h(CAT[e.cat]||e.cat)+'</span>':'<span class="mu">Weltcup</span>')+racePills(e)+fisLink(e)+'</div>'+
         '<div class="evchips">'+(chips.length?chips.join(''):'<span class="evnone">'+(st==='up'?'Noch keine Inhalte – Event steht bevor':'Noch keine Analysen erfasst')+'</span>')+'</div></div>'+
-      '<div class="evteam">'+(staffOf(e).length?avatars(staffOf(e)):'<span class="mu">'+(st==='past'?'kein FEA-Einsatz':'Einsatz noch offen')+'</span>')+'<span class="evgo" aria-hidden="true"><span class="evgo-t">Öffnen</span><b>›</b></span></div>'+
+      '<div class="evteam">'+(!isAdm()?'':staffOf(e).length?avatars(staffOf(e)):'<span class="mu">'+(st==='past'?'kein FEA-Einsatz':'Einsatz noch offen')+'</span>')+'<span class="evgo" aria-hidden="true"><span class="evgo-t">Öffnen</span><b>›</b></span></div>'+
     '</article>';
   });
   if(lastMon) rows+='</div>';
   var vt=seg('ev-view','evview',S.evView||'list',[['list','Liste'],['map','Karte']],'evv');
   if(S.evView==='map'){
     html+='<section class="card evmapc"><div class="ch"><div><h2>Events auf der Karte</h2><p>Ort antippen für die Events dort, dann «Event öffnen». Zahl im Punkt = Anzahl Events am Ort (Filter oben gelten).</p></div>'+vt+'</div>'+
-      '<div id="evmap" class="evmap"></div><div class="legend mklg"><span><i class="mk-d up"></i>bevorstehend</span><span><i class="mk-d"></i>vorbei</span><span><i class="mk-d fea"></i>mit FEA-Einsatz</span><span><i class="mk-d up nx"></i>nächste Events</span></div></section>';
+      '<div id="evmap" class="evmap"></div><div class="legend mklg"><span><i class="mk-d up"></i>bevorstehend</span><span><i class="mk-d"></i>vorbei</span>'+(isAdm()?'<span><i class="mk-d fea"></i>mit FEA-Einsatz</span>':'')+'<span><i class="mk-d up nx"></i>nächste Events</span></div></section>';
     return html;
   }
   html+='<section class="card"><div class="ch"><div><h2>Events</h2></div>'+
-    '<div class="evh-r">'+vt+'<div class="legend"><span><i class="dot onsite"></i>vor Ort</span><span><i class="dot cc"></i>Command Center</span></div></div></div>'+
+    '<div class="evh-r">'+vt+(isAdm()?'<div class="legend"><span><i class="dot onsite"></i>vor Ort</span><span><i class="dot cc"></i>Command Center</span></div>':'')+'</div></div>'+
     (list.length?rows:'<div class="empty"><b>Keine Events für diese Auswahl</b>Filter oben anpassen.</div>')+'</section>';
   if(S.meta&&S.meta.fisSynced){
     html+='<p class="note">Kalender, Resultate und Kursdaten: FIS, Stand '+dm(S.meta.fisSynced)+S.meta.fisSynced.slice(0,4)+'. Kurssetzungen und Gate-to-Gate-Grafiken: Gate-to-Gate-Tool.</p>';
@@ -2482,7 +2541,11 @@ function viewSpeed(){
   speedLoad();
   if(!SP) return '<section class="card"><div class="empty"><b>Sektordaten werden geladen</b>FIS-Zwischenzeiten und Pistenbedingungen.</div></section>';
   var st=spState(); if(!st.area) st.area='speed';
-  var intro=function(inner){ return '<section class="card spi"><div class="spi-h"><h2>Analyse</h2>'+seg('sp-a','spa',st.area,[['speed','Speed · DH/SG'],['tech','Technik · GS/SL']],'spa')+'</div><p>'+
+  /* Zugriff: nur erlaubte Bereiche und Geschlechter */
+  var AA=accA(),GG=accG();
+  if(AA.indexOf(st.area==='tech'?'T':'S')<0) st.area=AA[0]==='T'?'tech':'speed';
+  if(GG.indexOf(st.g)<0) st.g=GG[0]; if(st.tg&&GG.indexOf(st.tg)<0) st.tg=GG[0]; if(!st.tg) st.tg=GG[0];
+  var intro=function(inner){ return '<section class="card spi"><div class="spi-h"><h2>Analyse</h2>'+(AA.length>1?seg('sp-a','spa',st.area,[['speed','Speed · DH/SG'],['tech','Technik · GS/SL']],'spa'):'')+'</div><p>'+
     (st.area==='tech'?(st.tsea&&st.tsea!=='2025/26'?'Wie entwickeln sich die Schweizer Technik-Athlet:innen über die Saisons?':'Wo verlieren die Schweizer Technik-Athlet:innen Zeit?'):st.season==='all'?'Wie entwickeln sich die Schweizer Speed-Athlet:innen über die Saisons?':'Wo verlieren die Schweizer Speed-Athlet:innen Zeit?')+
     '</p><div class="filters spf">'+inner+'</div></section>'; };
   if(st.area==='tech') return viewTech(st,intro);
@@ -2491,7 +2554,7 @@ function viewSpeed(){
   var stats={}; team.forEach(function(n){ stats[n]=spStats(n,races); });
   var tm={T:med(team.map(function(n){return stats[n].mT;}).filter(function(v){return v!=null;})),M:med(team.map(function(n){return stats[n].mM;}).filter(function(v){return v!=null;})),G:med(team.map(function(n){return stats[n].mG;}).filter(function(v){return v!=null;})),fp:med(team.map(function(n){return stats[n].mfp;}))};
   var ctrl=intro(
-    '<div class="fg"><span class="lab">Geschlecht</span>'+seg('sp-g','spg',st.g,[['M','Männer'],['W','Frauen']])+'</div>'+
+    (accG().length>1?'<div class="fg"><span class="lab">Geschlecht</span>'+seg('sp-g','spg',st.g,[['M','Männer'],['W','Frauen']])+'</div>':'')+
     '<div class="fg"><span class="lab">Saison</span>'+seg('sp-s','sps',st.season,spSeasons(st.g).map(function(x){return [x,x];}).concat([['all','Alle']]))+'</div>'+
     '<div class="fg"><span class="lab">Daten</span>'+seg('sp-m','spm',st.mode,[['R','Rennen'],['A','DH Trainings']])+'</div>'+
     '<span class="count"><b>'+races.length+'</b> '+(st.mode==='R'?'Rennen':'Läufe')+' · '+(st.season==='all'?spSeasonList(races).length+' Saisons':races.filter(function(r){return r.st;}).length+' mit Streckencharakter')+'</span>');
@@ -2799,7 +2862,7 @@ function viewTech(st,intro){
   var stats={}; team.forEach(function(n){ stats[n]=tStats(n,runs); });
   var tm={}; TCAT.forEach(function(c){ tm[c.k]=med(team.map(function(n){return stats[n].v[c.k];}).filter(function(v){return v!=null;})); });
   TKT.forEach(function(k){ tm['kt_'+k[0]]=med(team.map(function(n){ var q=stats[n].kt[k[0]]; return q&&q.v!=null?q.v:null; }).filter(function(v){return v!=null;})); });
-  var ctrl0=function(cnt){ return intro('<div class="fg"><span class="lab">Geschlecht</span>'+seg('t-g','tg',st.tg,[['M','Männer'],['W','Frauen']])+'</div>'+
+  var ctrl0=function(cnt){ return intro((accG().length>1?'<div class="fg"><span class="lab">Geschlecht</span>'+seg('t-g','tg',st.tg,[['M','Männer'],['W','Frauen']])+'</div>':'')+
     '<div class="fg"><span class="lab">Disziplin</span>'+seg('t-d','td',st.td,[['all','Beide'],['GS','Riesenslalom'],['SL','Slalom']])+'</div>'+
     '<div class="fg"><span class="lab">Saison</span>'+seg('t-s','tsea',st.tsea,tSeasons(st.tg).map(function(x){return [x,x];}).concat([['all','Alle']]))+'</div>'+cnt); };
   if(st.tsea!=='2025/26') return viewTechAll(st,ctrl0);
@@ -3789,7 +3852,7 @@ function viewDetail(ev){
   }
   var staffHtml='<div class="dstaff"><div class="dsg"><p class="h3">Einsatz FEA · vor Ort</p>'+plist('onsite')+'</div><div class="dsg"><p class="h3">Command Center</p>'+plist('cc')+'</div>'+
     (canWrite()&&!formOpen('staff')?'<button class="btn" type="button" data-act="form" data-v="staff">+ Person</button>':'')+'</div>'+(formOpen('staff')?staffForm():'');
-  head=head.replace('</section>',staffHtml+'</section>');
+  if(isAdm()) head=head.replace('</section>',staffHtml+'</section>');
   var aside='';
   var tr=trend(ev);
   if(tr||(ev.hl||[]).length||(ev.resnote||[]).length){
@@ -3875,7 +3938,7 @@ function viewDetail(ev){
   var di=navList.map(function(x){return x.d;}).indexOf(dk),prev=navList[di-1],next=navList[di+1];
   var pn='<div class="dpn">'+(prev?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+prev.d+'">‹ '+WD[pd(prev.d).getDay()]+' '+dm(prev.d)+' '+h(prev.t)+'</button>':'<span></span>')+(next?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+next.d+'">'+WD[pd(next.d).getDay()]+' '+dm(next.d)+' '+h(next.t)+' ›</button>':'<span></span>')+'</div>';
   var miss=todoOf(ev).filter(function(x){return !x.done&&x.d===dk;});
-  var missH=miss.length&&stat!=='up'?'<div class="dmiss" id="dmiss"><b>Fehlt noch an diesem Tag</b>'+miss.map(function(x){return '<span class="tdc">'+h(todoShort(x))+'</span>';}).join('')+'<small class="mu">in monday «RVD Sync» beim Unterelement Datei, Link oder Notiz ergänzen oder «Stand» setzen</small></div>':'';
+  var missH=isAdm()&&miss.length&&stat!=='up'?'<div class="dmiss" id="dmiss"><b>Fehlt noch an diesem Tag</b>'+miss.map(function(x){return '<span class="tdc">'+h(todoShort(x))+'</span>';}).join('')+'<small class="mu">in monday «RVD Sync» beim Unterelement Datei, Link oder Notiz ergänzen oder «Stand» setzen</small></div>':'';
   return head.replace('<section class="card dhero">','<section class="card dhero cmp">')+nav+missH+'<div class="days">'+dayMap[dk]+'</div>'+pn+vnote;
 }
 
@@ -3960,6 +4023,7 @@ window.addEventListener('resize',function(){ fitLists(document); });
 function render(){
   var a=document.activeElement,fid=a&&a.id&&document.getElementById('view').contains(a)?a.id:null,ss=null,se=null;
   if(fid){ try{ ss=a.selectionStart; se=a.selectionEnd; }catch(e){} }
+  if(!isAdm()&&(S.tab==='team'||S.tab==='analysen')) S.tab='events';
   renderTabs(); renderFilters(); if(typeof lsPaint==='function') lsPaint();
   var lo=document.getElementById('logoutBtn'); if(lo) lo.hidden=!window.__encFetch;
   var v=document.getElementById('view'),html;
@@ -4080,7 +4144,7 @@ document.addEventListener('click',function(ev){
     case 'tab': S.tab=v; S.ev=null; S.form=null; remember(); render(); window.scrollTo(0,0); break;
     case 'season': S.season=v; S.venue=''; S.ev=null; remember(); render(); break;
     case 'g': S.g=v; remember(); render(); break;
-    case 'logout': try{ localStorage.removeItem('rvd-k'); }catch(e){} location.reload(); break;
+    case 'logout': try{ localStorage.removeItem('rvd-k'); localStorage.removeItem('rvd-u'); }catch(e){} location.reload(); break;
     case 'spprof': srchClose(); var spp=spState(); spp.area='speed'; spp.g=el.getAttribute('data-g')||spp.g; spp.season=el.getAttribute('data-s')||spp.season; spp.mode='A'; spp.ath=v; S.ev=null; S.tab='speed'; remember(); render(); window.scrollTo(0,0); setTimeout(function(){ var pf=document.getElementById('spProfile'); if(pf) pf.scrollIntoView({block:'start'}); },50); break;
     case 'dtab': S.dtab=S.dtab||{}; S.dtab[S.ev]=v; render(); var dnon=document.querySelector('.daynav .dn.on'); if(dnon&&dnon.scrollIntoView) dnon.scrollIntoView({block:'nearest',inline:'center'}); var dnv=document.querySelector('.daynav'); if(dnv){ var top=dnv.getBoundingClientRect().top+window.scrollY-70; if(window.scrollY>top) window.scrollTo(0,top); } break;
     case 'jump': var dj=document.getElementById('day-'+v); if(dj) dj.scrollIntoView({behavior:'smooth',block:'start'}); break;
