@@ -100,10 +100,14 @@ async function fisSync(rvdItems) {
     const wantG = p.did.slice(-1);
     // PDFs «Results, Analysis, Standings» in der Event-Übersicht: dem Rennen davor zuordnen
     const pdfOf = {}, pos = [...eh.matchAll(/raceid=(\d+)/g)].map(x => [x.index, x[1]]);
+    let lastEnd = 0;
     for (const a of eh.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
+      const before = strip(eh.slice(lastEnd, a.index)); lastEnd = a.index + a[0].length;
       const hr = (a[1].match(/href="([^"]+)"/) || [])[1]; if (!hr) continue;
-      const near = strip(a[0] + eh.slice(a.index + a[0].length, a.index + a[0].length + 200));
-      if (!/Analysis/i.test(near) || /raceid=/.test(hr)) continue;
+      const ga = (a[1].match(/data-ga-download="([^"]*)"/) || [])[1] || '';
+      const own = strip(a[2]) + ' ' + ga;
+      // Beschriftung im Link selbst oder direkt davor (nicht die des nächsten Dokuments)
+      if (!(/Analysis/i.test(own) || /Analysis/i.test(before.slice(-160))) || /raceid=/.test(hr)) continue;
       const prev = pos.filter(x => x[0] < a.index).pop(); if (!prev || pdfOf[prev[1]]) continue;
       const u = ent(hr); pdfOf[prev[1]] = u.startsWith('http') ? u : 'https://www.fis-ski.com' + u;
     }
