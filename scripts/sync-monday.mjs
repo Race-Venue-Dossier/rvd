@@ -83,8 +83,8 @@ async function fisSync(rvdItems) {
     const m = (p.span || '').match(/(\d{4}-\d\d-\d\d)\s*-\s*(\d{4}-\d\d-\d\d)/); if (!m || !/^\d{4}-\d+-[MW]$/.test(p.did || '')) return false;
     return (day(m[1]) - today) / 864e5 <= 2 && (today - day(m[2])) / 864e5 <= 1;
   });
-  if (!near.length) { console.log('FIS: keine Events in der Nähe'); return {}; }
-  if (!(await robotsOk('/DB/general/'))) { console.log('FIS: robots.txt erlaubt den Abruf nicht'); return {}; }
+  if (!near.length) { console.log((TEST ? '::notice title=FIS-Test::' : '') + 'FIS: keine Events in der Nähe'); return {}; }
+  if (!(await robotsOk('/DB/general/'))) { console.log((TEST ? '::notice title=FIS-Test::' : '') + 'FIS: robots.txt erlaubt den Abruf nicht'); return {}; }
   const res = {};
   for (const p of near) {
     const [season, eid] = p.did.split('-');
@@ -104,7 +104,8 @@ async function fisSync(rvdItems) {
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep };
-      console.log('FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI');
+      const msg = ['FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI'].join(' ');
+      console.log(TEST ? '::notice title=FIS-Test::' + msg + ' · ' + keep.filter(r => r.nat === 'SUI').slice(0, 3).map(r => r.rk + '. ' + r.n).join(', ') : msg);
     }
   }
   return res;
