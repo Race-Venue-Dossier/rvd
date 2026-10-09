@@ -100,7 +100,7 @@ async function fisSync(rvdItems) {
     const wantG = p.did.slice(-1);
     for (const rid of ids) {
       const info = rowInfo(rid);
-      const ig = /\bWCW\b|\bWomen\b|\bLadies\b|\bW\b(?=\s*$)/.test(info) ? 'W' : /\bWCM\b|\bMen\b/.test(info) ? 'M' : '';
+      const gm = info.match(/\b(?:WC|EC|WSC|OWG|NAC|FIS)\s+([MW])\b/), ig = gm ? gm[1] : /\bWomen\b|\bLadies\b/.test(info) ? 'W' : /\bMen\b/.test(info) ? 'M' : '';
       if (ig && ig !== wantG) continue;
       await new Promise(r => setTimeout(r, 800));
       const html = await (await fetch(`https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=${rid}`, { headers: UA })).text();
@@ -113,7 +113,7 @@ async function fisSync(rvdItems) {
       if (dm) { const mo = MONTHS[dm[2].toLowerCase().slice(0, 3)]; const yr = dm[3] || (mo >= 7 ? +season - 1 : +season); d = `${yr}-${String(mo).padStart(2, '0')}-${dm[1].padStart(2, '0')}`; }
       if (TEST) console.log('::notice title=FIS-Zeile::' + rid + ' · ' + info.slice(0, 160));
       const rows = parseRows(html);
-      const ranked = rows.some(r => r.rk);
+      const ranked = rows.some(r => r.rk) && rows.some(r => r.t);  // Startliste: Nummern, aber keine Zeiten
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep };
