@@ -75,6 +75,7 @@ function parseRows(html) {
   }
   return rows;
 }
+const FIS_PDF = [];
 async function fisSync(rvdItems) {
   const today = new Date(); const day = d => new Date(d + 'T12:00:00Z');
   const TEST = (process.env.FIS_TEST || '').trim();  // Test über «Run workflow»: Dossier-ID eines vergangenen Events
@@ -116,7 +117,15 @@ async function fisSync(rvdItems) {
       const ranked = rows.some(r => r.rk) && rows.some(r => r.t);  // Startliste: Nummern, aber keine Zeiten
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
-      res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep };
+      // PDF «Results, Analysis, Standings» (Zwischenzeiten) für die automatische Sektoranalyse
+      let pdf = '';
+      for (const a of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
+        if (!/Analysis/i.test(strip(a[2]))) continue;
+        const hr = (a[1].match(/href="([^"]+)"/) || [])[1]; if (!hr) continue;
+        pdf = ent(hr).startsWith('http') ? ent(hr) : 'https://www.fis-ski.com' + ent(hr); break;
+      }
+      res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep, pdf };
+      if (kind === 'res' && pdf && /^(DH|SG|DHT|GS|SL)$/.test(disc)) FIS_PDF.push({ rid, url: pdf, d, g, disc, did: p.did, pl: (p.name || '').split('·')[0].replace(/\s*\(.*\)/, '').trim() });
       const msg = ['FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI'].join(' ');
       console.log(TEST ? '::notice title=FIS-Test::' + msg + ' · ' + keep.filter(r => r.nat === 'SUI').slice(0, 3).map(r => r.rk + '. ' + r.n).join(', ') : msg);
     }
@@ -175,6 +184,18 @@ for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) {
 // ── FIS: Startlisten und Resultate rund um die Renntage (nur Events von 2 Tagen vorher bis 1 Tag nachher) ──
 // Hält sich an robots.txt, wenige Abrufe pro Lauf, speichert nur Schweizer Zeilen und das Podest.
 out.fis = await fisSync(out.rvd.items).catch(e => { console.log('FIS übersprungen:', String(e).slice(0, 120)); return {}; });
+// Neue PDFs für scripts/fis_pdf.py vormerken (schon ausgewertete stehen in data/fissec_done.json)
+{
+  let done = []; try { done = JSON.parse(fs.readFileSync('data/fissec_done.json', 'utf8')); } catch (e) {}
+  const todo = FIS_PDF.filter(t => process.env.FIS_TEST || !done.includes(String(t.rid)));
+  fs.mkdirSync('fispdf', { recursive: true });
+  fs.writeFileSync('fispdf/todo.json', JSON.stringify(todo));
+  if (todo.some(t => /^(DH|SG|DHT)$/.test(t.disc))) {
+    const sl = await board({ id: 5288162728, cols: ['datum', 'drop_down7', 'dup__of_abschnitt_1', 'dup__of_sec_2', 'dup__of_sec_3', 'dup__of_sec_4', 'dup__of_sec_5', 'dup__of_sec_6', 'dup__of_sec_7', 'dup__of_sec_8', 'dup__of_sec_9', 'zahlen', 'numeric', 'zahlen1', 'numeric4', 'text3', 'text8', 'numeric0', 'numeric2', 'drop_down0', 'drop_down6'] }).catch(e => { console.log('Slope SPEED nicht geladen', String(e).slice(0, 80)); return []; });
+    fs.writeFileSync('fispdf/slope.json', JSON.stringify(sl));
+  }
+  if (todo.length) console.log((process.env.FIS_TEST ? '::notice title=FIS-PDF::' : '') + 'FIS-PDFs zum Auswerten: ' + todo.map(t => t.rid + ' ' + t.disc).join(', '));
+}
 if (process.env.FIS_TEST) { console.log('FIS-Test beendet, nichts gespeichert'); process.exit(0); }
 const body = JSON.stringify(out);
 const hash = crypto.createHash('sha256').update(body).digest('hex');

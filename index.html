@@ -2311,10 +2311,22 @@ function spPrep(j){
   });
   return j;
 }
+/* Automatisch ausgewertete FIS-Sektordaten (GitHub Action, data/fissec.enc) zu den Basisdaten hinzufügen */
+var SPSEC=null;
+function spMergeSec(sec){
+  if(sec) SPSEC=sec; if(!SP||!SPSEC) return;
+  var R={},T={},nr=0; SP.races.forEach(function(r){R[r.id]=1;}); (SP.ts||[]).forEach(function(r){T[r.id+'|'+r.run]=1;});
+  var add=spPrep({races:(SPSEC.races||[]).filter(function(r){return !R[r.id];}),ts:(SPSEC.ts||[]).filter(function(r){return !T[r.id+'|'+r.run];})});
+  if(!add.races.length&&!add.ts.length) return;
+  SP.races=SP.races.concat(add.races).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;});
+  SP.ts=(SP.ts||[]).concat(add.ts).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:(a.run||0)-(b.run||0);});
+  if(typeof TSR!=='undefined') TSR=null; if(typeof VRID!=='undefined') VRID=null;
+  if(typeof render==='function') render();
+}
 function speedLoad(){
   if(SP) return Promise.resolve(SP);
-  if(window.__SPEED){ SP=spPrep(window.__SPEED); return Promise.resolve(SP); }
-  if(!SPL) SPL=fetch('speed.json').then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(j){ SP=spPrep(j); render(); return SP; }).catch(function(){ SPL=null; });
+  if(window.__SPEED){ SP=spPrep(window.__SPEED); spMergeSec(); return Promise.resolve(SP); }
+  if(!SPL) SPL=fetch('speed.json').then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(j){ SP=spPrep(j); spMergeSec(); render(); return SP; }).catch(function(){ SPL=null; });
   return SPL;
 }
 function med(a){ if(!a.length) return null; var b=a.slice().sort(function(x,y){return x-y;}),m=b.length>>1; return b.length%2?b[m]:(b[m-1]+b[m])/2; }
@@ -3036,8 +3048,10 @@ function lsRun(){ if(Date.now()-(LSYNC.runChk||0)<4*60*1000) return Promise.reso
 function liveSync(force){
   if(!window.__encFetch||LSYNC.busy) return Promise.resolve(); LSYNC.busy=true; lsPaint();
   return Promise.all([lsTxt(),lsRun()]).then(function(a){ var remote=a[0];
-    if(!force&&remote===LSYNC.sha) return;
-    return window.__encFetch('data/live.enc').then(function(b){ var j=JSON.parse(new TextDecoder().decode(b)); LIVE.src='github'; liveRaw(j); LSYNC.sha=remote; render(); });
+    /* automatisch ausgewertete FIS-Zwischenzeiten (eigene Datei, ändert sich unabhängig von monday) */
+    var sec=function(){ return window.__encFetch('data/fissec.enc').then(function(b2){ spMergeSec(JSON.parse(new TextDecoder().decode(b2))); },function(){}); };
+    if(!force&&remote===LSYNC.sha) return sec();
+    return window.__encFetch('data/live.enc').then(function(b){ var j=JSON.parse(new TextDecoder().decode(b)); LIVE.src='github'; liveRaw(j); LSYNC.sha=remote; render(); return sec(); });
   }).then(function(){ LSYNC.chk=Date.now(); LSYNC.off=false; },function(){ LSYNC.off=true; }).then(function(){ LSYNC.busy=false; lsPaint(); });
 }
 function lsState(){

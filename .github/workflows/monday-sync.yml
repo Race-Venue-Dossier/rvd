@@ -11,7 +11,7 @@ on:
         default: ''
   push:
     branches: [main]
-    paths-ignore: ['data/live.enc', 'data/live.sha', 'monasset/**']
+    paths-ignore: ['data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**']
 permissions:
   contents: write
 concurrency:
@@ -32,12 +32,26 @@ jobs:
           RVD_PASS: ${{ secrets.RVD_PASS }}
           FIS_TEST: ${{ inputs.fis_test }}
         run: node scripts/sync-monday.mjs
+      - name: FIS-PDFs auswerten (Zwischenzeiten)
+        if: hashFiles('fispdf/todo.json') != ''
+        env:
+          FIS_TEST: ${{ inputs.fis_test }}
+        run: |
+          if [ "$(cat fispdf/todo.json)" != "[]" ]; then
+            pip install --quiet pymupdf
+            python3 scripts/fis_pdf.py
+          fi
+      - name: FIS-Sektordaten speichern
+        env:
+          RVD_PASS: ${{ secrets.RVD_PASS }}
+          FIS_TEST: ${{ inputs.fis_test }}
+        run: node scripts/fis-store.mjs
       - name: Änderungen speichern
         run: |
-          if [ -n "$(git status --porcelain data/live.enc data/live.sha monasset)" ]; then
+          if [ -n "$(git status --porcelain data/live.enc data/live.sha data/fissec.enc data/fissec_done.json monasset)" ]; then
             git config user.name "monday-Sync"
             git config user.email "actions@users.noreply.github.com"
-            git add data/live.enc data/live.sha monasset
+            git add data/live.enc data/live.sha monasset; git add data/fissec.enc data/fissec_done.json 2>/dev/null || true
             git commit -m "monday-Daten aktualisiert"
             git push
           fi
