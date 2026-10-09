@@ -42,14 +42,14 @@ async function board(b) {
 
 // ── RVD Sync (Board 18434554343, Unterelemente 18434562036) ──
 const RVD = 18434554343, RVD_SUB = 18434562036;
-const PCOLS = ['text_mm7y6990', 'timerange_mm7ynrqk', 'color_mm7y4pr', 'color_mm7y6xtz', 'long_text_mm7yahaq'];
-const SCOLS = ['status', 'date0', 'dropdown_mm7yqjaj', 'color_mm7y3pqp', 'file_mm7ys0e2', 'link_mm7yseny', 'long_text_mm7ya2cv'];
+const PCOLS = ['text_mm7y6990', 'timerange_mm7ynrqk', 'color_mm7y4pr', 'color_mm7y6xtz', 'long_text_mm7yahaq', 'dropdown_mm7zsj09'];
+const SCOLS = ['status', 'date0', 'dropdown_mm7yqjaj', 'color_mm7y3pqp', 'file_mm7ys0e2', 'link_mm7yseny', 'long_text_mm7ya2cv', 'dropdown_mm7zem4t', 'color_mm7zkayz'];
 const SUBQ = `id name updated_at parent_item{ id } column_values(ids:$sc){ id text value ... on FileValue{ files{ ... on FileAssetValue{ asset{ id name file_extension file_size public_url } } } } }`;
 async function rvdBoard() {
   const parents = {};
   for (const it of await board({ id: RVD, cols: PCOLS })) {
     const cv = it.column_values;
-    parents[it.id] = { id: it.id, name: it.name, url: it.url, grp: it.group && it.group.title, did: cv.text_mm7y6990 || '', span: cv.timerange_mm7ynrqk || '', g: cv.color_mm7y4pr || '', cat: cv.color_mm7y6xtz || '', info: cv.long_text_mm7yahaq || '', sub: [] };
+    parents[it.id] = { id: it.id, name: it.name, url: it.url, grp: it.group && it.group.title, did: cv.text_mm7y6990 || '', span: cv.timerange_mm7ynrqk || '', g: cv.color_mm7y4pr || '', cat: cv.color_mm7y6xtz || '', info: cv.long_text_mm7yahaq || '', ath: cv.dropdown_mm7zsj09 || '', sub: [] };
   }
   let d = await gql(`query($id:[ID!],$sc:[String!]){ boards(ids:$id){ items_page(limit:200){ cursor items{ ${SUBQ} } } } }`, { id: [RVD_SUB], sc: SCOLS });
   let page = d.boards[0].items_page;
@@ -60,16 +60,19 @@ async function rvdBoard() {
       for (const c of it.column_values) { cv[c.id] = c.text || ''; if (c.files) for (const f of c.files) if (f.asset) files.push(f.asset); }
       let link = null;
       try { const lv = JSON.parse((it.column_values.find(c => c.id === 'link_mm7yseny') || {}).value || 'null'); if (lv && lv.url) link = { u: lv.url, t: lv.text || '' }; } catch (e) {}
-      // Vorlage ohne Inhalt (keine Datei, kein Link, keine Notiz): weglassen
-      if (!files.length && !link && !(cv.long_text_mm7ya2cv || '').trim()) continue;
-      p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, note: cv.long_text_mm7ya2cv, link,
+      // Vorlage ohne Inhalt (keine Datei, kein Link, keine Notiz): nur für «offene Analysen» mitgeben
+      if (!files.length && !link && !(cv.long_text_mm7ya2cv || '').trim()) {
+        p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, st: cv.color_mm7zkayz || '', ath: cv.dropdown_mm7zem4t || '', e: 1, files: [] });
+        continue;
+      }
+      p.sub.push({ id: it.id, name: it.name, art: cv.status, d: cv.date0, disc: cv.dropdown_mm7yqjaj, run: cv.color_mm7y3pqp, note: cv.long_text_mm7ya2cv, link, st: cv.color_mm7zkayz || '', ath: cv.dropdown_mm7zem4t || '',
         files: files.map(a => ({ id: a.id, n: a.name, ext: (a.file_extension || '').replace(/^\./, '').toLowerCase(), size: +a.file_size || 0, url: a.public_url })) });
     }
     if (!page.cursor) break;
     d = await gql(`query($c:String!,$sc:[String!]){ next_items_page(limit:200,cursor:$c){ cursor items{ ${SUBQ} } } }`, { c: page.cursor, sc: SCOLS });
     page = d.next_items_page;
   }
-  return Object.values(parents).filter(p => p.sub.length || p.info);
+  return Object.values(parents).filter(p => p.sub.length || p.info || p.ath);
 }
 
 const out = {};
