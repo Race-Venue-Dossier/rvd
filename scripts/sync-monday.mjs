@@ -91,14 +91,28 @@ async function fisSync(rvdItems) {
     const evUrl = `https://www.fis-ski.com/DB/general/event-details.html?sectorcode=AL&eventid=${eid}&seasoncode=${season}`;
     const eh = await (await fetch(evUrl, { headers: UA })).text();
     const ids = [...new Set([...eh.matchAll(/results\.html\?sectorcode=AL(?:&amp;|&)raceid=(\d+)/g)].map(x => x[1]))];
+    // Zeile zum Rennen in der Event-Übersicht: Datum, Disziplin, Geschlecht
+    const rowInfo = rid => {
+      const a = eh.match(new RegExp('<a[^>]*raceid=' + rid + '[^>]*>([\\s\\S]*?)</a>'));
+      let t = a ? strip(a[1]) : '';
+      if (!/\d{1,2}\s+[A-Z][a-z]{2}/.test(t)) { const i = eh.indexOf('raceid=' + rid); t = strip(eh.slice(Math.max(0, i - 2500), i + 300)); }
+      return t;
+    };
+    const wantG = p.did.slice(-1);
     for (const rid of ids) {
+      const info = rowInfo(rid);
+      const ig = /\bWCW\b|\bWomen\b|\bLadies\b|\bW\b(?=\s*$)/.test(info) ? 'W' : /\bWCM\b|\bMen\b/.test(info) ? 'M' : '';
+      if (ig && ig !== wantG) continue;
       await new Promise(r => setTimeout(r, 800));
       const html = await (await fetch(`https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=${rid}`, { headers: UA })).text();
       const head = strip((html.match(/<h1[\s\S]*?<\/h1>/) || [''])[0] + ' ' + (html.match(/event-header__subtitle[\s\S]{0,400}/) || [''])[0] + ' ' + (html.match(/<title>[\s\S]*?<\/title>/) || [''])[0]);
-      const g = /\b(Women|Ladies)\b/i.test(head) ? 'W' : /\bMen\b/i.test(head) ? 'M' : '';
-      const disc = (DISCS.find(d => new RegExp(d[0], 'i').test(head)) || [])[1] || '';
-      const dm = head.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{4})/i);
-      const d = dm ? `${dm[3]}-${String(MONTHS[dm[2].toLowerCase().slice(0, 3)]).padStart(2, '0')}-${dm[1].padStart(2, '0')}` : '';
+      const g = ig || (/\b(Women|Ladies)\b/i.test(head) ? 'W' : /\bMen\b/i.test(head) ? 'M' : '');
+      if (g && g !== wantG) continue;
+      const disc = (DISCS.find(d => new RegExp(d[0], 'i').test(info)) || DISCS.find(d => new RegExp(d[0], 'i').test(head)) || [])[1] || '';
+      const dm = (info + ' ' + head).match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?(?:\s+(\d{4}))?/i);
+      let d = '';
+      if (dm) { const mo = MONTHS[dm[2].toLowerCase().slice(0, 3)]; const yr = dm[3] || (mo >= 7 ? +season - 1 : +season); d = `${yr}-${String(mo).padStart(2, '0')}-${dm[1].padStart(2, '0')}`; }
+      if (TEST) console.log('::notice title=FIS-Zeile::' + rid + ' · ' + info.slice(0, 160));
       const rows = parseRows(html);
       const ranked = rows.some(r => r.rk);
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
