@@ -1124,7 +1124,6 @@ html[lang="en"] .rep[open] summary .src b::before{content:"close"}
 
 .bilk{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
 .bilch{margin:4px 0 12px}
-.tbl.bil td,.tbl.bil th{white-space:nowrap}
 .tdc.ck{background:color-mix(in srgb,#d9534f 10%,var(--surface));border-color:color-mix(in srgb,#d9534f 35%,var(--line));color:color-mix(in srgb,#b42318 85%,var(--ink))}
 a.tdr{text-decoration:none}
 
@@ -2183,25 +2182,19 @@ function bilanzData(list){
   list.forEach(function(e){ var st=staffOf(e),days=Math.round((pd(e.to)-pd(e.frm))/864e5)+1; if(st.length) feaEv++; st.forEach(function(x){ if(x.r==='cc'){ cc++; ccD+=days; } else { on++; onD+=days; } P[x.n]=1; });
     var T=todoOf(e); if(status(e)!=='up'){ tot+=T.length; done+=T.filter(function(x){return x.done;}).length; }
     itemsOf(e).forEach(function(it){ kinds[it.k]=(kinds[it.k]||0)+1; }); });
-  var pts=[]; ['M','W'].forEach(function(g){ if(S.g!=='all'&&S.g!==g) return; ['DH','SG','GS','SL'].forEach(function(dc){ var R=vPtsRaces(g,dc,[S.season]); if(!R.length) return; var t={},sum=0;
-    R.forEach(function(r){ r.a.forEach(function(a){ t[a.n]=(t[a.n]||0)+a.p; sum+=a.p; }); });
-    var best=Object.keys(t).sort(function(a,b){return t[b]-t[a];}).slice(0,3);
-    pts.push({g:g,dc:dc,n:R.length,sum:sum,best:best.map(function(n){return [n,t[n]];}),win:R.reduce(function(a,r){return a+r.a.filter(function(x){return x.rk===1;}).length;},0),pod:R.reduce(function(a,r){return a+r.a.filter(function(x){return x.rk&&x.rk<=3;}).length;},0)}); }); });
-  return {ev:ev,feaEv:feaEv,on:on,cc:cc,onD:onD,ccD:ccD,people:Object.keys(P).length,done:done,tot:tot,kinds:kinds,pts:pts};
+  return {ev:ev,feaEv:feaEv,on:on,cc:cc,onD:onD,ccD:ccD,people:Object.keys(P).length,done:done,tot:tot,kinds:kinds};
 }
 function bilanzCard(list){
   var B=bilanzData(list); if(!B.ev) return '';
   var tile=function(v,l,sub){ return '<div><b>'+v+'</b><span>'+l+'</span>'+(sub?'<small class="mu">'+sub+'</small>':'')+'</div>'; };
   var kt=KINDS.filter(function(k){return B.kinds[k.k];}).map(function(k){ return '<span class="evc"><b>'+B.kinds[k.k]+'</b>'+h(kpl(k.k,B.kinds[k.k]))+'</span>'; }).join('');
-  var tb=B.pts.length?'<div class="tw"><table class="tbl bil"><thead><tr><th>Disziplin</th><th class="num">Rennen</th><th class="num">Punkte</th><th class="num">Siege</th><th class="num">Podeste</th><th>Beste</th></tr></thead><tbody>'+
-    B.pts.map(function(x){ return '<tr><td>'+gMark(x.g)+' '+h(DISC[x.dc]||x.dc)+'</td><td class="num">'+x.n+'</td><td class="num"><b>'+x.sum+'</b></td><td class="num">'+x.win+'</td><td class="num">'+x.pod+'</td><td>'+x.best.map(function(b){return lnH(b[0])+' <small class="mu">'+b[1]+'</small>';}).join(' · ')+'</td></tr>'; }).join('')+'</tbody></table></div>':'';
   return '<section class="card bilc"><div class="ch"><div><h2>Saisonbilanz '+h(S.season)+'</h2><p>Nach den Filtern oben</p></div><button type="button" class="btn" data-act="bilcsv">Als CSV</button></div>'+
     '<div class="spkpi bilk">'+tile(B.ev,'Events (Rennwochenenden)','davon '+B.feaEv+' mit FEA-Einsatz')+
       tile(B.on,'Einsätze vor Ort','Person × Event · rund '+B.onD+' Personentage')+
       tile(B.cc,'Einsätze Command Center','Person × Event · rund '+B.ccD+' Personentage')+
       tile(B.people,'Personen im Einsatz','vor Ort oder Command Center')+
       (B.tot?tile(B.done+' / '+B.tot,'Analysen erledigt','Unterelemente in monday «RVD Sync», nur vergangene Events'):'')+'</div>'+
-    (kt?'<div class="evchips bilch">'+kt+'</div>':'')+tb+'</section>';
+    (kt?'<div class="evchips bilch">'+kt+'</div>':'')+'</section>';
 }
 function bilanzCsv(list){
   var q=function(v){ v=String(v==null?'':v); return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
