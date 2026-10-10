@@ -15,7 +15,7 @@ on:
         default: ''
   push:
     branches: [main]
-    paths-ignore: ['data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**', 'data/keyring.json', 'data/seg/**', 'seg/**']
+    paths-ignore: ['data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**', 'data/keyring.json', 'data/seg/**', 'seg/**', 'data/ks.enc']
 permissions:
   contents: write
 concurrency:
@@ -51,6 +51,17 @@ jobs:
           RVD_PASS: ${{ secrets.RVD_PASS }}
           FIS_TEST: ${{ inputs.fis_test }}
         run: node scripts/fis-store.mjs
+      - name: Kurssetzungs-PDFs aus monday auswerten
+        if: ${{ !inputs.fis_test }}
+        env:
+          RVD_PASS: ${{ secrets.RVD_PASS }}
+        run: |
+          node scripts/ks.mjs prep
+          if [ -f kspdf/todo.json ] && [ "$(cat kspdf/todo.json)" != "[]" ]; then
+            pip install --quiet pymupdf
+            python3 scripts/ks_pdf.py
+          fi
+          node scripts/ks.mjs store
       - name: Zugriffe pro Person (Login-Liste aus Supabase)
         if: ${{ !inputs.fis_test }}
         env:
@@ -59,10 +70,10 @@ jobs:
         run: node scripts/access.mjs
       - name: Änderungen speichern
         run: |
-          if [ -n "$(git status --porcelain data/live.enc data/live.sha data/fissec.enc data/fissec_done.json monasset data/keyring.json data/seg seg)" ]; then
+          if [ -n "$(git status --porcelain data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/seg seg)" ]; then
             git config user.name "monday-Sync"
             git config user.email "actions@users.noreply.github.com"
-            for f in data/live.enc data/live.sha data/fissec.enc data/fissec_done.json monasset data/keyring.json data/seg seg; do [ -e "$f" ] && git add -A "$f"; done
+            for f in data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/seg seg; do [ -e "$f" ] && git add -A "$f"; done
             git commit -m "monday-Daten aktualisiert"
             git pull --rebase -X theirs || true
             git push

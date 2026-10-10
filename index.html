@@ -1312,6 +1312,13 @@ html.popopen,html.popopen body{overflow:hidden}
 @media (prefers-reduced-motion:reduce){.apop-bg,.apop-box{animation:none}}
 .apop-box:focus{outline:none}
 
+/* Fussleiste */
+.foot{border-top:1px solid var(--line);margin-top:-36px;padding:14px 22px calc(18px + env(safe-area-inset-bottom,0px))}
+.foot-in{max-width:1436px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted)}
+.foot-l{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:6px 12px;font:inherit;font-weight:650;cursor:pointer}
+.foot-l svg{width:15px;height:15px}
+.foot-l:hover,.foot-l.on{border-color:var(--ink-2);color:var(--ink)}
+
 </style>
 
 </head>
@@ -1548,6 +1555,7 @@ html.offline body::after{content:'Offline · gespeicherter Stand';position:fixed
   <section class="card filters" aria-label="Filter" id="filters"></section>
   <div id="view"></div>
 </main>
+<footer class="foot" id="foot"></footer>
 <div class="lb" id="lb" hidden><button class="x" type="button" aria-label="Schliessen">✕</button><img id="lbImg" alt=""><iframe id="lbPdf" title="PDF" hidden></iframe><div id="lbJs" class="lbjs" hidden></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
@@ -1775,7 +1783,7 @@ var STAT={DNF1:'Ausfall 1. Lauf',DNF2:'Ausfall 2. Lauf',DNF:'Ausfall',DNQ:'nicht
 var GT=[['O','Offen'],['H','Hairpin'],['V','Flush'],['D','Banane']];
 var GTN={O:'Offen',H:'Hairpin',V:'Flush',D:'Banane',F:'Ziel'};
 function vimeoId(u){ var m=/^https:\/\/(?:www\.)?vimeo\.com\/(?:video\/)?(\d+)(?:\/([0-9a-f]+))?/.exec(String(u||'')); if(!m) return ''; var hq=/[?&]h=([0-9a-f]+)/.exec(String(u||'')); var hh=m[2]||(hq&&hq[1]); return m[1]+(hh?'?h='+hh+'&amp;':'?'); }
-function setterName(s){ var p=String(s||'').trim().split(/\s+/); return p.length>1?p.slice(-1).concat(p.slice(0,-1)).join(' '):String(s||''); }
+function setterName(s){ var p=String(s||'').trim().split(/\s+/),n=p.length>1?p.slice(-1).concat(p.slice(0,-1)).join(' '):String(s||''); return (typeof CSNAME!=='undefined'&&CSNAME[n])||n; }
 function f1(v){ return v==null?'–':(Math.round(v*10)/10).toFixed(1).replace('.',','); }
 function natTag(nat){ return (FL[nat]?flag(nat):'')+'<span class="nat">'+h(nat)+'</span>'; }
 
@@ -1996,9 +2004,12 @@ function avatars(st){
 
 /* ───────────── Rahmen ───────────── */
 function renderTabs(){
-  document.getElementById('tabs').innerHTML=TABS.filter(function(t){ return isAdm()||(t.id!=='team'&&t.id!=='analysen'); }).map(function(t){
+  document.getElementById('tabs').innerHTML=TABS.filter(function(t){ return t.id!=='analysen'&&(isAdm()||t.id!=='team'); }).map(function(t){
     return '<button class="tab" role="tab" type="button" data-act="tab" data-v="'+t.id+'" aria-selected="'+(S.tab===t.id)+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+t.i+'</svg>'+t.n+'</button>';
   }).join('');
+  /* Fussleiste: Datenbank (nur Admins) */
+  var ft=document.getElementById('foot');
+  if(ft) ft.innerHTML='<div class="foot-in"><span>Race Venue Dossier · Swiss-Ski FEA</span>'+(isAdm()?'<button type="button" class="foot-l'+(S.tab==='analysen'?' on':'')+'" data-act="tab" data-v="analysen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+TABS.filter(function(t){return t.id==='analysen';})[0].i+'</svg>Datenbank</button>':'')+'</div>';
   var m=S.meta&&S.meta.fisSynced? 'FIS-Kalender: Stand '+dm(S.meta.fisSynced)+S.meta.fisSynced.slice(0,4) : '';
   document.getElementById('barMeta').textContent=m;
 }
@@ -2426,7 +2437,11 @@ function spSeason(d){ var y=+d.slice(0,4),m=+d.slice(5,7); if(m<7) y--; return y
 var PLN={'Garmisch':'Garmisch-Partenkirchen','Garmisch Partenkirchen':'Garmisch-Partenkirchen','Crans Montana':'Crans-Montana','Kitzbuehel':'Kitzbühel',"Cortina d' Ampezzo":"Cortina d'Ampezzo",
   'Altenmarkt-Zauchensee':'Zauchensee','Saalbach-Hinterglemm':'Saalbach','Val Gardena - Gröden':'Val Gardena','Val Gardena / Gröden':'Val Gardena','Lillehammer':'Kvitfjell','Copper Mountain, CO':'Copper Mountain',
   'Grandvalira Soldeu - El Tarter':'Soldeu','Andorra':'Soldeu','Spindleruv Mlyn':'Špindlerův Mlýn'};
+/* Kurssetzer: Ergänzungen und Korrekturen aus der Liste der Speed-Frauen-Coaches (Okt. 2026) */
+var CSFIX={'118502':{r:[[1,'Thomas Rodseth','NOR']]}},CSNAME={'Stefan Abplanalb':'Stefan Abplanalp','Alex Hoedlmoser':'Alex Hödlmoser'};
 function spPrep(j){
+  if(j.cs){ Object.keys(CSFIX).forEach(function(k){ if(!j.cs[k]||!j.cs[k].r||!j.cs[k].r.length) j.cs[k]=CSFIX[k]; });
+    Object.keys(j.cs).forEach(function(k){ (j.cs[k].r||[]).forEach(function(x){ if(CSNAME[x[1]]) x[1]=CSNAME[x[1]]; }); }); }
   j.races.concat(j.ts||[]).forEach(function(r){
     if(PLN[r.pl]) r.pl=PLN[r.pl];
     r.season=spSeason(r.d);
@@ -3134,6 +3149,7 @@ function liveStaffOf(ev){
 /* Board «RVD Sync»: Inhalte zu einem Event (Unterelemente) – Dossier-ID oder Name, Geschlecht und Datum ordnen sie dem Event zu */
 var RART={'Kurssetzung':'ks','Gate-to-Gate':'gtg','Video':'vid','GPS-Bericht':'gps','Meteo':'met','Resultate':'res','Sonstiges':'div'};
 var RIMG={png:1,jpg:1,jpeg:1,webp:1,gif:1};
+var LDISC={'Super-G':'SG','Abfahrt':'DH','Riesenslalom':'GS','Slalom':'SL'};
 var RDISC={'DH-Training':'DHT'};
 function rKey(k,d,disc,run,url,name){
   disc=RDISC[disc]||disc||''; run=String(run||'');
@@ -3189,6 +3205,8 @@ function liveRvd(items,at){
       if(imgs.length) o.img=imgs.map(function(f){return 'monasset/'+f.id+'.'+f.ext;});
       if(docs.length) o.mfiles=docs.map(function(f){return {p:'monasset/'+f.id+'.'+f.ext,n:f.n,ext:f.ext,size:f.size};});
       if(rest.length) o.mrest=rest.map(function(f){return f.n;});
+      /* Kurssetzungs-PDF, von der GitHub Action ausgewertet: wie die Kurssetzungen im Dossier (Kennzahlen, Plan, Torliste) */
+      if(s.ks&&s.ks.gates&&s.ks.gates.length){ o.k='ks'; o.t='Kurssetzung'; o.disc=LDISC[s.disc]||s.disc||''; o.gates=s.ks.gates; o.fin=s.ks.fin||null; o.doc='monasset/'+s.ks.fid+'.pdf'; delete o.mfiles; }
       (out[ev.id]=out[ev.id]||[]).push(o);
     });
   });
