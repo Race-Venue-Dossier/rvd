@@ -1343,6 +1343,19 @@ html.popopen,html.popopen body{overflow:hidden}
 .form .fg>.seg{align-self:flex-start}
 /* Karte nicht verfügbar: Text auf dem dunklen Kartenfeld lesbar */
 .evmap .empty{color:#c5cedb}.evmap .empty b{color:#fff}
+/* Feinschliff 4 (11.10.2026) */
+/* Kopfzeile auf dem Tablet einzeilig: der Hinweis «FIS-Kalender: Stand …» steht auch unter der Eventliste */
+@media (max-width:980px){.bar-meta .season{display:none}}
+/* Profil «Alle Läufe»: Zellen nicht umbrechen (sonst sehr hohe, ungleiche Zeilen auf dem Tablet); die Tabelle scrollt quer */
+@media (max-width:1100px){.tbl.spr td{white-space:nowrap}}
+/* Saisonbilanz: kein zusätzlicher Abstand unter der letzten Zeile */
+.bilc .bilch:last-child{margin-bottom:0}
+/* Stärken/Schwächen im Profilkopf: lange Bezeichnungen umbrechen statt abschneiden */
+.swk li span{white-space:normal;overflow:visible;align-items:baseline}
+/* Schmale, dezente Scroll-Leisten in Tabellen und Profilen (Windows, Linux) */
+.tw,.pscr,.rchart,.spl,.apop-b,.gl-w,.srch-l{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+/* Tastatur-Fokus auf den Reitern: Rahmen nach innen, sonst schneidet die Leiste ihn oben und unten ab */
+.tabs .tab:focus-visible{outline-offset:-3px;border-radius:8px}
 
 </style>
 
