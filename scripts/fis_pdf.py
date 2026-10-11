@@ -57,10 +57,17 @@ def nice0(n):
     """«ODERMATT Marco» / «von ALLMEN Franjo» -> «Marco Odermatt» / «Franjo von Allmen»"""
     parts = n.split()
     PART = ('von', 'van', 'de', 'di', 'da', 'del', 'der')
+    # Initialen als Vorname: «HURT A J» -> «AJ Hurt»
+    ini = []
+    while len(parts) > 1 and len(parts[-1]) == 1 and parts[-1].isupper(): ini.insert(0, parts.pop())
+    # «O BRIEN Nina» -> O'Brien
+    if len(parts) > 1 and parts[0] == 'O' and parts[1].isupper() and len(parts[1]) > 1: parts = ["O'" + parts[1]] + parts[2:]
     parts = [p.lower() if p.lower() in PART else p for p in parts]
     sur = [p for p in parts if p.isupper() or p in PART]
     first = [p for p in parts if p not in sur]
-    def cap(w): return w if w in ('von', 'van', 'de', 'di', 'da', 'del', 'der') else '-'.join(x.capitalize() for x in w.split('-'))
+    def cap1(x): return "'".join(y.capitalize() for y in x.split("'"))
+    def cap(w): return w if w in ('von', 'van', 'de', 'di', 'da', 'del', 'der') else '-'.join(cap1(x) for x in w.split('-'))
+    if ini: first = [''.join(ini)] + first
     return ' '.join(first + [cap(w) for w in sur])
 
 
