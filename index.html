@@ -1334,6 +1334,15 @@ html.popopen,html.popopen body{overflow:hidden}
 /* FIS-Link: grössere Tippfläche auf Touch-Geräten (Aussehen bleibt gleich) */
 .fisl{position:relative}
 @media (pointer:coarse){.fisl::after{content:"";position:absolute;inset:-10px -6px}}
+/* Feinschliff 2 (11.10.2026) */
+/* Podest nicht in die Höhe ziehen, wenn die Liste daneben lang ist */
+@media (min-width:641px){.podc .pod{flex:0 1 auto;height:230px}}
+/* Handy: feste Stufenhöhen, damit lange Namen (z. B. Team-Kombination) das Podest nach oben wachsen lassen statt in den Titel zu ragen */
+@media (max-width:640px){.podc .pod{flex:0 0 auto}.podc .pd .step{flex:0 0 auto;height:54px}.podc .pd.r2 .step{flex-basis:auto;height:79px}.podc .pd.r1 .step{flex-basis:auto;height:108px}}
+/* Schalter im Formular nur so breit wie sein Inhalt */
+.form .fg>.seg{align-self:flex-start}
+/* Karte nicht verfügbar: Text auf dem dunklen Kartenfeld lesbar */
+.evmap .empty{color:#c5cedb}.evmap .empty b{color:#fff}
 
 </style>
 
@@ -1814,7 +1823,7 @@ function podium(top){
     }).join('')+'<div class="step" aria-label="Rang '+L[0].r+'">'+L[0].r+'</div></div>';
   }).join('')+'</div>';
 }
-var SHV={"Val d'Isère":'Isère','Val Gardena':'Gröden','Val Gardena/Gröden':'Gröden','Alta Badia':'Badia','Madonna di Campiglio':'Mad.','Crans-Montana':'Crans','Crans Montana':'Crans','St. Moritz':'StMo.','Copper Mountain':'Copp.','Beaver Creek':'Beav.','Kranjska Gora':'Kran.','Garmisch-Partenkirchen':'Garm.'};
+var SHV={"Val d'Isère":'Isère','Val Gardena':'Gröd.','Val Gardena/Gröden':'Gröd.','Alta Badia':'Badia','Madonna di Campiglio':'Mad.','Crans-Montana':'Crans','Crans Montana':'Crans','St. Moritz':'StMo.','Copper Mountain':'Copp.','Beaver Creek':'Beav.','Kranjska Gora':'Kran.','Garmisch-Partenkirchen':'Garm.'};
 function shortV(n){ n=String(n).trim(); if(SHV[n]) return SHV[n]; var w=n.split(/[\s-]/)[0]; return w.length>5?w.slice(0,4)+'.':w; }
 function suiList(x){
   if(!(x.sui||[]).length) return '<p class="sub">Niemand aus der Schweiz am Start.</p>';
@@ -2219,6 +2228,11 @@ function srchOpen(){
   if(!SRCH){ SRCH=document.createElement('div'); SRCH.className='srch'; SRCH.innerHTML='<div class="srch-bg" data-act="srchx"></div><div class="srch-box" role="dialog" aria-label="Suchen"><div class="srch-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="srch-q" placeholder="Athlet:in, Ort oder Event …" autocomplete="off"><button type="button" class="btn ghost" data-act="srchx">Esc</button></div><div class="srch-l" id="srch-l"></div></div>';
     document.body.appendChild(SRCH);
     SRCH.querySelector('#srch-q').addEventListener('input',srchList);
+    /* Pfeiltasten: von der Eingabe in die Treffer und zurück */
+    SRCH.addEventListener('keydown',function(e){ var R=[].slice.call(SRCH.querySelectorAll('.srch-r')),i=R.indexOf(document.activeElement);
+      if(e.key==='ArrowDown'&&R.length){ e.preventDefault(); R[Math.min(R.length-1,i+1)].focus(); }
+      else if(e.key==='ArrowUp'&&i>=0){ e.preventDefault(); if(i===0) SRCH.querySelector('#srch-q').focus(); else R[i-1].focus(); }
+      else if(e.key==='Escape'&&i>=0) srchClose(); });
     SRCH.querySelector('#srch-q').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var f=SRCH.querySelector('.srch-r'); if(f) f.click(); } if(e.key==='Escape') srchClose(); });
   }
   SRCH.hidden=false; document.documentElement.classList.add('srch-on'); var q=SRCH.querySelector('#srch-q'); q.value=''; srchList(); setTimeout(function(){ q.focus(); },30);
@@ -3708,7 +3722,7 @@ function jahresCard(ev){
     var ls={}; L.forEach(function(o){ ls[o.season]=1; });
     return '<section class="card jvc"><div class="ch"><h2><span class="vkick jv">Jahresvergleich</span>'+h(DISC[dc])+'</h2><span class="h3v">'+h(ev.name.replace(/\s*\(TBC\)/,''))+' · '+Object.keys(ls).sort().join(' · ')+'</span></div>'+
       '<div class="jvg"><div><p class="jvl">Bedingungen und Kurs</p>'+t1+'</div>'+(t2?'<div><p class="jvl">Ränge SUI</p>'+t2+'</div>':'')+'</div>'+
-      '<p class="spc-l"><span class="jvme"></span>dieses Event'+(tech?'':' · Strecke: Abschnitte <i class="stT vi"></i>Technisch <i class="stM vi"></i>Mix <i class="stG vi"></i>Gleiten')+' · Ränge: <i class="rkb dnf vi2">×</i> Ausfall · <i class="rkb dnq vi2">–</i> nicht im 2. Lauf · Punkt = nicht gestartet.</p></section>';
+      '<p class="spc-l"><span class="jvme"></span>dieses Event'+(tech?'':' · Strecke: Abschnitte <i class="stT vi"></i>Technisch <i class="stM vi"></i>Mix <i class="stG vi"></i>Gleiten')+' · Ränge: <i class="rkb dnf vi2">×</i> Ausfall'+(tech?' · <i class="rkb dnq vi2">–</i> nicht im 2. Lauf':'')+' · Punkt = nicht gestartet.</p></section>';
   }).join('');
   return body;
 }
@@ -4135,7 +4149,7 @@ function fitLists(root){
 }
 window.addEventListener('resize',function(){ fitLists(document); sxPaint(document); });
 /* Breite Tabellen und Grafiken: zeigen mit einem auslaufenden Rand, dass rechts (oder links) noch mehr kommt */
-var SXQ='.tw,.pscr,.rchart,.spl';
+var SXQ='.tw,.pscr,.rchart,.spl,.seg';
 function sxOne(el){
   var more=el.scrollWidth-el.clientWidth,x=el.scrollLeft;
   el.classList.toggle('sx-r',more>6&&more-x>6);
