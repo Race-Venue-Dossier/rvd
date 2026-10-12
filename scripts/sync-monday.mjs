@@ -124,7 +124,7 @@ async function fisSync(rvdItems) {
       const disc = (DISCS.find(d => new RegExp(d[0], 'i').test(info)) || DISCS.find(d => new RegExp(d[0], 'i').test(head)) || [])[1] || '';
       const dm = (info + ' ' + head).match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?(?:\s+(\d{4}))?/i);
       let d = '';
-      if (dm) { const mo = MONTHS[dm[2].toLowerCase().slice(0, 3)]; const yr = dm[3] || (mo >= 7 ? +season - 1 : +season); d = `${yr}-${String(mo).padStart(2, '0')}-${dm[1].padStart(2, '0')}`; }
+      if (dm) { const mo = MONTHS[dm[2].toLowerCase().slice(0, 3)]; const yc = mo >= 7 ? +season - 1 : +season, yr = dm[3] && Math.abs(+dm[3] - yc) <= 1 ? +dm[3] : yc; /* Jahr nur, wenn es zur Saison passt (sonst z. B. Codex-Nummer) */ d = `${yr}-${String(mo).padStart(2, '0')}-${dm[1].padStart(2, '0')}`; }
       const rows = parseRows(html);
       const ranked = rows.some(r => r.rk) && rows.some(r => r.t);  // Startliste: Nummern, aber keine Zeiten
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
