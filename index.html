@@ -3639,7 +3639,13 @@ function vkey(n){ n=String(n||''); var c=VKC[n]; if(c!==undefined) return c; var
 var SPDD={DH:1,SG:1},TECD={GS:1,SL:1};
 /* Zurückgetreten: nicht mehr in der Vorschau (Resultate und Profile bleiben) */
 var VRET={'Lara Gut-Behrami':1,'Niels Hintermann':1,'Andrea Ellenberger':1,'Vivianne Haerri':1,'Cedric Noger':1,'Daniele Sette':1};
-function vSetter(id,run){ var c=SP&&SP.cs&&SP.cs[String(id)]; if(!c||!c.r) return null; return c.r.filter(function(x){return x[0]===(run||1);})[0]||(run>1?null:c.r[0])||null; }
+/* Gleiche Kurssetzer unter verschiedenen Schreibweisen (Kurzform, Umlaut, Tippfehler) zusammenführen (Vonsie, 12.10.2026) */
+var SNFIX={'Pete Anderson':'Peter Anderson','Alex Berthold':'Alexander Berthold','Ivo Borisov':'Ivailo Borisov','Tim Cafe':'Tim Café','Poul Epstein':'Paul Epstein','Andy Evers':'Andreas Evers','Andi Furbeck':'Andreas Furbeck',
+  'Valter Girardi':'Walter Girardi','Alek Glebov':'Alec Glebov','Sergei Komarov':'Sergey Komarov','Helmuth Krug':'Helmut Krug','Joergen Nordlund':'Jørgen Nordlund','Jorgen Nordlund':'Jørgen Nordlund',
+  'Charly Pichler':'Karlheinz Pichler','Charlie Pichler':'Karlheinz Pichler','Luis Prenn':'Alois Prenn','Jorg Roten':'Jörg Roten','Joerg Roten':'Jörg Roten','Zan Spilar':'Žan Špilar','Nicola Thoule':'Nicolas Thoule',
+  'Julian Vuignier':'Julien Vuignier','Hannes Zochling':'Hannes Zöchling','Hannes Zoechling':'Hannes Zöchling',
+  'Nordlund Joergen':'Jørgen Nordlund','DAVIES Tristan Glasse':'Tristan Glasse-Davies','DIO Simone Del':'Simone Del Dio','Simone Deldio':'Simone Del Dio','HERVAS Jose Luis Alejo':'Alejo Hervas'};
+function vSetter(id,run){ var c=SP&&SP.cs&&SP.cs[String(id)]; if(!c||!c.r) return null; var x=c.r.filter(function(x){return x[0]===(run||1);})[0]||(run>1?null:c.r[0])||null; return x&&SNFIX[x[1]]?[x[0],SNFIX[x[1]]].concat(x.slice(2)):x; }
 function vSetterTxt(x){ return x?h(x[1])+(x[2]&&x[2]!=='FIS'?' <small class="mu">'+h(x[2])+'</small>':x[2]==='FIS'?' <small class="mu">FIS</small>':''):''; }
 /* FIS-Rennnummer zu einem Lauf (Geschlecht, Datum, Disziplin) */
 var VRID=null;
