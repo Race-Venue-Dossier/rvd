@@ -2509,11 +2509,9 @@ function viewEvents(){
   list.forEach(function(e){
     var mon=MON[pd(e.frm).getMonth()]+' '+e.frm.slice(0,4);
     if(mon!==lastMon){ rows+=(lastMon?'</div>':'')+'<h3 class="evmon">'+mon+'</h3><div class="evlist">'; lastMon=mon; }
-    var it=itemsOf(e),c=cov(it),st=status(e),nn=entriesOf(e,'note').length;
-    var spN=SP?SP.races.filter(function(r){return r.g===e.g&&r.d>=e.frm&&r.d<=e.to;}).length:0;
-    var chips=KINDS.filter(function(k){return c[k.k];}).map(function(k){ return '<span class="evc"><b>'+c[k.k]+'</b>'+h(kpl(k.k,c[k.k]))+'</span>'; });
-    if(spN) chips.push('<span class="evc sp"><b>'+spN+'</b>'+(spN===1?'Lauf':'Läufe')+' mit Sektorzeiten</span>');
-    if(nn) chips.push('<span class="evc"><b>'+nn+'</b>'+(nn===1?'Notiz':'Notizen')+'</span>');
+    var st=status(e);
+    /* Inhalts-Zähler (Resultate, Kurssetzungen, Videos …) nicht mehr in der Liste, nur «neu» und «Vorschau» (Vonsie, 13.10.2026) */
+    var chips=[];
     var nw=newOf(e).length; if(nw) chips.unshift('<span class="evc new"><b>'+nw+'</b>neu</span>');
     if(st==='up'){ var pvn=vRaces(vkey(e.name),e.g).filter(function(o){return o.d<e.frm&&o.sui;}).length; if(pvn) chips.unshift('<span class="evc pv">Vorschau · <b>'+pvn+'</b>'+(pvn===1?'Rennen':'Rennen')+' hier</span>'); }
     var state=st==='live'?'<span class="pill live">läuft</span>':(e.id===nextId?'<span class="pill next">als Nächstes · '+inWords(daysTo(e.frm))+'</span>':(st==='up'?'<span class="evst">'+inWords(daysTo(e.frm))+'</span>':''));
@@ -2523,7 +2521,7 @@ function viewEvents(){
       '<div class="evdate"><small>'+WD[d1.getDay()]+(e.frm!==e.to?'–'+WD[d2.getDay()]:'')+'</small><b>'+spanShort(e.frm,e.to)+'</b></div>'+
       '<div class="evmain"><div class="evtop"><button class="evname" type="button" data-act="open" data-v="'+h(e.id)+'">'+flag(e.nat)+h(e.name)+'</button>'+(champ?'<span class="chb">'+(e.cat==='WSC'?'WM '+e.frm.slice(0,4):'Olympia '+e.frm.slice(0,4))+'</span>':'')+state+'</div>'+
         '<div class="evmeta">'+gMark(e.g)+'<span>'+GN[e.g]+'</span>'+(e.cat!=='WC'?'<span class="pill">'+h(CAT[e.cat]||e.cat)+'</span>':'<span class="mu">Weltcup</span>')+racePills(e)+fisLink(e)+'</div>'+
-        '<div class="evchips">'+(chips.length?chips.join(''):'<span class="evnone">'+(st==='up'?'Noch keine Inhalte – Event steht bevor':'Noch keine Analysen erfasst')+'</span>')+'</div></div>'+
+        (chips.length?'<div class="evchips">'+chips.join('')+'</div>':'')+'</div>'+
       '<div class="evteam">'+(!isAdm()?'':staffOf(e).length?avatars(staffOf(e)):'<span class="mu">'+(st==='past'?'kein FEA-Einsatz':'Einsatz noch offen')+'</span>')+'<span class="evgo" aria-hidden="true"><span class="evgo-t">Öffnen</span><b>›</b></span></div>'+
     '</article>';
   });
