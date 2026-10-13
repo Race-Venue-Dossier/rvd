@@ -1464,6 +1464,25 @@ button.ndc{cursor:pointer}button.ndc:hover{border-color:var(--red);color:var(--i
 .spl .pt.t10 text{font-weight:800}
 .spl .pt.out text{fill:var(--muted)}
 .spl .pt.pd circle{fill:#E9B949;stroke:var(--surface);stroke-width:2}
+/* Eventliste kompakt (Desktop): ein Event pro Zeile, Monat mit rotem Strich */
+@media (min-width:900px){
+  .evlist{gap:0}
+  .evmon{border-left:3px solid var(--red);padding-left:8px}
+  .evcard:not(.champ){border-width:0 0 1px;border-radius:0;margin-bottom:0;box-shadow:none}
+  .evcard:not(.champ):hover{box-shadow:none;background:var(--surface-2)}
+  .evcard.live{box-shadow:inset 3px 0 0 var(--red)!important}
+  .evcard.champ{margin-block:6px}
+}
+@media (min-width:1200px){
+  .evmain{flex-direction:row;align-items:center;gap:14px}
+  .evtop{flex:0 0 280px;min-width:0;row-gap:2px}
+  .evcard .evname{white-space:nowrap}
+  .evmeta{flex:0 0 300px}
+  .evchips{flex:1;min-width:0}
+  .evc{white-space:nowrap}
+}
+/* Grosse Bilder in den Analysen begrenzen, antippen = gross */
+.days .shots .shot img{max-height:300px}
 
 </style>
 
