@@ -2818,7 +2818,7 @@ function sectorCard(r){
     show.map(function(a){ return '<div class="spm-r'+(a.nat==='SUI'?'':' ref')+'" role="row"><span class="spm-n"><b>'+flag(a.nat)+' '+h(shortN(a.n))+'</b><small>'+a.rk+'. · '+(a.rk===1?fmtT(a.fin):sg(a.fin-r.bf))+'</small></span><span class="spm-c">'+a.srk.map(function(rk,k){ return '<i style="'+lossBg(a.lp[k]/(TECD[r.disc]?2:1))+'" class="'+(rk===1?'best':rk<=3?'top':'')+'" title="'+h('S'+(k+1)+': '+sg(a.gap[k])+' s, Rang '+rk)+'">'+rk+'</i>'; }).join('')+'</span></div>'; }).join('')+
     '<p class="spc-l">Zahl = Sektorrang · Rahmen = Sektor-Bestzeit · fett = Top 3 · dunkler = mehr Rückstand.</p></div>';
   return '<div class="spc"><div class="spc-h"><span class="pill'+(r.tr?' tr':'')+'">'+h(r.lab)+'</span><span class="cd-t">Sektoranalyse · FIS-Zwischenzeiten</span><span class="sp"></span>'+
-      (r.st||TECD[r.disc]?'':'<span class="spc-n">Streckencharakter nicht zugeordnet</span>')+(function(x){return x?'<span class="spc-n">Kurs: '+vSetterTxt(x)+'</span>':'';})(vSetter(r.id,1))+'</div>'+
+      (r.st||TECD[r.disc]?'':'<span class="spc-n">Streckencharakter nicht zugeordnet</span>')+(function(x){return x?'<span class="spc-n">Kurs: '+vSetterTxt(x)+'</span>':'';})(vSetter(r.id,r.run||1))+'</div>'+
     '<div class="tw spt-d"><table class="tbl spt"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
     '<p class="spc-l">Rückstand auf die Sektor-Bestzeit (s) und Sektorrang · dunkler = mehr Verlust.</p>'+mob+pod+'</div>'; /* «Fazit pro Athlet:in» entfernt: gleiche Angaben wie die Tabelle (Vonsie, 13.10.2026) */
 }
