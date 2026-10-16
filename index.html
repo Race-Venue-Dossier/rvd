@@ -1473,11 +1473,16 @@ button.ndc{cursor:pointer}button.ndc:hover{border-color:var(--red);color:var(--i
   .evcard.live{box-shadow:inset 3px 0 0 var(--red)!important}
   .evcard.champ{margin-block:6px}
 }
-@media (min-width:1200px){
+@media (min-width:1280px){
   .evmain{flex-direction:row;align-items:center;gap:14px}
-  .evtop{flex:0 0 280px;min-width:0;row-gap:2px}
+  .evtop{flex:0 0 250px;min-width:0;row-gap:2px}
   .evcard .evname{white-space:nowrap}
-  .evmeta{flex:0 0 300px}
+  /* Angaben in festen Spalten, damit Geschlecht, Kategorie, Disziplinen und FIS untereinander stehen (Vonsie, 16.10.2026) */
+  .evmeta{flex:0 0 440px;display:grid!important;align-items:center;column-gap:8px;row-gap:3px}
+  .evmeta>.g{grid-column:1}.evmeta>span:nth-child(2){grid-column:2}.evmeta>:nth-child(3){grid-column:3;justify-self:start}
+  .evmeta>.discs{grid-column:4;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .evmeta>.fisl{grid-column:5}
+  .evmeta{grid-template-columns:20px 62px 116px minmax(160px,1fr) 44px}
   .evchips{flex:1;min-width:0}
   .evc{white-space:nowrap}
 }
@@ -2480,7 +2485,10 @@ function bilanzCsv(list){
 /* ───── Suche oben: Athlet:in, Ort, Event oder Kurssetzer (Kurssetzer und Orte seit 13.10.2026) ───── */
 var SRCH=null;
 function srchFold(t){ return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
-function srchIndex(){
+/* Index nur neu bauen, wenn sich Events oder Sektordaten ändern (Suche bleibt bei jedem Tastendruck schnell) */
+var SRIX=null,SRIK='';
+function srchIndex(){ var k=S.events.length+'|'+(SP?(SP.races||[]).length+'|'+(SP.ts||[]).length:0); if(SRIX&&SRIK===k&&SRIX.ev===S.events) return SRIX; SRIK=k; SRIX=srchIndex0(); SRIX.ev=S.events; return SRIX; }
+function srchIndex0(){
   var A={},E=[];
   var add=function(n,d){ if(!n||/\//.test(n)) return; var o=A[n]=A[n]||{n:n,sp:0,te:0,g:''}; if(SPDD[d]) o.sp++; else if(/GS|SL/.test(d)) o.te++; };
   var R=SP?vResAll():{}; Object.keys(R).forEach(function(n){ R[n].forEach(function(x){ add(n,x.disc); if(A[n]&&!A[n].g) A[n].g=x.g; }); });
