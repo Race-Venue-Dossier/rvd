@@ -211,6 +211,18 @@ let nDel = 0;
 for (const f of [...walkDir('seg'), ...walkDir('data/seg')]) if (f !== 'data/seg/state.json' && !keepFiles.has(f)) { fs.unlinkSync(P(f)); delete state.f[f]; nDel++; }
 for (const f of Object.keys(state.f)) if (!keepFiles.has(f)) delete state.f[f];
 
+// ── Personenliste für Admins (Tool: «Ansicht als» nach Person). Nur Name, Rolle, Bereiche; ohne Mail und Passwort.
+//    Mit dem Hauptschlüssel verschlüsselt: nur Admins können sie lesen (Vonsie, 16.10.2026).
+{
+  const ppl = rows.map(normRow).filter(u => u.email && u.name).map(u => {
+    const a = accessOf(u), o = { n: u.name, a: a.admin ? 1 : 0, s: a.segs };
+    if (!u.pw) o.x = 'kein Passwort';
+    else if (!a.admin && !a.segs.length) { o.x = 'keine passende Gruppe'; o.g = u.groups.slice(0, 6); }
+    return o;
+  }).sort((x, y) => x.n.localeCompare(y.n, 'de'));
+  put('data/people.enc', K, Buffer.from(JSON.stringify({ p: ppl })));
+}
+
 // ── Schlüsselbund: pro Person mit ihrem Passwort verschlüsselt ──
 const KR = P('data/keyring.json');
 let kr = { v: 1, iter: 210000, u: {} }; try { kr = JSON.parse(fs.readFileSync(KR, 'utf8')); } catch (e) {}

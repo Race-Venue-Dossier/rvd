@@ -4687,9 +4687,15 @@ function impRun(fn){
   try{ return fn(); }
   finally{ S.events=rE; SP=rSP; IMPK.forEach(function(x){ LIVE[x]=rL[x]; }); impReset(); }
 }
+/* Personenliste (nur Admins, GitHub-Version): Name → Bereiche, aus der Login-Liste über die Action (data/people.enc) */
+var IMPP=null;
+function impPeople(){ if(IMPP!==null||!window.__encFetch||!(window.__RVD_ACC||{}).admin) return; IMPP=[];
+  window.__encFetch('data/people.enc').then(function(b){ IMPP=(JSON.parse(new TextDecoder().decode(b)).p)||[]; renderTabs(); },function(){}); }
+function impSegTxt(segs){ var o=IMP_OPT.filter(function(x){return x[0]===segs.join('-');})[0]; return o?o[1]:segs.join(', '); }
 function impSet(v){
   if(!v){ IMP=null; }
-  else { var o=IMP_OPT.filter(function(x){return x[0]===v;})[0]; if(!o) return; IMP={segs:v.split('-'),n:o[1]}; }
+  else if(/^p:\d+$/.test(v)){ var pp=(IMPP||[])[+v.slice(2)]; if(!pp||!pp.s||!pp.s.length) return; IMP={segs:pp.s.slice(),n:pp.n+' · '+impSegTxt(pp.s),v:v}; }
+  else { var o=IMP_OPT.filter(function(x){return x[0]===v;})[0]; if(!o) return; IMP={segs:v.split('-'),n:o[1],v:v}; }
   IMPC={k:null}; S.ev=null; S.pop=null; S.form=null; S.venue='';
   if(IMP){ if(accG().length<2) S.g='all'; if(accA().length<2) S.grp='all'; if(S.tab==='team'||S.tab==='analysen') S.tab='events'; }
   render(); window.scrollTo(0,0);
@@ -4697,7 +4703,16 @@ function impSet(v){
 function impBar(){ if(!IMP) return '';
   return '<div class="impb" role="status"><b>Ansicht als: '+h(IMP.n)+'</b><span>So sieht es eine Person mit diesen Bereichen (z. B. ein Coach). Keine Einsatzplanung, keine FEA-Seiten.</span><button type="button" class="btn sm" data-act="imp" data-v="">Ansicht beenden</button></div>'; }
 function impPick(){ if(!(window.__RVD_ACC||{admin:true}).admin&&!IMP) return '';
-  return '<label class="imps"><span>Ansicht als</span><select class="sel" data-chg="imp" aria-label="Ansicht als"><option value="">Admin (alles)</option>'+IMP_OPT.map(function(o){ return '<option value="'+o[0]+'"'+(IMP&&IMP.segs.join('-')===o[0]?' selected':'')+'>'+h(o[1])+'</option>'; }).join('')+'</select></label>'; }
+  impPeople();
+  var sel=function(v){ return IMP&&IMP.v===v?' selected':''; },P=IMPP||[];
+  var pers=P.map(function(p,i){ return [p,i]; }).filter(function(x){ return !x[0].a&&x[0].s&&x[0].s.length&&!x[0].x; });
+  var adm=P.filter(function(p){ return p.a; }),no=P.filter(function(p){ return !p.a&&(p.x||!(p.s&&p.s.length)); });
+  return '<label class="imps"><span>Ansicht als</span><select class="sel" data-chg="imp" aria-label="Ansicht als"><option value="">Admin (alles)</option>'+
+    '<optgroup label="Bereich">'+IMP_OPT.map(function(o){ return '<option value="'+o[0]+'"'+sel(o[0])+'>'+h(o[1])+'</option>'; }).join('')+'</optgroup>'+
+    (pers.length?'<optgroup label="Person ('+pers.length+')">'+pers.map(function(x){ return '<option value="p:'+x[1]+'"'+sel('p:'+x[1])+'>'+h(x[0].n)+' · '+h(x[0].s.join('-'))+'</option>'; }).join('')+'</optgroup>':'')+
+    (adm.length?'<optgroup label="Admins, sehen alles ('+adm.length+')">'+adm.map(function(p){ return '<option disabled>'+h(p.n)+'</option>'; }).join('')+'</optgroup>':'')+
+    (no.length?'<optgroup label="Ohne Zugang ('+no.length+')">'+no.map(function(p){ return '<option disabled>'+h(p.n)+' – '+h(p.x||'kein Bereich')+(p.g&&p.g.length?' ('+h(p.g.join(', '))+')':'')+'</option>'; }).join('')+'</optgroup>':'')+
+    '</select></label>'; }
 
 /* ───────────── Rendern ───────────── */
 function fitLists(root){

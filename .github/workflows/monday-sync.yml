@@ -73,7 +73,7 @@ jobs:
           if [ -n "$(git status --porcelain data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/seg seg)" ]; then
             git config user.name "monday-Sync"
             git config user.email "actions@users.noreply.github.com"
-            for f in data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/seg seg; do [ -e "$f" ] && git add -A "$f"; done
+            for f in data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/people.enc data/seg seg; do [ -e "$f" ] && git add -A "$f"; done
             git commit -m "monday-Daten aktualisiert"
             git pull --rebase -X theirs || true
             git push
