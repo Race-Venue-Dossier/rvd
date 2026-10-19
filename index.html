@@ -1568,6 +1568,15 @@ i[class],.av{font-style:normal}
 .legend .dupk{display:inline-block;width:14px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--bad) 16%,var(--surface));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--bad) 60%,transparent);margin-right:5px;vertical-align:-1px}
 .dupl{margin:10px 0 0;padding:10px 14px;border-radius:10px;border:1px solid color-mix(in srgb,var(--bad) 40%,var(--line));background:color-mix(in srgb,var(--bad) 6%,var(--surface));font-size:12.5px}
 .dupl ul{margin:6px 0 4px;padding-left:18px}.dupl li{margin:2px 0}.dupl p{font-size:11.5px;margin:0}
+/* Startseite «Als Nächstes»: Wetter oben rechts, neben Titel und Team; Countdown ganz rechts (Vonsie, 19.10.2026) */
+.wk-head{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"hl cd" "wx wx";column-gap:12px;align-items:start}
+.wk-hl{grid-area:hl;min-width:0}.wk-head>.wk-cd{grid-area:cd}.wk-head>.wx{grid-area:wx}
+.wk-head>.wx .wxsrc{display:none} /* Quelle steht beim Event selbst */
+@media (min-width:1000px){
+  .wk-head{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"hl wx cd";column-gap:16px}
+  .wk-head>.wx{margin-top:0;justify-content:flex-end;max-width:480px;flex-wrap:wrap}
+  .wkc:has(.evph.wk.on) .wk-head{margin-right:38%}
+}
 
 </style>
 
@@ -2570,11 +2579,12 @@ function weekCard(list){
       var tiles=[]; C.forEach(function(c){ c.tiles.forEach(function(x){ if(tiles.length<3&&!tiles.some(function(y){return y.n===x[2];})) tiles.push({k:x[0],l:x[1],n:x[2],s:x[3],tip:x[4],c:c}); }); });
       hi=tiles.length?'<div class="wk-hi">'+tiles.map(function(x,i){ return '<button type="button" class="vhit vh-'+x.k+'" style="--i:'+(i+2)+'" '+(x.c.act?x.c.act(x.n):'')+' title="'+h((x.tip?x.tip+' · ':'')+'Profil öffnen')+'"><small>'+h(x.l)+(x.c.t?'<i class="wk-d"> · '+h(x.c.t)+'</i>':'')+'</small><b>'+lnH(x.n)+'</b><span>'+h(x.s)+'</span></button>'; }).join('')+'</div>':'';
     }catch(e){ VHI_COLLECT=null; } }
-  return '<section class="card wkc" data-act="open" data-v="'+h(ev.id)+'">'+phBox(ev,'wk')+'<div class="wk-top"><div class="wk-l"><small class="wk-k">'+(live?'Jetzt':'Als Nächstes')+'</small>'+
-      '<h2>'+flag(ev.nat)+h(ev.name)+'</h2><div class="wk-m">'+gMark(ev.g)+'<span>'+GN[ev.g]+'</span><span>'+span(ev.frm,ev.to)+'</span>'+racePills(ev)+fisLink(ev)+'</div></div>'+cd+'</div>'+
+  /* Wetter oben rechts neben Titel und Team (Vonsie, 19.10.2026) */
+  return '<section class="card wkc" data-act="open" data-v="'+h(ev.id)+'">'+phBox(ev,'wk')+'<div class="wk-head"><div class="wk-hl"><div class="wk-top"><div class="wk-l"><small class="wk-k">'+(live?'Jetzt':'Als Nächstes')+'</small>'+
+      '<h2>'+flag(ev.nat)+h(ev.name)+'</h2><div class="wk-m">'+gMark(ev.g)+'<span>'+GN[ev.g]+'</span><span>'+span(ev.frm,ev.to)+'</span>'+racePills(ev)+fisLink(ev)+'</div></div></div>'+
     '<div class="wk-row">'+(isAdm()?'<div><small>Vor Ort</small>'+ppl(on,'onsite')+'</div><div><small>Command Center</small>'+ppl(cc,'cc')+'</div>':'')+
       (startersOf(ev).length?'<div><small>Am Start</small><span>'+startersOf(ev).length+' Athlet:innen</span></div>':'')+
-      (met?'<div class="wk-met"><small>Wetter (monday)</small><span class="noi18n">'+h(String(met.note).replace(/\s+/g,' ').slice(0,120))+(String(met.note).length>120?' …':'')+'</span></div>':'')+'</div>'+wxStrip(ev,'wk')+hi+'</section>';
+      (met?'<div class="wk-met"><small>Wetter (monday)</small><span class="noi18n">'+h(String(met.note).replace(/\s+/g,' ').slice(0,120))+(String(met.note).length>120?' …':'')+'</span></div>':'')+'</div></div>'+wxStrip(ev,'wk')+cd+'</div>'+hi+'</section>';
 }
 function viewEvents(){
   var list=filtered();
