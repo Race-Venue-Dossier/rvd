@@ -1577,6 +1577,14 @@ i[class],.av{font-style:normal}
   .wk-head>.wx{margin-top:0;justify-content:flex-end;max-width:480px;flex-wrap:wrap}
   .wkc:has(.evph.wk.on) .wk-head{margin-right:38%}
 }
+/* Event-Kopf: Wetter rechts neben Name und Angaben, links vom Foto (Vonsie, 19.10.2026) */
+@media (min-width:1000px){
+  .dh-main{display:flex;align-items:flex-start;gap:18px}
+  .dh-l{flex:1 1 auto;min-width:0}
+  .dh-main>.wx.dhw{flex:0 1 auto;margin-top:14px;justify-content:flex-end;max-width:480px}
+  .dh-main>.wx.dhw .wxsrc{display:none}
+  .dhero:has(.evph.hero.on) .dh-main{margin-right:35%}
+}
 
 </style>
 
@@ -2422,7 +2430,7 @@ function wxData(ev){
 function wxStrip(ev,cls){
   var D=wxData(ev); if(!D) return '';
   var r=function(v){ return v==null?'–':String(Math.round(v)).replace('-','−'); };
-  return '<div class="wx'+(cls?' '+cls:'')+'">'+D.time.map(function(d,i){ var c=wxCode(D.weather_code[i]),sn=D.snowfall_sum[i],pr=D.precipitation_sum[i];
+  return '<div class="wx'+(cls?' '+cls:'')+'" title="Prognose für die Ortschaft (Open-Meteo: MeteoSwiss, ECMWF) · Zahl rechts = Böen in km/h">'+D.time.map(function(d,i){ var c=wxCode(D.weather_code[i]),sn=D.snowfall_sum[i],pr=D.precipitation_sum[i];
       return '<div class="wxd" style="--i:'+i+'" title="'+h(c[2]+' · '+r(D.temperature_2m_min[i])+' bis '+r(D.temperature_2m_max[i])+' °C'+(sn>0?' · Neuschnee '+n1(sn)+' cm':pr>0?' · Niederschlag '+n1(pr)+' mm':'')+' · Wind bis '+r(D.wind_speed_10m_max[i])+' km/h, Böen '+r(D.wind_gusts_10m_max[i])+' km/h')+'">'+
         '<small>'+WD[pd(d).getDay()]+' '+dm(d)+'</small><b aria-hidden="true">'+c[1]+'</b><span>'+r(D.temperature_2m_min[i])+'° / '+r(D.temperature_2m_max[i])+'°</span>'+
         '<i>'+(sn>=0.5?'❄︎ '+n1(sn)+' cm':pr>=0.5?'☂︎ '+n1(pr)+' mm':h(c[2]))+' · '+r(D.wind_gusts_10m_max[i])+' km/h</i></div>'; }).join('')+
@@ -4442,12 +4450,14 @@ function viewDetail(ev){
   var stat=status(ev);
   var head='<section class="card dhero">'+phBox(ev,'hero')+'<div class="dhead"><div>'+
       '<div class="dtop"><button class="btn" type="button" data-act="back">← Alle Events</button>'+copyBtn()+evNav(ev)+'</div>'+
+      /* Wetter rechts neben Name und Angaben statt darunter (Vonsie, 19.10.2026) */
+      '<div class="dh-main"><div class="dh-l">'+
       '<div class="dh1"><h1 style="margin-top:12px">'+flag(ev.nat)+h(ev.name)+' <span class="nat" style="font-size:12px">'+h(ev.nat)+'</span></h1>'+
         /* kommendes Event: Countdown gross neben dem Namen (Vonsie, 12.10.2026) */
         (stat==='up'?(function(dd){ return '<span class="wk-cd dh-cd" title="'+h(inWords(dd))+'"><b>'+dd+'</b>'+(dd===1?'Tag':'Tage')+'</span>'; })(daysTo(ev.frm)):'')+'</div>'+
       '<div class="meta">'+gMark(ev.g)+'<span>'+GN[ev.g]+'</span><span class="pill">'+h(CAT[ev.cat]||ev.cat)+'</span><span>'+span(ev.frm,ev.to)+'</span>'+
         (stat==='live'?'<span class="pill live">läuft</span>':'')+racePills(ev)+fisLink(ev)+'</div>'+
-      startLine(ev)+fisLine(ev)+todoLine(ev)+wxStrip(ev)+
+      startLine(ev)+fisLine(ev)+todoLine(ev)+'</div>'+wxStrip(ev,'dhw')+'</div>'+
     '</div></div>'+
     '</section>';
 
