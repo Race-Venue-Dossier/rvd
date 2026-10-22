@@ -1069,9 +1069,13 @@ html[lang="en"] .rep[open] summary .src b::before{content:"close"}
 .vsc .tw{background:var(--surface)}
 .vkick.jv{background:var(--ink-2)}
 /* Am Start, Stand der Analysen */
-.dstart{margin:10px 0 0;font-size:12.5px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px}
-.dstart>b{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-right:4px}
-.dstart .sep{color:var(--muted);opacity:.6}
+.dstart{margin:12px 0 0;font-size:12.5px}
+.dstart>b{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.dstart .dst-n{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:rgba(127,127,127,.14);color:var(--text);font-size:10.5px;letter-spacing:0;text-align:center;line-height:16px}
+.dst-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 6px;max-width:820px}
+.dst-g .lnk{display:block;text-align:left;padding:4px 8px;border-radius:7px;background:rgba(127,127,127,.07);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
+.dst-g .lnk:hover{background:rgba(127,127,127,.15)}
+@media (max-width:600px){ .dst-g{grid-template-columns:repeat(2,minmax(0,1fr))} }
 .dtodo{margin-top:8px;font-size:12.5px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
 .dtodo-b{display:inline-block;width:70px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex:none}
 .dtodo-b i{display:block;height:100%;background:var(--ok);border-radius:3px;animation:vmg .7s cubic-bezier(.2,.7,.2,1) both;transform-origin:left}
@@ -2401,7 +2405,8 @@ function seasonNow(){ var t=today(),y=+t.slice(0,4),st=+t.slice(5,7)>=7?y:y-1; r
 function todoOf(ev){ if(ev.season&&ev.season<seasonNow()) return []; return (LIVE.todo&&LIVE.todo[ev.id])||[]; }
 function todoShort(x){ var t=x.t.replace(/\s*·\s*/g,' ').replace(/Riesenslalom/,'RS').replace(/Slalom/,'SL').replace(/Abfahrt/,'DH').replace(/Super-G/,'SG').replace(/(\d)\. Lauf/,'L$1'); var w=String(x.who||'').split(',')[0].trim(); return t+(w?' · '+w.split(' ')[0]:''); }
 function startLine(ev){ var L=startersOf(ev); if(!L.length) return ''; var sp=SPDD&&(ev.races||[]).some(function(r){return SPDD[r.disc];});
-  return '<p class="dstart"><b>Am Start'+(startersSrc(ev)==='FIS-Startliste'?' <small>FIS-Startliste</small>':'')+'</b>'+L.slice().sort(lnCmp).map(function(n){ return '<button type="button" class="lnk" data-act="'+(sp?'spprof':'tprof')+'" data-v="'+h(n)+'" data-g="'+ev.g+'" data-s="all"'+(sp?'':' data-d="all"')+'>'+lnH(n)+'</button>'; }).join('<span class="sep">·</span>')+'</p>'; }
+  /* Raster statt Fliesstext, Namen sauber untereinander (Vonsie, 22.10.2026) */
+  return '<div class="dstart"><b>Am Start <span class="dst-n">'+L.length+'</span>'+(startersSrc(ev)==='FIS-Startliste'?' <small>FIS-Startliste</small>':'')+'</b><div class="dst-g">'+L.slice().sort(lnCmp).map(function(n){ return '<button type="button" class="lnk" data-act="'+(sp?'spprof':'tprof')+'" data-v="'+h(n)+'" data-g="'+ev.g+'" data-s="all"'+(sp?'':' data-d="all"')+'>'+lnH(n)+'</button>'; }).join('')+'</div></div>'; }
 function todoLine(ev){ var L=todoOf(ev); if(!L.length||status(ev)==='up') return ''; var open=L.filter(function(x){return !x.done;}),n=L.length-open.length;
   return '<div class="dtodo"><span class="dtodo-b"><i style="width:'+Math.round(n/L.length*100)+'%"></i></span><b>'+n+' / '+L.length+'</b> Analysen erledigt'+(open.length?'<span class="dtodo-o">offen: '+open.slice(0,6).map(function(x){return '<button type="button" class="tdc" data-act="todo" data-v="'+h(ev.id)+'" data-d="'+h(x.d||'')+'" data-disc="'+h(x.disc||'')+'" title="Zur Stelle springen">'+h(todoShort(x))+'</button>';}).join('')+(open.length>6?'<span class="mu">+'+(open.length-6)+'</span>':'')+'</span>':' <span class="ok">✓ alles erledigt</span>')+'</div>'; }
 function todoCard(list){
