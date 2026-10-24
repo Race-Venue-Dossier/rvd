@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 const PASS = process.env.RVD_PASS, MODE = process.argv[2] || 'prep';
+const KSV = 2;   // Version des PDF-Lesers (2: Tornummern mit Stern wie «7*», 24.10.2026)
 if (!PASS || !fs.existsSync('data/live.enc')) { console.log('ks: nichts zu tun'); process.exit(0); }
 const kj = JSON.parse(fs.readFileSync('key.json', 'utf8'));
 const K = crypto.pbkdf2Sync(PASS, Buffer.from(kj.salt, 'base64'), kj.iter, 32, 'sha256');
@@ -21,7 +22,8 @@ for (const p of (live.rvd || {}).items || []) for (const s of p.sub || []) {
   if (f) subs.push({ s, f, d: s.d || '', disc: s.disc || '' });
 }
 if (MODE === 'prep') {
-  const todo = subs.filter(x => !cache[x.f.id]);
+  // nicht lesbare PDFs nochmals versuchen, wenn der Leser neuer ist (KSV erhöhen bei Änderungen an ks_pdf.py)
+  const todo = subs.filter(x => !cache[x.f.id] || (cache[x.f.id].err && cache[x.f.id].v !== KSV));
   fs.mkdirSync('kspdf', { recursive: true });
   for (const x of todo) fs.writeFileSync('kspdf/' + x.f.id + '.pdf', dec(fs.readFileSync('monasset/' + x.f.id + '.enc')));
   fs.writeFileSync('kspdf/todo.json', JSON.stringify(todo.map(x => ({ id: x.f.id, d: x.d, disc: x.disc }))));
@@ -29,7 +31,7 @@ if (MODE === 'prep') {
 } else {
   let add = {}; try { add = JSON.parse(fs.readFileSync('kspdf/out.json', 'utf8')); } catch (e) {}
   let nNew = 0;
-  for (const [id, r] of Object.entries(add)) { cache[id] = r; nNew++; }
+  for (const [id, r] of Object.entries(add)) { cache[id] = r.err ? { ...r, v: KSV } : r; nNew++; }
   if (nNew) fs.writeFileSync('data/ks.enc', enc(Buffer.from(JSON.stringify(cache))));
   let nIn = 0, changed = false;
   for (const x of subs) {

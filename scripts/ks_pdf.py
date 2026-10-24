@@ -33,12 +33,12 @@ def table(doc):
     rows, fin = {}, None
     for page in doc:
         for r in lines(page):
-            if len(r) < 3 or not re.fullmatch(r'\d+', r[0]): continue
+            if len(r) < 3 or not re.fullmatch(r'\d+\*?', r[0]): continue   # «7*» = markiertes Tor (Sölden 24.10.2026)
             if r[1] == 'Finish':
                 fin = [num(x) for x in r[2:] if isnum(x)]
             elif r[1] in TY:
                 v = [num(x) for x in r[2:] if isnum(x)]
-                if len(v) >= 3: rows.setdefault(int(r[0]), (TY[r[1]], v))
+                if len(v) >= 3: rows.setdefault(int(r[0].rstrip('*')), (TY[r[1]], v))
     return [(n,) + rows[n] for n in sorted(rows)], fin
 
 
