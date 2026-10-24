@@ -2989,9 +2989,9 @@ function viewSpeed(){
     '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i></span> Rang · ▲▼ Trend letzte 3 Läufe · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als Team-Median.</p><p class="spc-l">Abschnitt: Rückstand auf die Sektor-Bestzeit · Bedingungen: Rückstand auf die Siegerzeit (Median, ab 2 Läufen).</p>';
   var lead='<div class="spk3">'+['T','M','G'].map(function(t){ var rk=team.filter(function(n){return stats[n]['m'+t]!=null&&stats[n][t].length>=4;}).sort(function(a,b){return stats[a]['m'+t]-stats[b]['m'+t];}).slice(0,3);
     return '<div class="k3"><p class="h3"><i class="st'+t+'" aria-hidden="true"></i>Am stärksten: '+STL[t]+'</p><ol>'+rk.map(function(n){ var d=(top[t]||0)-stats[n]['m'+t]; return '<li><button type="button" class="lnk" data-act="spath" data-v="'+h(n)+'">'+lnH(n)+'</button><span class="'+(Math.abs(d)<0.05?'':d>0?'up':'dn')+'" title="'+h('Rückstand auf die Sektor-Bestzeit: '+pc(stats[n]['m'+t])+' · Top 10 Weltcup: '+pc(top[t]))+'">'+(Math.abs(d)<0.05?'wie Top 10':(d>0?'▲ ':'▼ ')+n1(Math.abs(d))+' % '+(d>0?'vor':'hinter')+' Top 10')+'</span></li>'; }).join('')+'</ol><p class="spc-l">Vergleich mit den Top 10 im Weltcup (Rückstand auf die Sektor-Bestzeit)</p></div>'; }).join('')+'</div>';
-  return ctrl+ptsCard(st.g,['DH','SG'],st.season==='all'?spSeasons(st.g).filter(function(x){return x>='2024/25';}):[st.season],'spprof')+lead+
+  return ctrl+ptsCard(st.g,['DH','SG'],st.season==='all'?spSeasons(st.g).filter(function(x){return x>='2024/25';}):[st.season],'spprof')+natCard(st,races)+lead+
     '<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.g==='M'?'Männer':'Frauen')+'</h2><span class="h3v"><button type="button" class="btn ghost sm" data-act="sphc" aria-pressed="'+cOn+'">'+(cOn?'Bedingungen ausblenden':'Bedingungen zeigen')+'</button> Zeile antippen für das Profil</span></div>'+heat+'</section>'+
-    natCard(st,races)+setterSpeed(st,SP.races.filter(function(r){return r.g===st.g;}));
+    setterSpeed(st,SP.races.filter(function(r){return r.g===st.g;}));
 }
 /* ───────────── Saison «Alle»: Entwicklung über die Jahre ─────────────
    Streckencharakter und Bedingungen sind erst ab 2024/25 erfasst, deshalb zählen hier nur Rang und Rückstand im Ziel. */
@@ -3430,7 +3430,7 @@ function viewTech(st,intro){
     '</tbody></table></div>'+
     '<p class="spc-l"><span class="frm"><i class="pd">3</i><i class="t10">8</i><i class="t20">15</i><i class="out">25</i><i class="dnf">×</i><i class="dnq">–</i></span> Rang (× Ausfall, – nicht im 2. Lauf) · Zahlen = Zeitverlust pro Tor auf die Bestzeit in Hundertstelsekunden (kleiner = schneller) · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als Team-Median.</p>'+
     '<p class="spc-l">Gelände &lt;28 / 28–36 / &gt;36 % · Drehung RS &lt;6 / 6–8 / &gt;8 m, SL &lt;2 / 2–3,2 / &gt;3,2 m · Rhythmuswechsel: Torabstand ±12 %.</p>';
-  return ctrl+ptsCard(st.tg,st.td==='all'?['GS','SL']:[st.td],['2025/26'],'tprof')+lead+ktCard+natCard(st,tRunsAsRaces().filter(function(r){ return r.g===st.tg&&(st.td==='all'||r.disc===st.td)&&r.season==='2025/26'; }),true)+setterTech(st)+'<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.tg==='M'?'Männer':'Frauen')+': Rückstand pro Tor</h2><span class="h3v">Zeile antippen für das Profil</span></div>'+heat+'</section>';
+  return ctrl+ptsCard(st.tg,st.td==='all'?['GS','SL']:[st.td],['2025/26'],'tprof')+natCard(st,tRunsAsRaces().filter(function(r){ return r.g===st.tg&&(st.td==='all'||r.disc===st.td)&&r.season==='2025/26'; }),true)+lead+ktCard+setterTech(st)+'<section class="card"><div class="ch"><h2>Team-Übersicht '+(st.tg==='M'?'Männer':'Frauen')+': Rückstand pro Tor</h2><span class="h3v">Zeile antippen für das Profil</span></div>'+heat+'</section>';
 }
 function tForm(rr){
   var L=rr.slice(-6); if(!L.length) return '';
