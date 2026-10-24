@@ -240,12 +240,20 @@ def tech_runs(rid, meta, ath):
             o = a['runs'][rn]; sec = []
             for k in range(1, n + 2):
                 v = o['ints'].get(1) if k == 1 else (o['parts'].get('I%d-I%d' % (k - 1, k)) if k <= n else o['parts'].get('I%d-Fin' % n))
+                # PDF ohne Abschnittszeiten (nur Zwischenzeiten, z. B. Sölden 24.10.2026): aus den Zwischenzeiten rechnen, Rang folgt unten
+                if not v and k > 1:
+                    a0 = o['ints'].get(k - 1); a1 = o['ints'].get(k) if k <= n else o.get('fin')
+                    if a0 and a1: v = [round(a1[0] - a0[0], 2), None]
                 if not v: sec = None; break
                 sec.append(v)
             if not sec or abs(sum(x[0] for x in sec) - o['fin'][0]) > 0.05: continue
             rows.append([nice(a['n']), a['nat'], o['fin'][1], o['fin'][0], sec])
         if not rows: continue
         rows.sort(key=lambda x: (x[2], x[3]))
+        for k in range(n + 1):   # fehlende Abschnittsränge selbst bestimmen
+            if any(x[4][k][1] is None for x in rows):
+                srt = sorted(rows, key=lambda x: x[4][k][0])
+                for x in rows: x[4][k] = [x[4][k][0], 1 + sum(1 for y in srt if y[4][k][0] < x[4][k][0] - 1e-9)]
         best = []
         for k in range(n + 1):
             b = min(rows, key=lambda x: x[4][k][0]); best.append([b[4][k][0], b[0], b[1]])
