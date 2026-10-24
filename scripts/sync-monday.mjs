@@ -71,7 +71,7 @@ function parseRows(html) {
     const rk = /^\d+$/.test(nums[0]) && /bold|pr-1/.test(cells[0].c) ? +nums[0] : null;
     const times = nums.filter(t => /^(\d+:)?\d{1,2}\.\d\d$/.test(t));
     const diff = nums.find(t => /^\+\d/.test(t)) || '';
-    rows.push({ n: name, nat, rk, t: times[times.length - 1] || '', diff });
+    rows.push({ n: name, nat, rk, t: times[times.length - 1] || '', diff, _c: nums.slice(0, 6) });
   }
   return rows;
 }
@@ -128,6 +128,8 @@ async function fisSync(rvdItems) {
       const rows = parseRows(html);
       const ranked = rows.some(r => r.rk) && rows.some(r => r.t);  // Startliste: Nummern, aber keine Zeiten
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
+      if (TEST) console.log('::notice title=FIS-Zeilen::' + rid + ' ' + rows.slice(0, 3).map(r => r.n + ' [' + r._c.join(', ') + ']').join(' | '));
+      rows.forEach(r => delete r._c);
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       // PDF «Results, Analysis, Standings» (Zwischenzeiten) für die automatische Sektoranalyse
       const pdf = pdfOf[rid] || '';
