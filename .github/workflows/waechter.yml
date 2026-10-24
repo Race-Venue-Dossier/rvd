@@ -1,0 +1,26 @@
+name: Wächter
+# Prüft nach jedem Push auf main, ob Änderungen der anderen Person an index.html noch drin sind
+# (index.html wird aus den eigenen Quellen komplett neu gebaut – eine fehlende Quelle überschreibt still).
+# Bei Befund: Lauf rot, Annotation, Issue mit den fehlenden Stellen.
+on:
+  push:
+    branches: [main]
+    paths: [index.html, scripts/waechter.mjs, .github/workflows/waechter.yml]
+permissions:
+  contents: read
+  issues: write
+jobs:
+  waechter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 120
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Änderungen der anderen Person noch drin?
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WAECHTER_BASE: ${{ github.event.before }}
+        run: node scripts/waechter.mjs
