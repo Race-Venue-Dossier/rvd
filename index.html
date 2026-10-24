@@ -3161,11 +3161,11 @@ function sekRace(r){
   var rowsN=nats.map(function(n){ var A=by[n],o={n:n,c:A.length,fin:cell(A.map(function(a){return a.fp;}))};
     types.forEach(function(t){ var v=[]; A.forEach(function(a){ r.st.forEach(function(s,k){ if(s===t) v.push(a.lp[k]); }); }); o[t]=cell(v); });
     return o; }).sort(function(a,b){return a.fin-b.fin;});
-  var all=[]; rowsN.forEach(function(o){ types.forEach(function(t){ if(o[t]!=null) all.push(o[t]); }); });
-  var ref=med(all);
+  /* Farbskala pro Spalte: Median der gezeigten Nationen je Abschnittstyp */
+  var ref={}; types.forEach(function(t){ ref[t]=med(rowsN.map(function(o){return o[t];}).filter(function(v){return v!=null;})); });
   var tab='<div class="tw"><table class="tbl sekt srt" data-sid="sekt"><thead><tr><th>Nation</th><th class="num">Fahrer:innen</th>'+types.map(function(t){return '<th class="num"><i class="st'+t+'" aria-hidden="true"></i>'+STN[t]+'</th>';}).join('')+'<th class="num">Ziel</th></tr></thead><tbody>'+
     rowsN.map(function(o){ return '<tr'+(o.n==='SUI'?' class="me"':'')+'><td>'+flag(o.n)+' <b>'+o.n+'</b></td><td class="num">'+o.c+'</td>'+
-      types.map(function(t){ return '<td class="num hc" style="'+divBg(o[t],ref,1.2)+'">'+pc(o[t])+'</td>'; }).join('')+'<td class="num"><b>'+pc(o.fin)+'</b></td></tr>'; }).join('')+'</tbody></table></div>';
+      types.map(function(t){ return '<td class="num hc" style="'+divBg(o[t],ref[t],1.2)+'">'+pc(o[t])+'</td>'; }).join('')+'<td class="num"><b>'+pc(o.fin)+'</b></td></tr>'; }).join('')+'</tbody></table></div>';
   /* Welcher Abschnitt entscheidet: Spearman Abschnittsrückstand vs. Zielrang */
   var cor=r.best.map(function(b,k){ return {k:k,r:spearman(cls.map(function(a){return a.gap[k];}),cls.map(function(a){return a.rk;}))}; }).filter(function(x){return x.r!=null;}).sort(function(a,b){return b.r-a.r;});
   var bars=cor.map(function(x){ var t=r.st&&r.st[x.k];
