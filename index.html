@@ -3650,6 +3650,9 @@ function liveRvd(items,at){
       var imgs=files.filter(function(f){return RIMG[f.ext];}),docs=files.filter(function(f){return !RIMG[f.ext];});
       if(imgs.length) o.img=imgs.map(function(f){return 'monasset/'+f.id+'.'+f.ext;});
       if(docs.length) o.mfiles=docs.map(function(f){return {p:'monasset/'+f.id+'.'+f.ext,n:f.n,ext:f.ext,size:f.size};});
+      /* Gate-to-Gate-PDF mit Vorschaubild (Seite 1, von der GitHub Action erzeugt): Bild direkt auf der Seite, antippen öffnet das PDF (Vonsie, 24.10.2026) */
+      if(k==='gtg'&&imgs.some(function(f){return f.prev;})){ var pd=docs.filter(function(f){return /^pdf$/i.test(f.ext);});
+        if(pd.length){ o.pdf=pd.map(function(f){return {p:'monasset/'+f.id+'.pdf'};}); var od=docs.filter(function(f){return pd.indexOf(f)<0;}); if(od.length) o.mfiles=o.mfiles.filter(function(m){return !/\.pdf$/i.test(m.p);}); else delete o.mfiles; } }
       if(rest.length) o.mrest=rest.map(function(f){return f.n;});
       /* Kurssetzungs-PDF, von der GitHub Action ausgewertet: wie die Kurssetzungen im Dossier (Kennzahlen, Plan, Torliste) */
       if(s.ks&&s.ks.gates&&s.ks.gates.length){ o.k='ks'; o.t='Kurssetzung'; o.disc=LDISC[s.disc]||s.disc||''; o.gates=s.ks.gates; o.fin=s.ks.fin||null; o.doc='monasset/'+s.ks.fid+'.pdf'; delete o.mfiles; }

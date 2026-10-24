@@ -57,7 +57,7 @@ jobs:
           RVD_PASS: ${{ secrets.RVD_PASS }}
         run: |
           node scripts/ks.mjs prep
-          if [ -f kspdf/todo.json ] && [ "$(cat kspdf/todo.json)" != "[]" ]; then
+          if { [ -f kspdf/todo.json ] && [ "$(cat kspdf/todo.json)" != "[]" ]; } || { [ -f kspdf/prev.json ] && [ "$(cat kspdf/prev.json)" != "[]" ]; }; then
             pip install --quiet pymupdf
             python3 scripts/ks_pdf.py
           fi

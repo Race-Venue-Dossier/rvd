@@ -21,7 +21,19 @@ for (const p of (live.rvd || {}).items || []) for (const s of p.sub || []) {
   const f = (s.files || []).find(x => x.ok && /^pdf$/i.test(x.ext || '') && fs.existsSync('monasset/' + x.id + '.enc'));
   if (f) subs.push({ s, f, d: s.d || '', disc: s.disc || '' });
 }
+// Gate-to-Gate-PDFs: Seite 1 als Vorschaubild (monasset/<id>p1.enc), als zusätzliche Datei beim Unterelement (Vonsie, 24.10.2026)
+const gsubs = [];
+for (const p of (live.rvd || {}).items || []) for (const s of p.sub || []) {
+  if (!/Gate-to-Gate/i.test(s.art || '')) continue;
+  const f = (s.files || []).find(x => x.ok && /^pdf$/i.test(x.ext || '') && !x.prev && fs.existsSync('monasset/' + x.id + '.enc'));
+  if (f) gsubs.push({ s, f });
+}
 if (MODE === 'prep') {
+  const prev = gsubs.filter(x => !fs.existsSync('monasset/' + x.f.id + 'p1.enc'));
+  fs.mkdirSync('kspdf', { recursive: true });
+  for (const x of prev) fs.writeFileSync('kspdf/' + x.f.id + '.pdf', dec(fs.readFileSync('monasset/' + x.f.id + '.enc')));
+  fs.writeFileSync('kspdf/prev.json', JSON.stringify(prev.map(x => x.f.id)));
+  if (prev.length) console.log('Gate-to-Gate: ' + prev.length + ' Vorschaubilder neu');
   // nicht lesbare PDFs nochmals versuchen, wenn der Leser neuer ist (KSV erhöhen bei Änderungen an ks_pdf.py)
   const todo = subs.filter(x => !cache[x.f.id] || (cache[x.f.id].err && cache[x.f.id].v !== KSV));
   fs.mkdirSync('kspdf', { recursive: true });
@@ -40,6 +52,13 @@ if (MODE === 'prep') {
     if (JSON.stringify(x.s.ks) !== JSON.stringify(v)) { x.s.ks = v; changed = true; }
     nIn++;
   }
+  let nP = 0;
+  for (const x of gsubs) {
+    const jp = 'kspdf/' + x.f.id + 'p1.jpg', ep = 'monasset/' + x.f.id + 'p1.enc';
+    if (!fs.existsSync(ep) && fs.existsSync(jp)) { fs.writeFileSync(ep, enc(fs.readFileSync(jp))); nP++; }
+    if (fs.existsSync(ep) && !(x.s.files || []).some(f => f.prev)) { x.s.files.push({ id: x.f.id + 'p1', n: 'Seite 1', ext: 'jpg', ok: true, prev: 1 }); changed = true; }
+  }
+  if (nP) console.log('Gate-to-Gate: ' + nP + ' Vorschaubilder gespeichert');
   if (changed) fs.writeFileSync('data/live.enc', enc(Buffer.from(JSON.stringify(live))));
   const bad = Object.entries(add).filter(([, r]) => r.err).map(([id, r]) => id + ': ' + r.err);
   console.log((process.env.GITHUB_ACTIONS ? '::notice title=Kurssetzungen::' : '') + nIn + ' Kurssetzungen mit Tordaten' + (nNew ? ' · ' + nNew + ' neu ausgewertet' : '') + (bad.length ? ' · nicht lesbar: ' + bad.join('; ') : ''));

@@ -108,6 +108,14 @@ def main():
         r = out[str(t['id'])]
         print('Kurssetzung', t.get('d', ''), t.get('disc', ''), t['id'], ':', (str(len(r['gates'])) + ' Tore') if 'gates' in r else r['err'])
     json.dump(out, open(os.path.join(H, 'out.json'), 'w'))
+    # Gate-to-Gate: Seite 1 als JPEG (ca. 1600 px breit) für die Vorschau auf der Seite
+    pv = json.load(open(os.path.join(H, 'prev.json'))) if os.path.exists(os.path.join(H, 'prev.json')) else []
+    for fid in pv:
+        try:
+            doc = pymupdf.open(os.path.join(H, str(fid) + '.pdf')); pg = doc[0]
+            z = 1600 / pg.rect.width; pix = pg.get_pixmap(matrix=pymupdf.Matrix(z, z), alpha=False)
+            pix.save(os.path.join(H, str(fid) + 'p1.jpg'), jpg_quality=82); print('Vorschau', fid, pix.width, 'x', pix.height)
+        except Exception as e: print('Vorschau', fid, 'Fehler', str(e)[:100])
 
 
 if __name__ == '__main__':
