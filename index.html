@@ -2911,7 +2911,7 @@ function sectorCard(r){
   return '<div class="spc"><div class="spc-h"><span class="pill'+(r.tr?' tr':'')+'">'+h(r.lab)+'</span><span class="cd-t">Sektoranalyse · FIS-Zwischenzeiten</span><span class="sp"></span>'+
       (r.st||TECD[r.disc]?'':'<span class="spc-n" title="Die Streckenabschnitte aus monday passen nicht zu den FIS-Sektoren (andere Anzahl). Darum keine Typen technisch/Mix/Gleiten.">Streckencharakter: Abschnitte passen nicht zu den Sektoren</span>')+(function(x){return x?'<span class="spc-n">Kurs: '+vSetterTxt(x)+'</span>':'';})(vSetter(r.id,r.run||1))+'</div>'+
     '<div class="tw spt-d"><table class="tbl spt"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
-    '<p class="spc-l">Rückstand auf die Sektor-Bestzeit (s) und Sektorrang · dunkler = mehr Verlust.</p>'+mob+pod+'</div>'; /* «Fazit pro Athlet:in» entfernt: gleiche Angaben wie die Tabelle (Vonsie, 13.10.2026) */
+    '<p class="spc-l">Rückstand auf die Sektor-Bestzeit (s) und Sektorrang · dunkler = mehr Verlust.</p>'+mob+'</div>'; /* «Was fehlte aufs Podest/auf Laufrang 3» ausgeblendet: braucht es nicht (Vonsie, 24.10.2026) */ /* «Fazit pro Athlet:in» entfernt: gleiche Angaben wie die Tabelle (Vonsie, 13.10.2026) */
 }
 function fmtT(s){ var m=Math.floor(s/60),x=(s-m*60).toFixed(2); return m?m+':'+(x<10?'0':'')+x:x; }
 
