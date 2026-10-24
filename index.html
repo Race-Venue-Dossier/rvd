@@ -3197,11 +3197,12 @@ function natCard(st,races,tech){
   var nats=Object.keys(by).sort(function(a,b){ return (b==='SUI')-(a==='SUI')||by[b].c-by[a].c||a.localeCompare(b); }).slice(0,8);
   if(nats.indexOf('SUI')<0) return '';
   var rows=nats.map(function(n){ var o=by[n],x={n:n,c:o.c,ath:Object.keys(o.ath).length,t10:o.t10,pod:o.pod,fin:avg(o.fin)}; types.forEach(function(t){ x[t]=avg(o[t]); }); return x; }).sort(function(a,b){return a.fin-b.fin;});
-  var all=[]; rows.forEach(function(o){ types.forEach(function(t){ if(o[t]!=null) all.push(o[t]); }); });
-  var ref=med(all),refF=med(rows.map(function(o){return o.fin;}));
+  /* Farbskala pro Spalte: Median der gezeigten Nationen je Abschnitt (nicht über alle Abschnitte zusammen) */
+  var ref={}; types.forEach(function(t){ ref[t]=med(rows.map(function(o){return o[t];}).filter(function(v){return v!=null;})); });
+  var refF=med(rows.map(function(o){return o.fin;}));
   var tab='<div class="tw"><table class="tbl sekt nat srt" data-sid="nat'+(tech?'t':'')+'"><thead><tr><th>Nation</th><th class="num">Athlet:innen</th><th class="num">Top 30</th><th class="num">Top 10</th><th class="num">'+(tech?'Top 3':'Podeste')+'</th>'+(nSt?types.map(function(t){return '<th class="num">'+(tech?'':'<i class="st'+t+'" aria-hidden="true"></i>')+TN[t]+'</th>';}).join(''):'')+'<th class="num">Ziel</th></tr></thead><tbody>'+
     rows.map(function(o){ return '<tr'+(o.n==='SUI'?' class="me"':'')+'><td>'+flag(o.n)+' <b>'+o.n+'</b></td><td class="num">'+o.ath+'</td><td class="num">'+o.c+'</td><td class="num">'+o.t10+'</td><td class="num">'+o.pod+'</td>'+
-      (nSt?types.map(function(t){ return '<td class="num hc" style="'+divBg(o[t],ref,1.2)+'">'+pc(o[t])+'</td>'; }).join(''):'')+'<td class="num hc" style="'+divBg(o.fin,refF,1.2)+'"><b>'+pc(o.fin)+'</b></td></tr>'; }).join('')+'</tbody></table></div>';
+      (nSt?types.map(function(t){ return '<td class="num hc" style="'+divBg(o[t],ref[t],1.2)+'">'+pc(o[t])+'</td>'; }).join(''):'')+'<td class="num hc" style="'+divBg(o.fin,refF,1.2)+'"><b>'+pc(o.fin)+'</b></td></tr>'; }).join('')+'</tbody></table></div>';
   var gn=(tech?st.tg:st.g)==='M'?'Männer':'Frauen';
   return '<section class="card"><div class="ch"><h2>Nationenvergleich '+gn+'</h2><span class="h3v">'+(tech?'Top 30 pro Lauf · '+R.length+' Läufe':'Top 30 · '+R.length+' Rennen'+(nSt?' · '+nSt+' mit Streckencharakter':''))+'</span></div>'+tab+
     (tech?'<p class="spc-l">Laufränge aus beiden Läufen · Ø Rückstand der Top 30 pro Lauf: Start, Mitte, Schluss = Drittel der Abschnitte zwischen den Zwischenzeiten, auf die Abschnitts-Bestzeit, Ziel auf die Laufbestzeit · <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der Schnitt der gezeigten Nationen · Schweiz und die sieben Nationen mit den meisten Top-30-Laufplätzen.</p></section>':
