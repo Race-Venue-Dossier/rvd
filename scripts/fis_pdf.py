@@ -300,6 +300,11 @@ def main():
                     note('%s %s: noch keine Analyse im PDF (%s)' % (rid, t['disc'], pdfinfo(p))); continue
                 runs = tech_runs(rid, tech_meta(p, t), ath)
                 if not runs:
+                    # Hinweis zur Fehlersuche (nur Testlauf): Aufbau der ersten Athlet:innen und Seitenanfang
+                    if TEST:
+                        for a in ath[:2]: note('%s Probe %s: %s' % (rid, a.get('n'), json.dumps({k: {kk: (vv if kk != 'parts' else dict(list(vv.items())[:4])) for kk, vv in v.items()} for k, v in a.get('runs', {}).items()})[:900]))
+                        try: note('%s Seite 1: %s' % (rid, ' | '.join(l.strip() for l in pymupdf.open(p)[0].get_text().split('\n') if l.strip())[:900]))
+                        except Exception: pass
                     note('%s: keine Laufzeiten' % rid); continue
                 res['ts'] += runs
                 note('%s %s %s %s: %d Läufe, SUI %s' % (rid, t['d'], t['g'], t['disc'], len(runs), ', '.join(str(sum(a[1] == 'SUI' for a in r['a'])) for r in runs)))
