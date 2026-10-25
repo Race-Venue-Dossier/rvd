@@ -140,7 +140,7 @@ async function fisSync(rvdItems) {
       res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep, pdf, ...(setters.length ? { set: setters } : {}) };
       if (kind === 'res' && pdf && /^(DH|SG|DHT|GS|SL)$/.test(disc)) FIS_PDF.push({ rid, url: pdf, d, g, disc, did: p.did, pl: (p.name || '').split('·')[0].replace(/\s*\(.*\)/, '').trim() });
       const msg = ['FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI'].join(' ');
-      console.log(TEST ? '::notice title=FIS-Test::' + msg + ' · Sieg: ' + ((keep.find(r => r.rk === 1) || {}).n || '–') + ' · ' + keep.filter(r => r.nat === 'SUI').slice(0, 3).map(r => r.rk + '. ' + r.n).join(', ') : msg);
+      console.log(TEST ? '::notice title=FIS-Test::' + msg + ' · Sieg: ' + ((keep.find(r => r.rk === 1) || {}).n || '–') + ' · ' + keep.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3)).map(r => (r.rk || '×') + '. ' + r.n + ' ' + r.nat + ' ' + (r.t || '') + ' ' + (r.diff || '') + (r.bib ? ' #' + r.bib : '')).join(' | ') : msg);
     }
   }
   return res;
