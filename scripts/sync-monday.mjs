@@ -130,7 +130,7 @@ async function fisSync(rvdItems) {
       const kind = rows.length ? (ranked ? 'res' : 'start') : 'none';
       // Startliste: erste Spalte = Startnummer (gleich wie zweite), kein Rang (Vonsie, 24.10.2026)
       if (kind === 'start') rows.forEach(r => { r.bib = r.bib || r.rk; r.rk = null; });
-      if (TEST && kind === 'start') console.log('::notice title=FIS-Startliste::' + rid + ' SUI: ' + rows.filter(r => r.nat === 'SUI').map(r => r.bib + ' ' + r.n).join(', '));
+      if (TEST && kind === 'start') console.log('::notice title=FIS-Startliste::' + rid + ' SUI: ' + rows.map((r, i) => [i + 1, r]).filter(x => x[1].nat === 'SUI').map(x => 'Pos ' + x[0] + ' #' + x[1].bib + ' ' + x[1].n).join(', ') + ' · erste drei: ' + rows.slice(0, 3).map(r => r.n + ' ' + r.nat).join(', ') + ' · letzte drei: ' + rows.slice(-3).map(r => r.n + ' ' + r.nat).join(', '));
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       // PDF «Results, Analysis, Standings» (Zwischenzeiten) für die automatische Sektoranalyse
       const pdf = pdfOf[rid] || '';
