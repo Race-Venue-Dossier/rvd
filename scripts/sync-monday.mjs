@@ -134,7 +134,10 @@ async function fisSync(rvdItems) {
       const keep = rows.filter(r => r.nat === 'SUI' || (r.rk && r.rk <= 3));
       // PDF «Results, Analysis, Standings» (Zwischenzeiten) für die automatische Sektoranalyse
       const pdf = pdfOf[rid] || '';
-      res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep, pdf };
+      // Kurssetzer pro Lauf (Jury-Angaben auf der FIS-Seite), falls vorhanden (Vonsie, 25.10.2026)
+      const txt = strip(html), setters = [...txt.matchAll(/(?:Course\s*setter|Course-setter|Setter)\s*(?:Run\s*)?(\d)?\s*[:\-]?\s*([A-ZÄÖÜ][A-Za-zÀ-ÿ' \-]{3,40}?\s*\(([A-Z]{3})\))/g)].map(x => ({ run: x[1] ? +x[1] : null, n: x[2].trim() }));
+      if (TEST) { const i = txt.search(/Course\s*setter|Setter|Jury/i); console.log('::notice title=FIS-Jury::' + rid + ' ' + (i >= 0 ? txt.slice(i, i + 400) : 'keine Jury-Angaben') + ' · erkannt: ' + JSON.stringify(setters)); }
+      res[rid] = { did: p.did, d, g, disc, kind, n: rows.length, rows: keep, pdf, ...(setters.length ? { set: setters } : {}) };
       if (kind === 'res' && pdf && /^(DH|SG|DHT|GS|SL)$/.test(disc)) FIS_PDF.push({ rid, url: pdf, d, g, disc, did: p.did, pl: (p.name || '').split('·')[0].replace(/\s*\(.*\)/, '').trim() });
       const msg = ['FIS', p.did, rid, disc, g, d, kind, rows.length, 'Zeilen,', keep.filter(r => r.nat === 'SUI').length, 'SUI'].join(' ');
       console.log(TEST ? '::notice title=FIS-Test::' + msg + ' · Sieg: ' + ((keep.find(r => r.rk === 1) || {}).n || '–') + ' · ' + keep.filter(r => r.nat === 'SUI').slice(0, 3).map(r => r.rk + '. ' + r.n).join(', ') : msg);

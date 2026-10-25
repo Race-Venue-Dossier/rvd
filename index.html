@@ -3690,7 +3690,13 @@ function liveRvd(items,at){
         if(pd.length){ o.pdf=pd.map(function(f){return {p:'monasset/'+f.id+'.pdf'};}); var od=docs.filter(function(f){return pd.indexOf(f)<0;}); if(od.length) o.mfiles=o.mfiles.filter(function(m){return !/\.pdf$/i.test(m.p);}); else delete o.mfiles; } }
       if(rest.length) o.mrest=rest.map(function(f){return f.n;});
       /* Kurssetzungs-PDF, von der GitHub Action ausgewertet: wie die Kurssetzungen im Dossier (Kennzahlen, Plan, Torliste) */
-      if(s.ks&&s.ks.gates&&s.ks.gates.length){ o.k='ks'; o.t='Kurssetzung'; o.disc=LDISC[s.disc]||s.disc||''; o.gates=s.ks.gates; o.fin=s.ks.fin||null; o.doc='monasset/'+s.ks.fid+'.pdf'; delete o.mfiles; }
+      if(s.ks&&s.ks.gates&&s.ks.gates.length){ o.k='ks'; o.t='Kurssetzung'; o.disc=LDISC[s.disc]||s.disc||''; o.gates=s.ks.gates; o.fin=s.ks.fin||null; o.doc='monasset/'+s.ks.fid+'.pdf'; delete o.mfiles;
+        /* Start verlegt (z. B. Wetter): Notiz «neues Tor 1 = Tor 12» oder «Start ab Tor 12» in monday → Tore davor weglassen, Plan ab dem Tor davor (Vonsie, 25.10.2026) */
+        var sm=/Tor\s*1\s*(?:=|ist\s+gleich|entspricht)\s*Tor\s*(\d+)|Start\s+(?:ab|bei)\s+Tor\s*(\d+)/i.exec(s.note||''),sn=sm?+(sm[1]||sm[2]):0;
+        if(sn>1&&sn<=o.gates.length-5){ var ref=o.gates[sn-2],rx=ref[5]||0,ry=ref[6]||0;
+          o.gates=o.gates.slice(sn-1).map(function(g){ var c=g.slice(); if(c[5]!=null) c[5]=Math.round((c[5]-rx)*10)/10; if(c[6]!=null) c[6]=Math.round((c[6]-ry)*10)/10; return c; });
+          if(o.fin&&o.fin[2]!=null) o.fin=[o.fin[0],o.fin[1],Math.round((o.fin[2]-rx)*10)/10,Math.round((o.fin[3]-ry)*10)/10];
+          o.startFrom=sn; } }
       (out[ev.id]=out[ev.id]||[]).push(o);
     });
   });
