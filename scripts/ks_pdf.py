@@ -76,7 +76,7 @@ def parse(path):
         p = plan(doc[pi])
         if not p: continue
         mk, se = p
-        if len(mk) != len(T): continue
+        if len(mk) < len(T) or len(mk) > len(T) + 2: continue   # 1–2 Marker zu viel (z. B. Legende) erlaubt, die Abstandsprüfung unten fängt Fehler (Sölden 25.10.2026)
         se.sort(key=lambda q: -q[1]); st = se[0] if se else (0.0, 0.0); fi = se[-1] if len(se) > 1 else None
         cur, free, order = st, list(mk), []
         for n, t, v in T:

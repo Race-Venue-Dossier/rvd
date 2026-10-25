@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 const PASS = process.env.RVD_PASS, MODE = process.argv[2] || 'prep';
-const KSV = 2;   // Version des PDF-Lesers (2: Tornummern mit Stern wie «7*», 24.10.2026)
+const KSV = 3;   // Version des PDF-Lesers (2: Tornummern mit Stern wie «7*», 24.10.2026; 3: Marker zu viel im Plan, 25.10.2026)
 if (!PASS || !fs.existsSync('data/live.enc')) { console.log('ks: nichts zu tun'); process.exit(0); }
 const kj = JSON.parse(fs.readFileSync('key.json', 'utf8'));
 const K = crypto.pbkdf2Sync(PASS, Buffer.from(kj.salt, 'base64'), kj.iter, 32, 'sha256');
