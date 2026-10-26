@@ -50,15 +50,18 @@ const others = git('log --format=%H%x09%an%x09%ad%x09%s --date=short -n ' + MAXC
   .filter(c => c.author !== hauthor && !BOTS.test(c.author));
 
 const findings = [];
+let skipped = 0;
 for (const c of others) {
-  const d = git('diff -U0 --word-diff=porcelain ' + c.sha + '^ ' + c.sha + ' -- ' + FILE);
+  if (!ok(c.sha + '^')) { skipped++; continue; }   // flacher Klon in der Action: Vorgänger nicht geladen → Commit auslassen
+  let d;
+  try { d = git('diff -U0 --word-diff=porcelain ' + c.sha + '^ ' + c.sha + ' -- ' + FILE); } catch (e) { skipped++; continue; }
   const added = [...new Set(d.split('\n').filter(l => l.startsWith('+') && !l.startsWith('+++')).map(l => l.slice(1).trim()).filter(s => s.length >= MINLEN))]
     .filter(s => before.includes(s));
   if (!added.length) continue;
   const missing = added.filter(s => !now.includes(s));
   if (!missing.length) continue;
   // Einordnung je fehlender Stelle anhand des Hunks, der sie entfernt hat
-  const old = git('show ' + c.sha + '^:' + FILE);
+  let old = ''; try { old = git('show ' + c.sha + '^:' + FILE); } catch (e) {}
   let reset = 0, removed = 0, changed = 0;
   for (const s of missing) {
     const hk = hunks.find(h => h.del.some(l => l.includes(s) || (l.trim().length >= MINLEN && s.includes(l.trim()))));
@@ -72,7 +75,7 @@ for (const c of others) {
 const errors = findings.filter(f => f.error), hints = findings.filter(f => !f.error);
 const lines = [];
 lines.push('Wächter: Push ' + short(hsha) + ' von ' + hauthor + ' (' + hdate + ', «' + hsubject + '»), Stand davor ' + short(bsha));
-lines.push('Geprüft: ' + others.length + ' Commit(s) anderer Personen an ' + FILE + '.');
+lines.push('Geprüft: ' + (others.length - skipped) + ' Commit(s) anderer Personen an ' + FILE + '.' + (skipped ? ' (' + skipped + ' ohne geladenen Vorgänger ausgelassen)' : ''));
 const kind = (f) => [f.reset ? f.reset + ' zurückgesetzt' : '', f.removed ? f.removed + ' entfernt' : '', f.changed ? f.changed + ' geändert' : ''].filter(Boolean).join(', ');
 for (const f of findings) {
   lines.push('');
