@@ -18,6 +18,7 @@ on:
     paths-ignore: ['data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**', 'data/keyring.json', 'data/seg/**', 'seg/**', 'data/ks.enc']
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: monday-sync
   cancel-in-progress: false
@@ -78,3 +79,10 @@ jobs:
             git pull --rebase -X theirs || true
             git push
           fi
+      - name: Renntag-Schlaufe anstossen
+        if: ${{ !inputs.fis_test }}
+        continue-on-error: true
+        env:
+          MONDAY_TOKEN: ${{ secrets.MONDAY_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/renntag.mjs kick

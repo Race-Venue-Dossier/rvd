@@ -1,0 +1,27 @@
+name: Renntag-Abgleich
+# An Renntagen (Zeitraum eines Events in monday «RVD Sync») den monday-Sync alle 30 Minuten von 9 bis 18 Uhr starten,
+# danach stündlich bis 22 Uhr. Wird vom monday-Sync ab dem Vortag angestossen und startet sich nach ~5½ h selbst neu.
+on:
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: renntag
+  cancel-in-progress: false
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Abgleich zu den Terminen starten
+        env:
+          MONDAY_TOKEN: ${{ secrets.MONDAY_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/renntag.mjs loop
