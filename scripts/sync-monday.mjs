@@ -71,7 +71,9 @@ async function calEvent(eid, season) {
     let disc = (DISCS.find(x => new RegExp(x[0], 'i').test(txt)) || [])[1] || '';
     if (/Team Parallel|Parallel Team|Team Event/i.test(txt)) disc = 'TP';
     else if (/Qualif/i.test(txt) && (disc === 'GS' || disc === 'SL')) disc += 'Q';
-    const g = /\bWomen\b|\bLadies\b|\bW\b/.test(txt) ? 'W' : /\bMen\b|\bM\b/.test(txt) ? 'M' : /Mixed|Team/.test(txt) ? 'A' : '';
+    let g = /\bWomen\b|\bLadies\b|\bW\b/.test(txt) ? 'W' : /\bMen\b|\bM\b/.test(txt) ? 'M' : /Mixed|Team/.test(txt) ? 'A' : '';
+    const cx0 = (txt.match(/\b(\d{4})\b/) || [])[1] || '';
+    if (!g && cx0) g = cx0[0] === '5' ? 'W' : cx0[0] === '0' ? 'M' : '';   // FIS-Codex: 0… Männer, 5… Frauen
     const cx = (txt.match(/\b(\d{4})\b/) || [])[1] || '';
     races.push({ id: +rid, d, cx, disc, g, x: /title="Cancelled"/.test(seg) ? 1 : 0, t: txt.slice(0, 160) });
   }
@@ -106,7 +108,9 @@ function parseRows(html) {
     const rk = /^\d+$/.test(nums[0]) && /bold|pr-1/.test(cells[0].c) ? +nums[0] : null;
     const times = nums.filter(t => /^(\d+:)?\d{1,2}\.\d\d$/.test(t));
     const diff = nums.find(t => /^\+\d/.test(t)) || '';
-    rows.push({ n: name, nat, rk, t: times[times.length - 1] || '', diff, bib: /^\d+$/.test(nums[1] || '') ? +nums[1] : null });
+    // Startnummer aus ihrer eigenen Spalte (zentriert, 1–3 Ziffern); ohne Rang (Ausfall, nicht im 2. Lauf) fehlt die Rang-Spalte (27.10.2026)
+    const bc = cells.find(c => /justify-center/.test(c.c) && /^\d{1,3}$/.test(c.t));
+    rows.push({ n: name, nat, rk, t: times[times.length - 1] || '', diff, bib: bc ? +bc.t : /^\d{1,3}$/.test(nums[1] || '') ? +nums[1] : null });
   }
   return rows;
 }
@@ -283,11 +287,6 @@ async function bibSync(test) {
   console.log('::notice title=Startnummern::' + n + ' Rennen neu, total ' + Object.keys(B.r).length);
 }
 if ((process.env.FIS_TEST || '').trim() === 'bib') {
-  const html = await (await fetch('https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=131578', { headers: UA })).text();
-  const re = /<a[^>]*class="[^"]*table-row[^"]*"[^>]*>([\s\S]*?)<\/a>/g; let m, i = 0;
-  while ((m = re.exec(html))) { i++; if (![1, 2, 30, 31, 45, 60, 66].includes(i)) continue;
-    const cells = [...m[1].matchAll(/<div[^>]*class="([^"]*)"[^>]*>([^<]*)<\/div>/g)].map(c => c[1].replace(/\s+/g, '.').slice(0, 40) + '=' + ent(c[2]).trim()).filter(x => !/=$/.test(x));
-    console.log('::notice title=Zeile ' + i + '::' + cells.join(' | ').slice(0, 1500)); }
   await bibSync(true); process.exit(0);
 }
 // ── FIS-Kalender höchstens einmal pro Tag nachführen (data/cal.json, öffentlich wie der FIS-Kalender selbst; Vonsie, 27.10.2026) ──
