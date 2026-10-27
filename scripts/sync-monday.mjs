@@ -68,7 +68,9 @@ async function calEvent(eid, season) {
   for (const rid of order) {
     const st = pos.find(x => x[1] === rid)[0], nx = pos.find(x => x[0] > st && x[1] !== rid), seg = eh.slice(Math.max(0, eh.lastIndexOf('table-row', st)), nx ? nx[0] : st + 6000);
     const txt = strip(seg), d = (seg.match(/data-date="(\d{4}-\d\d-\d\d)"/) || [])[1] || '';
-    const disc = (DISCS.find(x => new RegExp(x[0], 'i').test(txt)) || [])[1] || '';
+    let disc = (DISCS.find(x => new RegExp(x[0], 'i').test(txt)) || [])[1] || '';
+    if (/Team Parallel|Parallel Team|Team Event/i.test(txt)) disc = 'TP';
+    else if (/Qualif/i.test(txt) && (disc === 'GS' || disc === 'SL')) disc += 'Q';
     const g = /\bWomen\b|\bLadies\b|\bW\b/.test(txt) ? 'W' : /\bMen\b|\bM\b/.test(txt) ? 'M' : /Mixed|Team/.test(txt) ? 'A' : '';
     const cx = (txt.match(/\b(\d{4})\b/) || [])[1] || '';
     races.push({ id: +rid, d, cx, disc, g, x: /title="Cancelled"/.test(seg) ? 1 : 0, t: txt.slice(0, 160) });
@@ -248,6 +250,19 @@ for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) {
 out.fis = await fisSync(out.rvd.items).catch(e => { console.log('FIS übersprungen:', String(e).slice(0, 120)); return {}; });
 // Nachauswertung älterer Rennen über «Run workflow» (fis_redo = «raceid|datum|M/W|GS/SL|Ort;…»), z. B. wenn mehr Athlet:innen gespeichert werden sollen
 const REDO = (process.env.FIS_REDO || '').split(';').map(x => x.trim()).filter(Boolean).map(x => { const [rid, d, g, disc, pl] = x.split('|'); return { rid, d, g, disc, pl: pl || '' }; });
+// ── FIS-Kalender höchstens einmal pro Tag nachführen (data/cal.json, öffentlich wie der FIS-Kalender selbst; Vonsie, 27.10.2026) ──
+if (!process.env.FIS_TEST && !REDO.length) {
+  let old = null; try { old = JSON.parse(fs.readFileSync('data/cal.json', 'utf8')); } catch (e) {}
+  if (!old || Date.now() - Date.parse(old.at) > 20 * 3600e3) {
+    try {
+      if (await robotsOk('/DB/')) {
+        const c = await calSync(false), nr = c.evs.reduce((n, e) => n + e.races.length, 0);
+        if (c.evs.length >= 10 && nr >= 30) { fs.mkdirSync('data', { recursive: true }); fs.writeFileSync('data/cal.json', JSON.stringify({ at: new Date().toISOString(), season: c.season, evs: c.evs.map(e => ({ ...e, races: e.races.map(({ t, ...r }) => r) })) })); console.log('FIS-Kalender: ' + c.evs.length + ' Events, ' + nr + ' Rennen'); }
+        else console.log('::warning title=FIS-Kalender::zu wenig gefunden (' + c.evs.length + ' Events, ' + nr + ' Rennen), alter Stand bleibt');
+      }
+    } catch (e) { console.log('FIS-Kalender übersprungen: ' + String(e).slice(0, 120)); }
+  }
+}
 if (REDO.length && !process.env.FIS_TEST && (await robotsOk('/DB/general/'))) {
   let ok = 0; const miss = [];
   for (const t of REDO) {

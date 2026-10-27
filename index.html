@@ -3846,11 +3846,36 @@ function fisName(n){ var t=String(n||'').trim().split(/\s+/),sur=[],giv=[],inSur
   return (giv.join(' ')+' '+sur.map(tc).join(' ')).trim(); }
 function fisRacesOf(ev){ var L=[]; Object.keys(LIVE.fis||{}).forEach(function(id){ var r=LIVE.fis[id]; if(r&&r.did===ev.id) L.push(Object.assign({id:id},r)); }); return L.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;}); }
 function fisStarters(ev){ var o={}; fisRacesOf(ev).forEach(function(r){ if(r.kind==='start'||r.kind==='res') (r.rows||[]).forEach(function(a){ if(a.nat==='SUI') o[fisName(a.n)]=1; }); }); return Object.keys(o); }
-window.__rvdT=function(){ return {S:S,render:render,renderIfChanged:renderIfChanged,today:today,spMergeSec:spMergeSec,SP:function(){return SP;},LIVE:function(){return LIVE;},evRecent:evRecent,itemsOf:itemsOf,vPdfEnd:vPdfEnd,vPdf:vPdf}; };  /* für Tests */
+/* ───── FIS-Kalender nachführen (Vonsie, 27.10.2026): data/cal.json schreibt die Action höchstens einmal pro Tag.
+   Übernimmt neue Daten, Absagen und neue Rennen oder Events; Disziplin bekannter Rennen bleibt wie im Dossier (GSQ/SLQ/TP). ───── */
+var CAL=null;
+function calLoad(){ if(!window.__encFetch||CAL) return; fetch('data/cal.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){ if(j&&j.evs){ CAL=j; calApply(); render(); } },function(){}); }
+function calArea(dc){ return /^(DH|SG|DHT)$/.test(dc)?'S':/^(GS|SL|GSQ|SLQ|PAR|TP|PGS|PSL)$/.test(dc)?'T':''; }
+function calApply(){
+  if(!CAL||!S.events.length) return;
+  var acc=window.__RVD_ACC,ok=function(g,dc){ if(!acc||acc.admin) return true; var a=calArea(dc); return !a||acc.segs.indexOf(g+a)>=0; };
+  var se=(CAL.season-1)+'/'+String(CAL.season).slice(2),byId={},n=0;
+  S.events.forEach(function(e){ byId[e.id]=e; });
+  CAL.evs.forEach(function(c){ ['M','W'].forEach(function(g){
+    var R=c.races.filter(function(r){ return (r.g===g||r.g==='A')&&r.d&&ok(g,r.disc); }); if(!R.length) return;
+    var id=CAL.season+'-'+c.eid+'-'+g,e=byId[id];
+    if(!e){ e={id:id,season:se,fis:c.eid,name:c.place,nat:c.nat,g:g,cat:c.cat==='WSC'?'WSC':'WC',frm:'',to:'',races:[],staff:[],pts:[],hl:[],resnote:[],days:[],items:[],lf:[],cal:1}; S.events.push(e); byId[id]=e; n++; }
+    var have={}; (e.races||[]).forEach(function(r){ have[r.id]=r; });
+    R.forEach(function(r){ var o=have[r.id];
+      if(o){ if(o.d!==r.d){ o.d=r.d; n++; } if(!!o.x!==!!r.x){ if(r.x) o.x=true; else delete o.x; n++; } return; }
+      var k=r.disc==='DHT'?'T':/Q$/.test(r.disc)?'Q':'R'; e.races.push({id:r.id,d:r.d,cx:r.cx,disc:r.disc,kind:k,x:r.x?true:undefined}); n++; });
+    e.races.sort(function(a,b){ return a.d<b.d?-1:a.d>b.d?1:String(a.cx)<String(b.cx)?-1:1; });
+    var live=e.races.filter(function(r){return !r.x;}),all=live.length?live:e.races; e.frm=all[0].d; e.to=all[all.length-1].d;
+  }); });
+  if(CAL.at&&S.meta) S.meta.fisSynced=CAL.at.slice(0,10);
+  return n;
+}
+window.__rvdT=function(){ return {S:S,render:render,renderIfChanged:renderIfChanged,today:today,spMergeSec:spMergeSec,SP:function(){return SP;},LIVE:function(){return LIVE;},evRecent:evRecent,itemsOf:itemsOf,vPdfEnd:vPdfEnd,vPdf:vPdf,calApply:calApply,calSet:function(j){ CAL=j; return calApply(); }}; };  /* für Tests */
 window.__liveRaw=function(j){ liveRaw(j); if(typeof render==='function') render(); return LIVE; };  /* für Tests und manuelle Aktualisierung */
 var LIVEON=false;
 function liveStart(){
   if(LIVEON||!S.events.length) return; LIVEON=true;
+  calLoad();
   if(window.__LIVE){ LIVE.src='snapshot'; liveRaw(window.__LIVE); }
   if(window.__encFetch){
     LIVEPULL=function(){ return liveSync(true); };
@@ -5526,9 +5551,9 @@ function start(){
   c.use('db').then(function(db){
     S.db=db;
     if(!S.db){ S.ready=true; S.noDb=true; render(); return; }
-    S.db.collection('events').limit(1000).onSnapshot(function(snap){ S.events=docsOf(snap); S.ready=true; pickSeason(); liveStart(); if(!NAV.init){ NAV.init=1; navApply(location.hash); } render(); },
+    S.db.collection('events').limit(1000).onSnapshot(function(snap){ S.events=docsOf(snap); if(typeof calApply==='function') calApply(); S.ready=true; pickSeason(); liveStart(); if(!NAV.init){ NAV.init=1; navApply(location.hash); } render(); },
       function(){ S.ready=true; S.noDb=true; render(); });
-    S.db.doc('meta/app').get().then(function(s){ if(s.exists){ S.meta=s.data()||{}; render(); } },function(){});
+    S.db.doc('meta/app').get().then(function(s){ if(s.exists){ S.meta=s.data()||{}; if(typeof calApply==='function') calApply(); render(); } },function(){});
   },function(){ S.ready=true; S.noDb=true; render(); });
 }
 var hot=window.claude&&window.claude.hot;

@@ -15,7 +15,7 @@ on:
         default: ''
   push:
     branches: [main]
-    paths-ignore: ['data/offline.json', 'data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**', 'data/keyring.json', 'data/seg/**', 'seg/**', 'data/ks.enc']
+    paths-ignore: ['data/cal.json', 'data/offline.json', 'data/live.enc', 'data/live.sha', 'data/fissec.enc', 'data/fissec_done.json', 'monasset/**', 'data/keyring.json', 'data/seg/**', 'seg/**', 'data/ks.enc']
 permissions:
   contents: write
   actions: write
@@ -71,10 +71,10 @@ jobs:
         run: node scripts/access.mjs
       - name: Änderungen speichern
         run: |
-          if [ -n "$(git status --porcelain data/offline.json data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/seg seg)" ]; then
+          if [ -n "$(git status --porcelain data/cal.json data/offline.json data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/seg seg)" ]; then
             git config user.name "monday-Sync"
             git config user.email "actions@users.noreply.github.com"
-            for f in data/offline.json data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/people.enc data/seg seg; do [ -e "$f" ] && git add -A "$f"; done
+            for f in data/cal.json data/offline.json data/live.enc data/live.sha data/fissec.enc data/fissec_done.json data/ks.enc monasset data/keyring.json data/people.enc data/seg seg; do [ -e "$f" ] && git add -A "$f"; done
             git commit -m "monday-Daten aktualisiert"
             git pull --rebase -X theirs || true
             git push
