@@ -60,7 +60,14 @@ const K = crypto.pbkdf2Sync(PASS, Buffer.from(kj.salt, 'base64'), kj.iter, 32, '
 function enc(key, buf) { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', key, iv); return Buffer.concat([iv, c.update(buf), c.final(), c.getAuthTag()]); }
 function dec(key, b) { const d = crypto.createDecipheriv('aes-256-gcm', key, b.subarray(0, 12)); d.setAuthTag(b.subarray(b.length - 16)); return Buffer.concat([d.update(b.subarray(12, b.length - 16)), d.final()]); }
 if (dec(K, Buffer.from(kj.check, 'base64')).toString() !== 'rvd-ok') { console.log('Zugriffe: RVD_PASS passt nicht zu key.json'); process.exit(1); }
-const subKey = name => Buffer.from(crypto.hkdfSync('sha256', K, Buffer.from('rvd-access'), Buffer.from(name), 32));
+// Schlüssel-Wechsel (Vonsie, 27.10.2026): verliert jemand einen Bereich (aus der Login-Liste gefallen oder Gruppe geändert),
+// bekommt dieser Bereich eine neue Epoche und damit einen neuen Schlüssel. Wer noch dabei ist, meldet sich einmal neu an.
+const STATE = P('data/seg/state.json');
+let state = { f: {} }; try { state = JSON.parse(fs.readFileSync(STATE, 'utf8')); } catch (e) {}
+state.ep = state.ep || {};
+const tagOf = name => state.ep[name] ? name + '#' + state.ep[name] : name;
+const epTag = name => name && state.ep[name] ? '#' + state.ep[name] : '';   // in den Prüfsummen: ohne Wechsel gleich wie bisher
+const subKey = name => Buffer.from(crypto.hkdfSync('sha256', K, Buffer.from('rvd-access'), Buffer.from(tagOf(name)), 32));
 const fp = buf => crypto.createHmac('sha256', K).update(buf).digest('hex').slice(0, 24);
 
 // ── Login-Liste ──
@@ -157,12 +164,29 @@ function assetsOf(core, live) {
   return { files: Object.keys(files), mon };
 }
 
+// ── Wer hatte welche Schlüssel? Verlorene Bereiche bekommen einen neuen Schlüssel ──
+{
+  const who = {}, hid = u => fp(Buffer.from('who:' + u.email));
+  for (const u of users) who[hid(u)] = u.admin ? ['master'] : ['combo:' + u.segs.join('-'), ...u.segs.map(x => 'seg:' + x)];
+  const prev = state.who || {}, nPrev = Object.keys(prev).length, lost = new Set();
+  for (const [h, names] of Object.entries(prev)) for (const n of names) if (!(who[h] || []).includes(n)) lost.add(n);
+  if (nPrev && users.length < nPrev * 0.6) note('Login-Liste viel kürzer als vorher (' + users.length + ' statt ' + nPrev + ') – Schlüssel bleiben gleich, bitte prüfen');
+  else {
+    const turn0 = [...lost].filter(n => n !== 'master');
+    // Bereich gewechselt → auch jede Kombination mit diesem Bereich, damit gespeicherte alte Schlüssel ganz ungültig werden (sonst fehlen nur Bilder)
+    const combosNow = new Set(users.filter(u => !u.admin).map(u => 'combo:' + u.segs.join('-')));
+    for (const n of turn0) if (n.startsWith('seg:')) for (const c of combosNow) if (c.slice(6).split('-').includes(n.slice(4))) lost.add(c);
+    const turn = [...lost].filter(n => n !== 'master');
+    for (const n of turn) state.ep[n] = (state.ep[n] || 0) + 1;
+    if (turn.length) note('Neue Schlüssel für ' + turn.join(', ') + ' (jemand hat diesen Bereich verloren); Betroffene melden sich einmal neu an');
+    if (lost.has('master')) console.log('::warning title=Zugriffe::Ein Admin ist nicht mehr in der Liste. Der Hauptschlüssel (RVD_PASS) bleibt gleich – zum Sperren RVD_PASS wechseln.');
+    state.who = who;
+  }
+}
 // ── Schreiben: nur wenn sich der Inhalt geändert hat ──
-const STATE = P('data/seg/state.json');
-let state = { f: {} }; try { state = JSON.parse(fs.readFileSync(STATE, 'utf8')); } catch (e) {}
 const keepFiles = new Set(); let nW = 0;
-function put(rel, key, plain) {
-  keepFiles.add(rel); const f = fp(Buffer.concat([Buffer.from(rel), plain]));
+function put(rel, key, plain, kn) {
+  keepFiles.add(rel); const f = fp(Buffer.concat([Buffer.from(rel + epTag(kn)), plain]));
   if (state.f[rel] === f && fs.existsSync(P(rel))) return;
   fs.mkdirSync(path.dirname(P(rel)), { recursive: true }); fs.writeFileSync(P(rel), enc(key, plain)); state.f[rel] = f; nW++;
 }
@@ -181,15 +205,15 @@ for (const s of SEGS) {
   const a = assetsOf(c, l), key = subKey('seg:' + s); segAssets[s] = a;
   for (const f of a.files) {
     const src = fs.readFileSync(P(f)), rel = 'seg/' + s + '/' + f;
-    const sf = fp(Buffer.concat([Buffer.from(rel), src]));
+    const sf = fp(Buffer.concat([Buffer.from(rel + epTag('seg:' + s)), src]));
     keepFiles.add(rel);
     if (state.f[rel] === sf && fs.existsSync(P(rel))) continue;
-    put(rel, key, dec(K, src)); state.f[rel] = sf;
+    put(rel, key, dec(K, src), 'seg:' + s); state.f[rel] = sf;
   }
   for (const [d, keys] of Object.entries(a.mon)) {
     const all = monCache[d] || (monCache[d] = JSON.parse(dec(K, fs.readFileSync(P('mon/' + d + '.enc'))).toString()));
     const sub = {}; for (const k of keys) if (all[k]) sub[k] = all[k];
-    put('seg/' + s + '/mon/' + d + '.enc', key, Buffer.from(JSON.stringify(sub)));
+    put('seg/' + s + '/mon/' + d + '.enc', key, Buffer.from(JSON.stringify(sub)), 'seg:' + s);
   }
 }
 // Kombinationen, wie sie in der Login-Liste vorkommen (z. B. «MS» oder «MS-MT»): Kerndaten, monday, Sektordaten
@@ -201,10 +225,11 @@ for (const cb of combos) {
   const amap = {};
   for (const s of segs) { for (const f of segAssets[s].files) (amap[f] = amap[f] || []).push(s); for (const d of Object.keys(segAssets[s].mon)) (amap['mon/' + d + '.enc'] = amap['mon/' + d + '.enc'] || []).push(s); }
   c.assets = amap;
-  put('data/seg/' + cb + '.gz.enc', key, zlib.gzipSync(Buffer.from(JSON.stringify(c)), { level: 9 }));
-  put('data/seg/' + cb + '-live.enc', key, Buffer.from(JSON.stringify(filterLive(live, segs, evIds))));
-  put('data/seg/' + cb + '-sec.enc', key, Buffer.from(JSON.stringify(filterSec(sec, segs))));
+  put('data/seg/' + cb + '.gz.enc', key, zlib.gzipSync(Buffer.from(JSON.stringify(c)), { level: 9 }), 'combo:' + cb);
+  put('data/seg/' + cb + '-live.enc', key, Buffer.from(JSON.stringify(filterLive(live, segs, evIds))), 'combo:' + cb);
+  put('data/seg/' + cb + '-sec.enc', key, Buffer.from(JSON.stringify(filterSec(sec, segs))), 'combo:' + cb);
 }
+keepFiles.add('data/people.enc');   // wird unten geschrieben; Prüfsumme nicht vorher löschen (sonst jedes Mal neu)
 // Alte Dateien entfernen (Bereich oder Kombination nicht mehr gebraucht)
 const walkDir = d => fs.existsSync(P(d)) ? fs.readdirSync(P(d), { withFileTypes: true }).flatMap(e => e.isDirectory() ? walkDir(d + '/' + e.name) : [d + '/' + e.name]) : [];
 let nDel = 0;
@@ -223,6 +248,17 @@ for (const f of Object.keys(state.f)) if (!keepFiles.has(f)) delete state.f[f];
   put('data/people.enc', K, Buffer.from(JSON.stringify({ p: ppl })));
 }
 
+// ── Schlüsselpaar für die Offline-Datei (Vonsie, 27.10.2026): öffentlicher Teil zum Verschlüsseln beim Bauen (ohne Passwort),
+//    privater Teil mit dem Hauptschlüssel verschlüsselt. Öffnen kann die Offline-Datei nur, wer sich als Admin anmeldet.
+{
+  const OF = P('data/offline.json'); let ok = false;
+  try { const o = JSON.parse(fs.readFileSync(OF, 'utf8')); crypto.createPrivateKey({ key: dec(K, Buffer.from(o.priv, 'base64')), format: 'der', type: 'pkcs8' }); ok = true; } catch (e) {}
+  if (!ok) {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 3072 });
+    fs.writeFileSync(OF, JSON.stringify({ v: 1, pub: publicKey.export({ type: 'spki', format: 'der' }).toString('base64'), priv: enc(K, privateKey.export({ type: 'pkcs8', format: 'der' })).toString('base64') }));
+    nW++; note('Neues Schlüsselpaar für die Offline-Datei');
+  }
+}
 // ── Schlüsselbund: pro Person mit ihrem Passwort verschlüsselt ──
 const KR = P('data/keyring.json');
 let kr = { v: 1, iter: 210000, u: {} }; try { kr = JSON.parse(fs.readFileSync(KR, 'utf8')); } catch (e) {}
