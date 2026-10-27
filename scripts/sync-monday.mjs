@@ -219,21 +219,21 @@ async function rvdBoard() {
 const out = {};
 for (const [k, b] of Object.entries(BOARDS)) out[k] = { items: await board(b) };
 out.rvd = { items: await rvdBoard() };
-// Vimeo prüfen (Vonsie, 27.10.2026): wird das Video gefunden und darf es auf der Seite eingebettet werden? Ergebnis pro Eintrag in s.vchk
+// Vimeo prüfen (Vonsie, 27.10.2026): wird das Video gefunden und darf es auf der Seite eingebettet werden? Ergebnis pro Eintrag in s.vchk (4 gleichzeitig)
 {
-  let n = 0, bad = 0;
-  for (const p of out.rvd.items) for (const s of p.sub) {
-    const u = s.link && s.link.u; if (!u || !/vimeo\.com\/(?:video\/)?\d+/.test(u)) continue;
-    n++;
+  const L = []; for (const p of out.rvd.items) for (const s of p.sub) { const u = s.link && s.link.u; if (u && /vimeo\.com\/(?:video\/)?\d+/.test(u)) L.push(s); }
+  let bad = 0, k = 0;
+  const one = async s => {
+    const u = s.link.u;
     try {
       const r = await fetch('https://vimeo.com/api/oembed.json?url=' + encodeURIComponent(u), { headers: { Referer: 'https://race-venue-dossier.github.io/', 'User-Agent': UA['User-Agent'] } });
       if (r.status === 403) s.vchk = 'blocked';
       else if (r.status === 404) s.vchk = /vimeo\.com\/(?:video\/)?\d+\/[0-9a-f]+|[?&]h=[0-9a-f]+/.test(u) ? 'missing' : 'nohash';
       if (s.vchk) bad++;
     } catch (e) {}
-    await new Promise(r => setTimeout(r, 300));
-  }
-  if (n) console.log('::notice title=Vimeo::' + n + ' Videos geprüft' + (bad ? ', ' + bad + ' mit Problem' : ', alle in Ordnung'));
+  };
+  await Promise.all([0, 1, 2, 3].map(async () => { while (k < L.length) await one(L[k++]); }));
+  if (L.length) console.log('::notice title=Vimeo::' + L.length + ' Videos geprüft' + (bad ? ', ' + bad + ' mit Problem (siehe «monday prüfen»)' : ', alle in Ordnung'));
 }
 // Dateien: Download-Adressen gelten nur eine Stunde, deshalb werden sie einmalig geholt und verschlüsselt im Repo abgelegt.
 const MAXA = 40 * 1024 * 1024;
