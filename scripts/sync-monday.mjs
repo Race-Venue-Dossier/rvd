@@ -233,7 +233,7 @@ out.rvd = { items: await rvdBoard() };
     } catch (e) {}
     await new Promise(r => setTimeout(r, 300));
   }
-  if (n) console.log('Vimeo: ' + n + ' Videos geprüft' + (bad ? ', ' + bad + ' mit Problem' : ', alle in Ordnung'));
+  if (n) console.log('::notice title=Vimeo::' + n + ' Videos geprüft' + (bad ? ', ' + bad + ' mit Problem' : ', alle in Ordnung'));
 }
 // Dateien: Download-Adressen gelten nur eine Stunde, deshalb werden sie einmalig geholt und verschlüsselt im Repo abgelegt.
 const MAXA = 40 * 1024 * 1024;
