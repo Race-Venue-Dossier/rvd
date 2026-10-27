@@ -3856,17 +3856,26 @@ function calApply(){
   var acc=window.__RVD_ACC,ok=function(g,dc){ if(!acc||acc.admin) return true; var a=calArea(dc); return !a||acc.segs.indexOf(g+a)>=0; };
   var se=(CAL.season-1)+'/'+String(CAL.season).slice(2),byId={},n=0;
   S.events.forEach(function(e){ byId[e.id]=e; });
+  /* bekannte Rennen über die FIS-Nummer: Datum und Absage (unabhängig vom erkannten Geschlecht) */
+  var rIx={}; S.events.forEach(function(e){ (e.races||[]).forEach(function(r){ rIx[r.id]=e; }); });
+  var touched={};
+  CAL.evs.forEach(function(c){ c.races.forEach(function(r){ var e=rIx[r.id]; if(!e||!r.d) return; var o=e.races.filter(function(x){return x.id===r.id;})[0];
+    if(o.d!==r.d){ o.d=r.d; n++; touched[e.id]=e; } if(!!o.x!==!!r.x){ if(r.x) o.x=true; else delete o.x; n++; touched[e.id]=e; } }); });
+  Object.keys(touched).forEach(function(k){ var e=touched[k]; e.races.sort(function(a,b){ return a.d<b.d?-1:a.d>b.d?1:String(a.cx)<String(b.cx)?-1:1; }); var lv=e.races.filter(function(r){return !r.x;}),al=lv.length?lv:e.races; e.frm=al[0].d; e.to=al[al.length-1].d; });
   CAL.evs.forEach(function(c){ ['M','W'].forEach(function(g){
-    var R=c.races.filter(function(r){ return (r.g===g||r.g==='A')&&r.d&&ok(g,r.disc); }); if(!R.length) return;
+    var R=c.races.filter(function(r){ return (r.g===g||r.g==='A')&&r.d&&ok(g,r.disc)&&!rIx[r.id]; }); if(!R.length) return;
     var id=CAL.season+'-'+c.eid+'-'+g,e=byId[id];
     if(!e){ e={id:id,season:se,fis:c.eid,name:c.place,nat:c.nat,g:g,cat:c.cat==='WSC'?'WSC':'WC',frm:'',to:'',races:[],staff:[],pts:[],hl:[],resnote:[],days:[],items:[],lf:[],cal:1}; S.events.push(e); byId[id]=e; n++; }
     var have={}; (e.races||[]).forEach(function(r){ have[r.id]=r; });
-    R.forEach(function(r){ var o=have[r.id];
-      if(o){ if(o.d!==r.d){ o.d=r.d; n++; } if(!!o.x!==!!r.x){ if(r.x) o.x=true; else delete o.x; n++; } return; }
+    R.forEach(function(r){ if(have[r.id]||rIx[r.id]) return;   /* bekannte Rennen sind oben schon nachgeführt */
       var k=r.disc==='DHT'?'T':/Q$/.test(r.disc)?'Q':'R'; e.races.push({id:r.id,d:r.d,cx:r.cx,disc:r.disc,kind:k,x:r.x?true:undefined}); n++; });
     e.races.sort(function(a,b){ return a.d<b.d?-1:a.d>b.d?1:String(a.cx)<String(b.cx)?-1:1; });
     var live=e.races.filter(function(r){return !r.x;}),all=live.length?live:e.races; e.frm=all[0].d; e.to=all[all.length-1].d;
   }); });
+  /* Event der Saison nicht mehr im FIS-Kalender (z. B. Narvik «TBC»): Rennen als abgesagt zeigen */
+  var inCal={}; CAL.evs.forEach(function(c){ inCal[c.eid]=1; });
+  if(CAL.evs.length>=10) S.events.forEach(function(e){ if(e.season!==se||inCal[e.fis]||!/^(WC|WCF|WSC)$/.test(e.cat||'')||e.calGone) return;
+    e.calGone=1; (e.races||[]).forEach(function(r){ if(!r.x){ r.x=true; n++; } }); });
   if(CAL.at&&S.meta) S.meta.fisSynced=CAL.at.slice(0,10);
   return n;
 }
