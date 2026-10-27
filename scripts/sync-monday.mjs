@@ -282,7 +282,14 @@ async function bibSync(test) {
   fs.writeFileSync('data/bib.enc', Buffer.concat([iv, c.update(JSON.stringify(B)), c.final(), c.getAuthTag()]));
   console.log('::notice title=Startnummern::' + n + ' Rennen neu, total ' + Object.keys(B.r).length);
 }
-if ((process.env.FIS_TEST || '').trim() === 'bib') { await bibSync(true); process.exit(0); }
+if ((process.env.FIS_TEST || '').trim() === 'bib') {
+  const html = await (await fetch('https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=131578', { headers: UA })).text();
+  const re = /<a[^>]*class="[^"]*table-row[^"]*"[^>]*>([\s\S]*?)<\/a>/g; let m, i = 0;
+  while ((m = re.exec(html))) { i++; if (![1, 2, 30, 31, 45, 60, 66].includes(i)) continue;
+    const cells = [...m[1].matchAll(/<div[^>]*class="([^"]*)"[^>]*>([^<]*)<\/div>/g)].map(c => c[1].replace(/\s+/g, '.').slice(0, 40) + '=' + ent(c[2]).trim()).filter(x => !/=$/.test(x));
+    console.log('::notice title=Zeile ' + i + '::' + cells.join(' | ').slice(0, 1500)); }
+  await bibSync(true); process.exit(0);
+}
 // ── FIS-Kalender höchstens einmal pro Tag nachführen (data/cal.json, öffentlich wie der FIS-Kalender selbst; Vonsie, 27.10.2026) ──
 if (!process.env.FIS_TEST && !REDO.length) {
   let old = null; try { old = JSON.parse(fs.readFileSync('data/cal.json', 'utf8')); } catch (e) {}
