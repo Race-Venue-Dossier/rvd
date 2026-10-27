@@ -1,6 +1,6 @@
 /* Service Worker: App-Gefühl und Offline-Zugriff (GitHub-Pages-Version).
    Alle Daten bleiben verschlüsselt im Cache; entschlüsselt wird nur in der Seite. */
-var V='rvd-a413bccfc9c2',SHELL=['./','index.html','key.json','manifest.webmanifest','icons/apple-touch-icon.png','icons/icon-192.png','icons/favicon.svg','data/core.gz.enc'];
+var V='rvd-deab3966a5f6',SHELL=['./','index.html','key.json','manifest.webmanifest','icons/apple-touch-icon.png','icons/icon-192.png','icons/favicon.svg','data/core.gz.enc'];
 self.addEventListener('install',function(e){ e.waitUntil(caches.open(V).then(function(c){ return c.addAll(SHELL); }).then(function(){ return self.skipWaiting(); })); });
 self.addEventListener('activate',function(e){ e.waitUntil(caches.keys().then(function(ks){ return Promise.all(ks.filter(function(k){ return k.indexOf('rvd-')===0&&k!==V&&k!=='rvd-media'&&k!=='rvd-map'; }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); })); });
 function netFirst(req,cache){
@@ -20,6 +20,8 @@ self.addEventListener('fetch',function(e){
   var req=e.request; if(req.method!=='GET') return;
   var u=new URL(req.url);
   if(u.origin===location.origin){
+    /* Bereichsdateien (seg/…) können nach einem Schlüsselwechsel neu verschlüsselt sein: immer zuerst vom Netz (27.10.2026) */
+    if(/\/seg\//.test(u.pathname)) return e.respondWith(netFirst(req,'rvd-media'));
     if(/\/(img|kurs|gtgpdf|mon|monasset)\//.test(u.pathname)) return e.respondWith(cacheFirst(req,'rvd-media',1500));
     return e.respondWith(netFirst(req,V));
   }
