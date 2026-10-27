@@ -250,6 +250,39 @@ for (const p of out.rvd.items) for (const s of p.sub) for (const f of s.files) {
 out.fis = await fisSync(out.rvd.items).catch(e => { console.log('FIS übersprungen:', String(e).slice(0, 120)); return {}; });
 // Nachauswertung älterer Rennen über «Run workflow» (fis_redo = «raceid|datum|M/W|GS/SL|Ort;…»), z. B. wenn mehr Athlet:innen gespeichert werden sollen
 const REDO = (process.env.FIS_REDO || '').split(';').map(x => x.trim()).filter(Boolean).map(x => { const [rid, d, g, disc, pl] = x.split('|'); return { rid, d, g, disc, pl: pl || '' }; });
+// ── Startnummern aller Fahrer:innen sammeln (Vonsie, 27.10.2026): dauerhaft in data/bib.enc (verschlüsselt, nur Admins).
+//    Pro Lauf höchstens 6 abgeschlossene Rennen der Saison aus data/cal.json, die noch fehlen. Zeile: [Startnr, Rang, Rückstand s, Nation, Name]
+const secOf = t => { const m = String(t || '').match(/^\+?(?:(\d+):)?(\d+(?:\.\d+)?)$/); return m ? (+(m[1] || 0)) * 60 + +m[2] : null; };
+async function bibRace(rid) {
+  const html = await (await fetch(`https://www.fis-ski.com/DB/general/results.html?sectorcode=AL&raceid=${rid}`, { headers: UA })).text();
+  const rows = parseRows(html), fin = rows.filter(r => r.rk && r.t);
+  if (fin.length < 10) return null;   // noch keine offiziellen Resultate
+  const ok = rows.filter(r => r.bib && r.bib >= 1 && r.bib <= 150);
+  if (ok.length < rows.length * 0.8) return { bad: 1, n: rows.length, nb: ok.length };
+  return { rows: rows.map(r => [r.bib && r.bib <= 150 ? r.bib : null, r.rk || null, r.rk === 1 ? 0 : r.rk ? secOf(r.diff) : null, r.nat, r.n]) };
+}
+async function bibSync(test) {
+  let cal = null; try { cal = JSON.parse(fs.readFileSync('data/cal.json', 'utf8')); } catch (e) { return; }
+  const kj = JSON.parse(fs.readFileSync('key.json', 'utf8')), kk = crypto.pbkdf2Sync(PASS, Buffer.from(kj.salt, 'base64'), kj.iter, 32, 'sha256');
+  let B = { v: 1, r: {} };
+  if (fs.existsSync('data/bib.enc')) { const b = fs.readFileSync('data/bib.enc'), d = crypto.createDecipheriv('aes-256-gcm', kk, b.subarray(0, 12)); d.setAuthTag(b.subarray(b.length - 16)); B = JSON.parse(Buffer.concat([d.update(b.subarray(12, b.length - 16)), d.final()]).toString()); }
+  const today = new Date().toISOString().slice(0, 10), todo = [];
+  for (const e of cal.evs) for (const r of e.races) if (r.d && r.d < today && !r.x && /^(DH|SG|GS|SL)$/.test(r.disc) && !B.r[r.id]) todo.push({ ...r, eid: e.eid, pl: e.place, season: cal.season });
+  todo.sort((a, b) => a.d < b.d ? 1 : -1);
+  let n = 0;
+  for (const r of todo.slice(0, test ? 2 : 6)) {
+    await new Promise(z => setTimeout(z, 800));
+    const x = await bibRace(r.id);
+    if (test) { console.log('::notice title=Startnummern::' + r.id + ' ' + r.d + ' ' + r.pl + ' ' + r.disc + ' ' + r.g + ': ' + (x ? (x.bad ? 'Startnummern fehlen (' + x.nb + '/' + x.n + ')' : x.rows.length + ' Zeilen, erste: ' + JSON.stringify(x.rows.slice(0, 4)) + ' … letzte: ' + JSON.stringify(x.rows.slice(-2))) : 'noch keine Resultate')); continue; }
+    if (!x || x.bad) { if (x) console.log('::warning title=Startnummern::' + r.id + ': Startnummern nicht lesbar'); continue; }
+    B.r[r.id] = { d: r.d, disc: r.disc, g: r.g, id: r.season + '-' + r.eid + '-' + r.g, pl: r.pl, rows: x.rows }; n++;
+  }
+  if (test || !n) return;
+  const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', kk, iv);
+  fs.writeFileSync('data/bib.enc', Buffer.concat([iv, c.update(JSON.stringify(B)), c.final(), c.getAuthTag()]));
+  console.log('::notice title=Startnummern::' + n + ' Rennen neu, total ' + Object.keys(B.r).length);
+}
+if ((process.env.FIS_TEST || '').trim() === 'bib') { await bibSync(true); process.exit(0); }
 // ── FIS-Kalender höchstens einmal pro Tag nachführen (data/cal.json, öffentlich wie der FIS-Kalender selbst; Vonsie, 27.10.2026) ──
 if (!process.env.FIS_TEST && !REDO.length) {
   let old = null; try { old = JSON.parse(fs.readFileSync('data/cal.json', 'utf8')); } catch (e) {}
@@ -263,6 +296,7 @@ if (!process.env.FIS_TEST && !REDO.length) {
     } catch (e) { console.log('FIS-Kalender übersprungen: ' + String(e).slice(0, 120)); }
   }
 }
+if (!process.env.FIS_TEST && !REDO.length) { try { if (await robotsOk('/DB/general/')) await bibSync(false); } catch (e) { console.log('Startnummern übersprungen: ' + String(e).slice(0, 120)); } }
 if (REDO.length && !process.env.FIS_TEST && (await robotsOk('/DB/general/'))) {
   let ok = 0; const miss = [];
   for (const t of REDO) {
