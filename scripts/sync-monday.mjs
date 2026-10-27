@@ -270,6 +270,9 @@ async function bibSync(test) {
   const kj = JSON.parse(fs.readFileSync('key.json', 'utf8')), kk = crypto.pbkdf2Sync(PASS, Buffer.from(kj.salt, 'base64'), kj.iter, 32, 'sha256');
   let B = { v: 1, r: {} };
   if (fs.existsSync('data/bib.enc')) { const b = fs.readFileSync('data/bib.enc'), d = crypto.createDecipheriv('aes-256-gcm', kk, b.subarray(0, 12)); d.setAuthTag(b.subarray(b.length - 16)); B = JSON.parse(Buffer.concat([d.update(b.subarray(12, b.length - 16)), d.final()]).toString()); }
+  // Reparatur: Einträge ohne Geschlecht (vor der Codex-Regel gespeichert) über den Codex im Kalender ergänzen
+  let fixed = 0; const cxOf = {}; for (const e of cal.evs) for (const r of e.races) cxOf[r.id] = { cx: String(r.cx || ''), eid: e.eid };
+  for (const [rid, rec] of Object.entries(B.r)) if (!rec.g && cxOf[rid]) { const c = cxOf[rid].cx[0]; rec.g = c === '5' ? 'W' : c === '0' ? 'M' : ''; if (rec.g) { rec.id = cal.season + '-' + cxOf[rid].eid + '-' + rec.g; fixed++; } }
   const today = new Date().toISOString().slice(0, 10), todo = [];
   for (const e of cal.evs) for (const r of e.races) if (r.d && r.d < today && !r.x && /^(DH|SG|GS|SL)$/.test(r.disc) && !B.r[r.id]) todo.push({ ...r, eid: e.eid, pl: e.place, season: cal.season });
   todo.sort((a, b) => a.d < b.d ? 1 : -1);
@@ -282,10 +285,10 @@ async function bibSync(test) {
     const g = r.g || (String(r.cx)[0] === '5' ? 'W' : String(r.cx)[0] === '0' ? 'M' : ''); if (!g) continue;
     B.r[r.id] = { d: r.d, disc: r.disc, g, id: r.season + '-' + r.eid + '-' + g, pl: r.pl, rows: x.rows }; n++;
   }
-  if (test || !n) return;
+  if (test || (!n && !fixed)) return;
   const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', kk, iv);
   fs.writeFileSync('data/bib.enc', Buffer.concat([iv, c.update(JSON.stringify(B)), c.final(), c.getAuthTag()]));
-  console.log('::notice title=Startnummern::' + n + ' Rennen neu, total ' + Object.keys(B.r).length);
+  console.log('::notice title=Startnummern::' + n + ' Rennen neu' + (fixed ? ', ' + fixed + ' repariert' : '') + ', total ' + Object.keys(B.r).length);
 }
 if ((process.env.FIS_TEST || '').trim() === 'bib') {
   await bibSync(true); process.exit(0);
