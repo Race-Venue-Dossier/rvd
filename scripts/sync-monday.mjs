@@ -58,26 +58,37 @@ const ent = s => s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;
 const strip = s => ent(s.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
 const DISCS = [['Downhill Training', 'DHT'], ['Training', 'DHT'], ['Super G', 'SG'], ['Super-G', 'SG'], ['Giant Slalom', 'GS'], ['Parallel', 'PAR'], ['Slalom', 'SL'], ['Downhill', 'DH'], ['Alpine combined', 'AC'], ['Team Combined', 'TC']];
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
-// ── Testmodus FIS-Kalender (fis_test=cal): zeigt den Aufbau der Kalenderseite, speichert nichts (Vonsie, 27.10.2026) ──
+// ── FIS-Kalender (Vonsie, 27.10.2026): Events der Saison (WC, WSC) und ihre Rennen mit Datum, Codex, Disziplin, Geschlecht, abgesagt ──
+async function calEvent(eid, season) {
+  const eh = await (await fetch(`https://www.fis-ski.com/DB/general/event-details.html?sectorcode=AL&eventid=${eid}&seasoncode=${season}`, { headers: UA })).text();
+  const head = strip((eh.match(/<h1[\s\S]*?<\/h1>/) || [''])[0]), nat = (head.match(/\(([A-Z]{3})\)/) || [])[1] || '', place = head.replace(/\s*\([A-Z]{3}\).*$/, '').trim();
+  const pos = [...eh.matchAll(/results\.html\?sectorcode=AL(?:&amp;|&)raceid=(\d+)/g)].map(x => [x.index, x[1]]);
+  const order = []; for (const [, r] of pos) if (!order.includes(r)) order.push(r);
+  const races = [];
+  for (const rid of order) {
+    const st = pos.find(x => x[1] === rid)[0], nx = pos.find(x => x[0] > st && x[1] !== rid), seg = eh.slice(Math.max(0, eh.lastIndexOf('table-row', st)), nx ? nx[0] : st + 6000);
+    const txt = strip(seg), d = (seg.match(/data-date="(\d{4}-\d\d-\d\d)"/) || [])[1] || '';
+    const disc = (DISCS.find(x => new RegExp(x[0], 'i').test(txt)) || [])[1] || '';
+    const g = /\bWomen\b|\bLadies\b|\bW\b/.test(txt) ? 'W' : /\bMen\b|\bM\b/.test(txt) ? 'M' : /Mixed|Team/.test(txt) ? 'A' : '';
+    const cx = (txt.match(/\b(\d{4})\b/) || [])[1] || '';
+    races.push({ id: +rid, d, cx, disc, g, x: /title="Cancelled"/.test(seg) ? 1 : 0, t: txt.slice(0, 160) });
+  }
+  return { eid: +eid, place, nat, races };
+}
+async function calSync(test) {
+  const now = new Date(), season = now.getUTCMonth() >= 6 ? now.getUTCFullYear() + 1 : now.getUTCFullYear(), evs = [];
+  for (const cat of ['WC', 'WSC']) {
+    const html = await (await fetch(`https://www.fis-ski.com/DB/alpine-skiing/calendar-results.html?eventselection=&place=&sectorcode=AL&seasoncode=${season}&categorycode=${cat}&disciplinecode=&gendercode=&racedate=&racecodex=&nationcode=&seasonmonth=X-${season}&saveselection=-1&seasonselection=`, { headers: UA })).text();
+    const ids = [...new Set([...html.matchAll(/eventid=(\d+)/g)].map(x => x[1]))];
+    for (const eid of (test ? ids.slice(0, 3) : ids)) { await new Promise(r => setTimeout(r, 700)); const e = await calEvent(eid, season); e.cat = cat; evs.push(e); }
+  }
+  return { season, evs };
+}
 if ((process.env.FIS_TEST || '').trim() === 'cal') {
   const N = m => console.log('::notice title=FIS-Kalender::' + m.slice(0, 3800));
-  const now = new Date(), season = now.getUTCMonth() >= 6 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
-  for (const cat of ['WC', 'WSC']) {
-    const url = `https://www.fis-ski.com/DB/alpine-skiing/calendar-results.html?eventselection=&place=&sectorcode=AL&seasoncode=${season}&categorycode=${cat}&disciplinecode=&gendercode=&racedate=&racecodex=&nationcode=&seasonmonth=X-${season}&saveselection=-1&seasonselection=`;
-    const r = await fetch(url, { headers: UA }); const html = await r.text();
-    const ids = [...new Set([...html.matchAll(/eventid=(\d+)/g)].map(x => x[1]))];
-    N(cat + ' Status ' + r.status + ' · ' + html.length + ' Zeichen · ' + ids.length + ' Events: ' + ids.slice(0, 50).join(','));
-    const i = html.search(/eventid=\d+/); if (i >= 0) N(cat + ' Ausschnitt: ' + strip(html.slice(Math.max(0, i - 1500), i + 2500)));
-    if (i >= 0) N(cat + ' HTML: ' + html.slice(Math.max(0, i - 600), i + 1800).replace(/\s+/g, ' '));
-    if (cat === 'WC' && ids.length) {
-      await new Promise(r => setTimeout(r, 800));
-      const eh = await (await fetch(`https://www.fis-ski.com/DB/general/event-details.html?sectorcode=AL&eventid=${ids[2] || ids[0]}&seasoncode=${season}`, { headers: UA })).text();
-      const j = eh.search(/raceid=\d+/);
-      N('Event ' + (ids[2] || ids[0]) + ' Kopf: ' + strip((eh.match(/<h1[\s\S]*?<\/h1>/) || [''])[0]) + ' · Ausschnitt: ' + strip(eh.slice(Math.max(0, j - 800), j + 3000)));
-      N('Event HTML: ' + eh.slice(Math.max(0, j - 400), j + 2500).replace(/\s+/g, ' '));
-    }
-    await new Promise(r => setTimeout(r, 800));
-  }
+  const c = await calSync(true);
+  for (const e of c.evs) N(e.cat + ' ' + e.eid + ' ' + e.place + ' (' + e.nat + '): ' + e.races.map(r => r.id + ' ' + r.d + ' ' + r.cx + ' ' + r.disc + ' ' + r.g + (r.x ? ' ABGESAGT' : '')).join(' | '));
+  N('Rohtext erstes Rennen: ' + ((c.evs[0] || {}).races || [{}])[0].t);
   process.exit(0);
 }
 function parseRows(html) {
