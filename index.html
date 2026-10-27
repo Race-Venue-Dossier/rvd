@@ -399,9 +399,9 @@ h1 .flag{width:1.25em;height:.84em;border-radius:3px}
 .sl .rk{display:inline-flex;align-items:center;justify-content:center;height:21px;border-radius:6px;font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted);background:var(--bg)}
 .sl .rk.t30{color:var(--ink-2)}
 .sl .rk.t10{background:var(--ink-2);color:var(--surface)}
-.sl .rk.r1{background:linear-gradient(160deg,var(--gold-a),var(--gold-b));color:var(--gold-ink)}
-.sl .rk.r2{background:linear-gradient(160deg,var(--silver-a),var(--silver-b));color:var(--silver-ink)}
-.sl .rk.r3{background:linear-gradient(160deg,var(--bronze-a),var(--bronze-b));color:var(--bronze-ink)}
+.sl .rk.r1{background:color-mix(in srgb,var(--gold-a) 55%,var(--surface));box-shadow:inset 0 0 0 1px var(--gold-b);color:var(--gold-ink)}
+.sl .rk.r2{background:var(--silver-a);box-shadow:inset 0 0 0 1px var(--silver-b);color:var(--silver-ink)}
+.sl .rk.r3{background:color-mix(in srgb,var(--bronze-a) 55%,var(--surface));box-shadow:inset 0 0 0 1px var(--bronze-b);color:var(--bronze-ink)}
 .sl .nm{font-weight:650;min-width:0;overflow-wrap:anywhere}
 .sl .tm{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:12px;white-space:nowrap}
 .sl .pp{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;font-size:12px}
@@ -409,9 +409,9 @@ h1 .flag{width:1.25em;height:.84em;border-radius:3px}
 .sl li.out .tm{color:var(--muted);font-size:11px}
 .nb{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content max-content;gap:5px 9px;align-items:center;font-size:12px}
 .nb .nl{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:11px;letter-spacing:.03em}
-.nb .nbar{height:13px;border-radius:4px;background:var(--bg);overflow:hidden;display:block}
+.nb .nbar{height:8px;border-radius:4px;background:var(--bg);overflow:hidden;display:block}
 .nb .nbar i{display:block;height:100%;border-radius:4px;background:var(--bar)}
-.nb .me .nbar i{background:var(--red)}
+.nb .me .nbar i{background:var(--ink-2)}.nb .me.nl,.nb .nr.me>.nl{color:var(--ink)}
 .nb .nv{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
 .nb .nc{font-variant-numeric:tabular-nums;color:var(--muted);text-align:right;font-size:11px;min-width:14px}
 .nb .me{display:contents}
@@ -1647,6 +1647,18 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .fni summary::-webkit-details-marker{display:none}
 .fni[open]{display:block;margin:6px 0 0}.fni p{margin:6px 0 0;max-width:80ch}
 
+/* Resultat: Podest als Liste, Nationen-Balken schlanker (27.10.2026) */
+.podl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.podl li{display:grid;grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid var(--line)}
+.podl li:last-child{border-bottom:0}
+.podl .pm{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:var(--bronze-ink);background:color-mix(in srgb,var(--bronze-a) 55%,var(--surface));box-shadow:inset 0 0 0 1px var(--bronze-b)}
+.podl .r1 .pm{color:var(--gold-ink);background:color-mix(in srgb,var(--gold-a) 55%,var(--surface));box-shadow:inset 0 0 0 1px var(--gold-b)}
+.podl .r2 .pm{color:var(--silver-ink);background:var(--silver-a);box-shadow:inset 0 0 0 1px var(--silver-b)}
+.podl .flag{width:20px;height:13.5px;border-radius:2px}
+.podl b{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.podl .t{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.podl .r1 .t{color:var(--ink);font-weight:700}
+
 </style>
 
 </head>
@@ -2157,15 +2169,13 @@ function f1(v){ return v==null?'–':(Math.round(v*10)/10).toFixed(1).replace('.
 function natTag(nat){ return (FL[nat]?flag(nat):'')+'<span class="nat">'+h(nat)+'</span>'; }
 
 /* Resultat eines Rennens: Podest, alle Schweizer:innen, Nationen */
+/* Podest als schlanke Liste: kleine Medaille, Flagge, Name, Zeit (Vonsie, 27.10.2026; vorher Treppe mit grossen Blöcken) */
 function podium(top){
   var s=top.slice().sort(function(a,b){return a.r-b.r;});
-  var slots=[[s[1]],[s[0]],[s[2]]]; s.slice(3).forEach(function(x){ slots[2].push(x); });
-  return '<div class="pod">'+slots.map(function(L){
-    L=L.filter(Boolean); if(!L.length) return '<div class="pd"></div>';
-    return '<div class="pd r'+L[0].r+'">'+L.map(function(x){
-      return '<div class="who">'+(FL[x.nat]?flag(x.nat):'<span class="nat">'+h(x.nat)+'</span>')+'<b>'+h(x.n)+'</b><span class="t">'+h(x.d||x.t)+'</span></div>';
-    }).join('')+'<div class="step" aria-label="Rang '+L[0].r+'">'+L[0].r+'</div></div>';
-  }).join('')+'</div>';
+  if(!s.length) return '<p class="sub">Noch kein Resultat.</p>';
+  return '<ol class="podl">'+s.map(function(x){
+    return '<li class="r'+x.r+'"><span class="pm" aria-label="Rang '+x.r+'">'+x.r+'</span>'+(FL[x.nat]?flag(x.nat):'<span class="nat">'+h(x.nat)+'</span>')+'<b>'+h(x.n)+'</b><span class="t">'+h(x.d||x.t)+'</span></li>';
+  }).join('')+'</ol>';
 }
 var SHV={"Val d'Isère":'Isère','Val Gardena':'Gröd.','Val Gardena/Gröden':'Gröd.','Alta Badia':'Badia','Madonna di Campiglio':'Mad.','Crans-Montana':'Crans','Crans Montana':'Crans','St. Moritz':'StMo.','Copper Mountain':'Copp.','Beaver Creek':'Beav.','Kranjska Gora':'Kran.','Garmisch-Partenkirchen':'Garm.'};
 function shortV(n){ n=String(n).trim(); if(SHV[n]) return SHV[n]; var w=n.split(/[\s-]/)[0]; return w.length>5?w.slice(0,4)+'.':w; }
@@ -3778,6 +3788,10 @@ function liveRvd(items,at){
       if(/Kurssetzung|Gate-to-Gate/.test(art)&&tech&&!s.run) prob.push('Lauf fehlt');
       if(!s.d) prob.push('Datum fehlt');
       if(/Video/.test(art)&&!/^Laufbestzeit/.test(s.name||'')&&!lAthList(s.ath).length&&!/Alle \(Team\)/.test(s.ath||'')) prob.push('Athlet:in fehlt');
+      /* Vimeo (Prüfung im Abgleich, 27.10.2026) */
+      if(s.vchk==='blocked') prob.push('Video nicht einbettbar (Vimeo: Einbetten «Überall»)');
+      else if(s.vchk==='nohash') prob.push('Vimeo-Link ohne Code (vimeo.com/ID/CODE)');
+      else if(s.vchk==='missing') prob.push('Video bei Vimeo nicht gefunden');
       if(prob.length) chk.push({ev:ev,t:s.name||art||'Eintrag',p:prob,mid:s.id}); });
     (p.sub||[]).forEach(function(s){ if(/^Beispiel-Eintrag/.test(s.name||'')||s.st==='nicht nötig') return;
       var has=!s.e&&((s.files&&s.files.length)||(s.link&&s.link.u)||(s.note&&String(s.note).trim()));

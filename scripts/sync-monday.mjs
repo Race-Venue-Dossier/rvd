@@ -58,6 +58,28 @@ const ent = s => s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;
 const strip = s => ent(s.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
 const DISCS = [['Downhill Training', 'DHT'], ['Training', 'DHT'], ['Super G', 'SG'], ['Super-G', 'SG'], ['Giant Slalom', 'GS'], ['Parallel', 'PAR'], ['Slalom', 'SL'], ['Downhill', 'DH'], ['Alpine combined', 'AC'], ['Team Combined', 'TC']];
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+// ── Testmodus FIS-Kalender (fis_test=cal): zeigt den Aufbau der Kalenderseite, speichert nichts (Vonsie, 27.10.2026) ──
+if ((process.env.FIS_TEST || '').trim() === 'cal') {
+  const N = m => console.log('::notice title=FIS-Kalender::' + m.slice(0, 3800));
+  const now = new Date(), season = now.getUTCMonth() >= 6 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
+  for (const cat of ['WC', 'WSC']) {
+    const url = `https://www.fis-ski.com/DB/alpine-skiing/calendar-results.html?eventselection=&place=&sectorcode=AL&seasoncode=${season}&categorycode=${cat}&disciplinecode=&gendercode=&racedate=&racecodex=&nationcode=&seasonmonth=X-${season}&saveselection=-1&seasonselection=`;
+    const r = await fetch(url, { headers: UA }); const html = await r.text();
+    const ids = [...new Set([...html.matchAll(/eventid=(\d+)/g)].map(x => x[1]))];
+    N(cat + ' Status ' + r.status + ' · ' + html.length + ' Zeichen · ' + ids.length + ' Events: ' + ids.slice(0, 50).join(','));
+    const i = html.search(/eventid=\d+/); if (i >= 0) N(cat + ' Ausschnitt: ' + strip(html.slice(Math.max(0, i - 1500), i + 2500)));
+    if (i >= 0) N(cat + ' HTML: ' + html.slice(Math.max(0, i - 600), i + 1800).replace(/\s+/g, ' '));
+    if (cat === 'WC' && ids.length) {
+      await new Promise(r => setTimeout(r, 800));
+      const eh = await (await fetch(`https://www.fis-ski.com/DB/general/event-details.html?sectorcode=AL&eventid=${ids[2] || ids[0]}&seasoncode=${season}`, { headers: UA })).text();
+      const j = eh.search(/raceid=\d+/);
+      N('Event ' + (ids[2] || ids[0]) + ' Kopf: ' + strip((eh.match(/<h1[\s\S]*?<\/h1>/) || [''])[0]) + ' · Ausschnitt: ' + strip(eh.slice(Math.max(0, j - 800), j + 3000)));
+      N('Event HTML: ' + eh.slice(Math.max(0, j - 400), j + 2500).replace(/\s+/g, ' '));
+    }
+    await new Promise(r => setTimeout(r, 800));
+  }
+  process.exit(0);
+}
 function parseRows(html) {
   const rows = [];
   const re = /<a[^>]*class="[^"]*table-row[^"]*"[^>]*>([\s\S]*?)<\/a>/g; let m;
@@ -184,6 +206,22 @@ async function rvdBoard() {
 const out = {};
 for (const [k, b] of Object.entries(BOARDS)) out[k] = { items: await board(b) };
 out.rvd = { items: await rvdBoard() };
+// Vimeo prüfen (Vonsie, 27.10.2026): wird das Video gefunden und darf es auf der Seite eingebettet werden? Ergebnis pro Eintrag in s.vchk
+{
+  let n = 0, bad = 0;
+  for (const p of out.rvd.items) for (const s of p.sub) {
+    const u = s.link && s.link.u; if (!u || !/vimeo\.com\/(?:video\/)?\d+/.test(u)) continue;
+    n++;
+    try {
+      const r = await fetch('https://vimeo.com/api/oembed.json?url=' + encodeURIComponent(u), { headers: { Referer: 'https://race-venue-dossier.github.io/', 'User-Agent': UA['User-Agent'] } });
+      if (r.status === 403) s.vchk = 'blocked';
+      else if (r.status === 404) s.vchk = /vimeo\.com\/(?:video\/)?\d+\/[0-9a-f]+|[?&]h=[0-9a-f]+/.test(u) ? 'missing' : 'nohash';
+      if (s.vchk) bad++;
+    } catch (e) {}
+    await new Promise(r => setTimeout(r, 300));
+  }
+  if (n) console.log('Vimeo: ' + n + ' Videos geprüft' + (bad ? ', ' + bad + ' mit Problem' : ', alle in Ordnung'));
+}
 // Dateien: Download-Adressen gelten nur eine Stunde, deshalb werden sie einmalig geholt und verschlüsselt im Repo abgelegt.
 const MAXA = 40 * 1024 * 1024;
 // Aus dem Dossier nach monday kopierte Dateien sind schon auf der Seite: nicht nochmals holen (data/monasset_skip.json)
