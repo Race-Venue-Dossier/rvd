@@ -279,7 +279,8 @@ async function bibSync(test) {
     const x = await bibRace(r.id);
     if (test) { console.log('::notice title=Startnummern::' + r.id + ' ' + r.d + ' ' + r.pl + ' ' + r.disc + ' ' + r.g + ': ' + (x ? (x.bad ? 'Startnummern fehlen (' + x.nb + '/' + x.n + ')' : x.rows.length + ' Zeilen, erste: ' + JSON.stringify(x.rows.slice(0, 4)) + ' … letzte: ' + JSON.stringify(x.rows.slice(-2))) : 'noch keine Resultate')); continue; }
     if (!x || x.bad) { if (x) console.log('::warning title=Startnummern::' + r.id + ': Startnummern nicht lesbar'); continue; }
-    B.r[r.id] = { d: r.d, disc: r.disc, g: r.g, id: r.season + '-' + r.eid + '-' + r.g, pl: r.pl, rows: x.rows }; n++;
+    const g = r.g || (String(r.cx)[0] === '5' ? 'W' : String(r.cx)[0] === '0' ? 'M' : ''); if (!g) continue;
+    B.r[r.id] = { d: r.d, disc: r.disc, g, id: r.season + '-' + r.eid + '-' + g, pl: r.pl, rows: x.rows }; n++;
   }
   if (test || !n) return;
   const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', kk, iv);

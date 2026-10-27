@@ -1659,6 +1659,9 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .podl .t{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .podl .r1 .t{color:var(--ink);font-weight:700}
 
+/* Startnummer-Effekt (27.10.2026) */
+.vbibx{margin:12px 0 4px}.vbibx .jvl{margin:0 0 6px}p.vbibx{font-size:12.5px}
+
 </style>
 
 </head>
@@ -3879,7 +3882,7 @@ function calApply(){
   if(CAL.at&&S.meta) S.meta.fisSynced=CAL.at.slice(0,10);
   return n;
 }
-window.__rvdT=function(){ return {S:S,render:render,renderIfChanged:renderIfChanged,today:today,spMergeSec:spMergeSec,SP:function(){return SP;},LIVE:function(){return LIVE;},evRecent:evRecent,itemsOf:itemsOf,vPdfEnd:vPdfEnd,vPdf:vPdf,calApply:calApply,calSet:function(j){ CAL=j; return calApply(); }}; };  /* für Tests */
+window.__rvdT=function(){ return {S:S,render:render,renderIfChanged:renderIfChanged,today:today,spMergeSec:spMergeSec,SP:function(){return SP;},LIVE:function(){return LIVE;},evRecent:evRecent,itemsOf:itemsOf,vPdfEnd:vPdfEnd,vPdf:vPdf,calApply:calApply,bibSet:function(j){ BIBD=j; BIBL=1; },vBibHtml:vBibHtml,calSet:function(j){ CAL=j; return calApply(); }}; };  /* für Tests */
 window.__liveRaw=function(j){ liveRaw(j); if(typeof render==='function') render(); return LIVE; };  /* für Tests und manuelle Aktualisierung */
 var LIVEON=false;
 function liveStart(){
@@ -4288,7 +4291,7 @@ function vSpeedPart(ev,k,prev){
       return '<tr style="--i:'+i+'"><td class="stick">'+vBib(BIB,x.n)+'<button type="button" class="lnk" data-act="spprof" data-v="'+h(x.n)+'" data-g="'+ev.g+'" data-s="all">'+lnH(x.n)+'</button></td>'+
       '<td class="vch" data-sv="'+(x.fit==null?99:x.fit.toFixed(3))+'" data-tip="'+h(basis.replace(/<[^>]+>/g,''))+'" tabindex="0">'+vMeter(x.fit)+vFitCell(x.fit,VFT,'rank')+(x.usual!=null?' <small class="mu">meist Rang '+Math.round(x.usual)+'</small>':'')+'</td>'+
       '<td data-l="Hier" data-sv="'+(x.best||99)+'">'+vHist(x.hh,3)+'</td><td data-l="'+(fpre?'Vorsaison':'Form')+'">'+vForm(x.n,SPDD,ev.frm,fpre)+'</td></tr>'; }).join('')+'</tbody></table></div>'; tbl=(rows.length?tbl:'')+vs.html;
-  var body='<p class="jvl">Streckenprofil hier <small class="mu">aus den FIS-Sektoren der Vorjahre</small></p>'+bar+condHtml+hi+(typeof startCheck==='function'?startCheck(ev,{DH:1,SG:1}):'')+tbl+
+  var body='<p class="jvl">Streckenprofil hier <small class="mu">aus den FIS-Sektoren der Vorjahre</small></p>'+bar+condHtml+hi+(typeof startCheck==='function'?startCheck(ev,{DH:1,SG:1}):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,['DH','SG']):'')+
     '<p class="spc-l"><b>Chance hier</b> = Ränge besser oder schlechter als der eigene übliche Rang, aus Rennen mit ähnlichem Streckenprofil'+(hasCond?', ähnlichen Bedingungen':'')+' und den bisherigen Rennen hier (Details beim Überfahren).</p><p class="spc-l vbt">Treffsicherheit (Rückrechnung 2024/25 und 2025/26, 80 Events): grosse Unterschiede treffen im Schnitt ein, kleine nicht. Die Werte sind darum halbiert und erst ab 2 Rängen als besser oder schlechter gezeigt. Ein einzelnes Rennen streut stark.</p>';
   return vCard('Abfahrt und Super-G',(starters&&starters.length?'Am Start laut '+startersSrc(ev)+' · ':'')+'Was liegt den Schweizer:innen hier? · aus '+hist.length+' Rennen '+vSeasons(hist).join(', '),body);
 }
@@ -4349,7 +4352,7 @@ function vTechPart(ev,k,prev,dc){
       '<td class="vch" data-sv="'+(x.fit==null?99:x.fit.toFixed(3))+'" data-tip="'+h(basis.replace(/<[^>]+>/g,''))+'" tabindex="0">'+vMeter(x.fit)+vFitCell(x.fit,VFT,'rank')+(x.usual!=null?' <small class="mu">meist Rang '+Math.round(x.usual)+'</small>':'')+'</td>'+
       '<td data-l="Hier" data-sv="'+(x.best||99)+'">'+vHist(x.hh,3)+'</td><td data-l="'+(fpre?'Vorsaison':'Form')+'">'+vForm(x.n,(function(o){o[dc]=1;return o;})({}),ev.frm,fpre)+'</td></tr>'; }).join('')+'</tbody></table></div>'; tbl=(rows.length?tbl:'')+vs.html;
   var body='<div class="vpdfr"><button type="button" class="btn sm" data-act="vpdf" data-v="'+h(ev.id)+'" data-d="'+dc+'" title="Onepager in der Swiss-Ski-Vorlage, zum Drucken oder als PDF">Onepager (PDF)</button></div>'+(typeof vTodayHtml==='function'?vTodayHtml(ev,dc):'')+'<p class="jvl">Kurs hier <small class="mu">aus den Kurssetzungen der Vorjahre</small></p>'+(chips.length?'<div class="vchips">'+chips.map(function(c){return '<span class="vchip"><b>'+h(c[0])+'</b>'+h(c[1])+'</span>';}).join('')+'</div>':'<p class="spc-l">Für diesen Ort gibt es noch keine Kursdaten pro Tor.</p>')+
-    hi+(typeof startCheck==='function'?startCheck(ev,(function(o){o[dc]=1;return o;})({})):'')+tbl+
+    hi+(typeof startCheck==='function'?startCheck(ev,(function(o){o[dc]=1;return o;})({})):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,dc):'')+
     '<p class="spc-l"><b>Chance hier</b> = Ränge besser oder schlechter als der eigene übliche Rang, aus Läufen mit ähnlichem Kurs'+(hasKt?'':' (Kurs hier im Schnitt, daher ohne Kurstyp-Wertung)')+' und den bisherigen Rennen hier (Details beim Überfahren).</p><p class="spc-l vbt">Treffsicherheit (Rückrechnung 2024/25 und 2025/26, 80 Events): grosse Unterschiede treffen im Schnitt ein, kleine nicht. Die Werte sind darum halbiert und erst ab 2 Rängen als besser oder schlechter gezeigt. Ein einzelnes Rennen streut stark.</p>';
   return vCard(h(DISC[dc]),(starters&&starters.length?'Am Start laut '+startersSrc(ev)+' · ':'')+'Was liegt den Schweizer:innen hier? · aus '+hist.length+' Rennen '+vSeasons(hist).join(', '),body);
 }
@@ -4895,6 +4898,44 @@ function secCards(ev,d,L){
     var key='sr|'+ev.id+'|'+d+'|'+k,sel=S.gl[key]; if(sel==null||!G[sel]) sel=0;
     out+='<div class="srsw"><span class="h3">'+h(DISC[k]||k)+' · Sektoranalyse</span>'+seg('sr-'+safeKey(key),'gl',sel,G.map(function(r,i){return [i,'Lauf '+(r.run||i+1)];}),'sm').replace(/data-act="gl"/g,'data-act="gl" data-k="'+h(key)+'"')+'</div>'+sectorCard(G[sel]); });
   return out;
+}
+
+/* ───── Startnummer-Effekt in der Vorschau (Vonsie, 27.10.2026) ─────
+   Daten: data/bib.enc (Abgleich sammelt seit Okt. 2026 Startnummer, Rang und Rückstand aller Fahrer:innen, nur Admins).
+   Gemessen wird nur der Ortseffekt: Verlieren späte Nummern HIER mehr Zeit als an anderen Orten?
+   Ein Effekt, der überall gleich wirkt, steckt schon im üblichen Rückstand (jede Person startet meist in derselben Nummern-Gruppe).
+   Ränge taugen dafür nicht: späte Nummern liegen ohnehin hinten, ein gleicher Zeitverlust ändert ihren Rang kaum.
+   Darum Rückstand relativ zum Median-Rückstand des Rennens (vergleichbar über Streckenlängen), umgerechnet in Sekunden für diesen Ort. */
+var BIBD=null,BIBL=0;
+function bibLoad(){ if(BIBL||!window.__encFetch) return; BIBL=1;
+  window.__encFetch('data/bib.enc').then(function(b){ BIBD=JSON.parse(new TextDecoder().decode(b)); if(typeof render==='function') render(); },function(){ BIBD={r:{},none:1}; }); }
+var BIBG=[[1,7,'1–7'],[8,15,'8–15'],[16,30,'16–30'],[31,999,'ab 31']];
+function bibRel(r){ var D=r.rows.filter(function(a){return a[1]&&a[2]!=null;}).map(function(a){return a[2];}),m=D.length>=10?med(D):null; return m&&m>0?m:null; }
+function bibEffect(R,here){
+  var H={}; here.forEach(function(r){ H[r.d+r.disc+r.id]=1; });
+  var other=R.filter(function(r){ return !H[r.d+r.disc+r.id]; }),byN={};
+  other.forEach(function(r){ var m=bibRel(r); if(!m) return; r.rows.forEach(function(a){ if(a[1]&&a[2]!=null) (byN[a[4]]=byN[a[4]]||[]).push(a[2]/m); }); });
+  var md={}; Object.keys(byN).forEach(function(n){ if(byN[n].length>=2) md[n]=med(byN[n]); });
+  var use=[],ms=[];
+  here.forEach(function(r){ var m=bibRel(r); if(!m) return; ms.push(m); r.rows.forEach(function(a){ if(a[0]&&a[1]&&a[2]!=null&&md[a[4]]!=null) use.push({b:a[0],z:a[2]/m-md[a[4]]}); }); });
+  var sec=ms.length?med(ms):0;   /* Median-Rückstand hier in s: rechnet die relative Abweichung in Sekunden um */
+  return {n:use.length,nh:here.length,no:other.length,g:BIBG.map(function(g){ var L=use.filter(function(x){return x.b>=g[0]&&x.b<=g[1];});
+    return {l:g[2],n:L.length,s:L.length>=5?L.reduce(function(s,x){return s+x.z;},0)/L.length*sec:null}; })};
+}
+function vBibHtml(ev,discs){
+  if(!window.__encFetch||(window.__RVD_ACC&&!window.__RVD_ACC.admin)) return '';
+  bibLoad(); if(!BIBD||BIBD.none) return '';
+  var D={}; [].concat(discs).forEach(function(d){D[d]=1;});
+  var R=Object.keys(BIBD.r).map(function(k){return BIBD.r[k];}).filter(function(r){ return D[r.disc]&&r.g===ev.g; });
+  var vk=vkey(ev.name),here=R.filter(function(r){ var e=S.events.filter(function(x){return x.id===r.id;})[0]; return e?vkey(e.name)===vk:vkey(r.pl||'')===vk; });
+  var X=bibEffect(R,here);
+  if(X.n<20) return '<p class="vbibx mu">Startnummer-Effekt an diesem Ort: Daten werden gesammelt ('+X.nh+' Rennen hier, '+X.no+' an anderen Orten, seit Okt. 2026).</p>';
+  var T=0.15,chip=function(g){ if(g.s==null) return '<span class="vchip"><b>Nr. '+g.l+'</b><span class="mu">zu wenig Daten</span></span>';
+    var a=Math.abs(g.s),t=a<T?'wie sonst':(g.s<0?'−':'+')+a.toFixed(2).replace('.',',')+' s '+(g.s<0?'weniger':'mehr')+' Rückstand';
+    return '<span class="vchip"><b>Nr. '+g.l+'</b><span class="'+(a<T?'mu':g.s<0?'up':'dn')+'">'+(a<T?'':g.s<0?'▲ ':'▼ ')+t+'</span></span>'; };
+  return '<div class="vbibx"><p class="jvl">Startnummer-Effekt an diesem Ort <small class="mu">'+X.nh+' Rennen hier, verglichen mit '+X.no+' an anderen Orten</small></p>'+
+    '<div class="vchips">'+X.g.map(chip).join('')+'</div>'+
+    '<p class="spc-l">Rückstand hier gegenüber dem eigenen üblichen Rückstand an den anderen Orten, Mittel je Startnummern-Gruppe. Zeigt, ob späte Nummern hier mehr Zeit verlieren als sonst. Gesammelt seit Oktober 2026, ab 0,15 s gezeigt.</p></div>';
 }
 
 function evNav(ev){ /* Schnellwahl vorheriges / nächstes Event (gleiche Filter wie die Liste) */
