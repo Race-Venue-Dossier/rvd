@@ -32,7 +32,7 @@
   --silver-a:#dfe5ec; --silver-b:#b4bfcb; --silver-ink:#28313c; --bronze-a:#e2b488; --bronze-b:#bd8450; --bronze-ink:#3b2410;
   --bar:#8a96a6; --gO:#93a0b1; --gH:#e67e22; --gV:#7c5cd6; --gD:#12a594;
   --grid:#e6eaef; --halo:#ffffff; --gate-r:#e63a2e; --gate-b:#2aa3d6; --fig-b:#7a8694; --fig-h:#7a3fb5; --fig-f:#0f9b8e;
-  --pdf-d:#66c2a5; --pdf-o:#8da0cb; --pdf-p:#fc8d62; --pdf-a:#a6d854;
+  --pdf-d:#7ea6dc; --pdf-o:#b3a6dd; --pdf-p:#fc8d62; --pdf-a:#e8b84f;
   --loss:#c4600f; --good:#2f6fd0; --bad:#e67e22; --stT:#34506f; --stM:#6e8bab; --stG:#a9c1d9; --stTx:#ffffff; --stMx:#ffffff; --stGx:#1d2a38; --me:#2f6fd0; --tm:#7b8494; --tp:#14181f;
   --tip:#14181f; --tip-txt:#ffffff; --dnf:#4b5563; --pv:#4a63b0;
   --shadow:0 1px 3px rgba(20,24,31,.06),0 6px 22px rgba(20,24,31,.06);
@@ -49,7 +49,7 @@
   --gm:#8fb4ff; --gw:#ec7fbd; --ok:#5aa8ec;
   --bar:#7d8a9b; --gO:#6f7d90; --gH:#f08a3c; --gV:#9d86ee; --gD:#3cc4b2;
   --grid:#39424f; --halo:#252d39; --fig-b:#9aa6b4; --fig-h:#a987dc;
-  --pdf-d:rgba(102,194,165,.5); --pdf-o:rgba(141,160,203,.5); --pdf-p:rgba(252,141,98,.5); --pdf-a:rgba(166,216,84,.45);
+  --pdf-d:rgba(126,166,220,.5); --pdf-o:rgba(179,166,221,.5); --pdf-p:rgba(252,141,98,.5); --pdf-a:rgba(232,184,79,.45);
   --loss:#f97316; --good:#3ea6dc; --bad:#f08a3c; --stT:#7f9cc0; --stM:#a7bdd6; --stG:#d3e0ee; --stTx:#0f141b; --stMx:#0f141b; --stGx:#0f141b; --me:#3ea6dc; --tm:#9aa6b4; --tp:#eef1f6;
   --tip:#0f141b; --tip-txt:#ffffff; --dnf:#6b7280; --pv:#7d93d6;
   --shadow:0 1px 3px rgba(0,0,0,.35),0 8px 26px rgba(0,0,0,.4);
@@ -1698,6 +1698,10 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .evnow i{width:7px;height:7px;border-radius:50%;background:#fff;animation:evp 1.6s infinite}
 @keyframes evp{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}100%{box-shadow:0 0 0 7px rgba(255,255,255,0)}}
 @media(prefers-reduced-motion:reduce){.evnow i{animation:none}}
+/* Karte ohne Internet: Legende der Punkte ausblenden (es gibt keine Punkte) */
+.evmapc:has(.mapoff) .mklg{display:none}
+/* iPhone: Kursangaben im Resultat-Kopf linksbündig unter dem Titel */
+@media (max-width:640px){.rc-h .facts{margin-left:0;text-align:left;flex-basis:100%;order:3}}
 
 </style>
 
@@ -2510,7 +2514,7 @@ function startersSrc(ev){ return (LIVE.ath&&LIVE.ath[ev.id]&&LIVE.ath[ev.id].len
 function fisLine(ev){ var L=fisRacesOf(ev).filter(function(r){return r.kind!=='none';}); if(!L.length) return '';
   return '<div class="fisr">'+L.map(function(r){ var sui=(r.rows||[]).filter(function(a){return a.nat==='SUI';}),lab=(r.disc==='DHT'?'Training':(DSHORT[r.disc]||r.disc||'Rennen'))+(r.d?' '+dm(r.d):'');
     if(r.kind==='start') return '<span class="fisc st"><b>'+h(lab)+'</b> Startliste · '+sui.length+' SUI</span>';
-    var top=sui.filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}).slice(0,4).map(function(a){ return '<i class="'+rkCls(a.rk)+'">'+a.rk+'</i>'+h(fisName(a.n).split(' ').slice(-1)[0]); }).join(' ');
+    var top=sui.filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}).slice(0,4).map(function(a){ return '<i class="'+rkCls(a.rk)+'">'+a.rk+'</i>'+h(fisName(a.n).split(' ').slice(1).join(' ')||fisName(a.n)); }).join(' ');
     return '<span class="fisc"><b>'+h(lab)+'</b> '+(top||'<span class="mu">kein SUI-Rang</span>')+'</span>'; }).join('')+'<small class="mu">live von der FIS</small></div>'; }
 /* FIS-Startliste: Startnummern der Schweizer:innen (nächstes Rennen der Disziplin) und Abgleich mit monday «Athlet:innen am Start» (Vonsie, 24.10.2026) */
 function fisBibs(ev,discs){ var o={},L=fisRacesOf(ev).filter(function(r){return r.kind==='start'&&(!discs||!r.disc||discs[r.disc]);});
@@ -2910,7 +2914,7 @@ function condCard(list){
     if(c.tm) cells.push(['Zeit',h(rng(c.tm,''))]);
     if(c.air) cells.push(['Luft',rng(c.air,' °C',fC)]);
     if(c.snow) cells.push(['Schnee',rng(c.snow,' °C',fC)]);
-    if(c.rh) cells.push(['Luftfeuchte',rng(c.rh,' %')]);
+    if(c.rh) cells.push(['Luftfeuchte',rng(c.rh,' %',function(x){return x==null?'–':String(x).replace('.',',');})]);
     if(c.prep) cells.push(['Piste',h(c.prep.join(', '))]);
     var sec=c.sec?'<div class="secbar" role="img" aria-label="Streckencharakter: '+h(c.sec.map(function(x,i){return 'Abschnitt '+(i+1)+' '+SECN[x];}).join(', '))+'">'+c.sec.map(function(x,i){ return '<span class="s'+x+'" title="Abschnitt '+(i+1)+': '+h(SECN[x])+'"><b>'+(i+1)+'</b>'+h(x==='T'?'Technisch':x==='M'?'Mix':'Gleiten')+'</span>'; }).join('')+'</div>':'';
     return '<div class="cd"><div class="cd-h"><span class="pill'+(c.k==='T'?' tr':'')+'">'+h(c.l)+'</span><span class="cd-t">Bedingungen und Strecke</span></div>'+
@@ -4588,8 +4592,8 @@ function ptsChart(g,disc,seasons,act,half,col){
   var names=Object.keys(tot).sort(function(a,b){return tot[b]-tot[a];}); col=col||ptsCols(g,[disc],seasons);
   var sums=R.map(function(r){return r.a.reduce(function(s,a){return s+a.p;},0);}),mx=Math.max(50,Math.max.apply(null,sums));
   var step=mx>200?50:mx>100?25:20,top=Math.ceil(mx/step)*step;
-  var mob=window.innerWidth<640,avail=Math.min(window.innerWidth-(mob?40:90),1300); if(half) avail=Math.floor((avail-28)/2); var pl=34,x0=mob?84:92,gap=mob?12:18;
-  var bw=Math.max(mob?30:34,Math.min(64,Math.floor((avail-x0-gap)/R.length-gap))),pt=18,ph=mob?200:230,pb=104,W=Math.max(avail,x0+R.length*(bw+gap)),Hh=pt+ph+pb;
+  var mob=window.innerWidth<640,avail=Math.min(window.innerWidth-(mob?40:90),1300); if(half) avail=Math.floor((avail-28)/2); var pl=34,x0=mob?84:92,gap=mob?12:(R.length>9?12:18);
+  var bw=Math.max(mob?30:28,Math.min(64,Math.floor((avail-x0-gap)/R.length-gap))),pt=18,ph=mob?200:230,pb=104,W=Math.max(avail,x0+R.length*(bw+gap)),Hh=pt+ph+pb;
   var Y=function(v){return pt+ph-v/top*ph;};
   var grid=''; for(var v=0;v<=top;v+=step) grid+='<line x1="'+pl+'" x2="'+W+'" y1="'+Y(v).toFixed(1)+'" y2="'+Y(v).toFixed(1)+'" class="gl'+(v?'':' z')+'"/><text x="'+(pl-6)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" class="ax">'+v+'</text>';
   var bars=R.map(function(r,i){ var x=x0+i*(bw+gap),y0=0,segs='';
@@ -4818,7 +4822,7 @@ function vPdf(evId,dc){
   var setH='<h2>Kurssetzer</h2><table><tbody><tr><td>1. Lauf</td><td>'+(st1?flag(st1[1])+'<b>'+h(st1[0])+'</b> '+st1[1]:'<span class="mu">noch offen</span>')+'</td></tr><tr><td>2. Lauf</td><td>'+(st2?flag(st2[1])+'<b>'+h(st2[0])+'</b> '+st2[1]:'<span class="mu">noch offen</span>')+'</td></tr>'+
     (prevSet.filter(Boolean).length?'<tr><td class="mu">Vorjahr</td><td class="mu">'+prevSet.filter(Boolean).map(function(x){return flag(x[2])+h(x[1]);}).join(' · ')+'</td></tr>':'')+'</tbody></table>';
   var ranksBy={}; sR.forEach(function(r){ r.sui.forEach(function(a){ (ranksBy[a.n]=ranksBy[a.n]||[]).push(a.rk); }); });
-  if(st1) setH+='<div class="ks"><b>Frühere '+h(st1[0].split(' ').slice(-1)[0])+'-Läufe</b> <span class="mu">Laufränge SUI im '+h(DISC[dc])+'</span>'+(sR.length?'<ul>'+sR.slice(-4).map(function(r){ return '<li>'+h(r.pl)+' '+r.d.slice(0,4)+', L'+r.run+': '+r.sui.filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}).slice(0,5).map(function(a){return h(shortN(a.n))+' '+(a.rk===1?'<b>1.</b>':a.rk+'.');}).join(', ')+'</li>'; }).join('')+'</ul>':'<p class="mu">Keine früheren Läufe im Dossier.</p>')+
+  if(st1) setH+='<div class="ks"><b>Frühere '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+'-Läufe</b> <span class="mu">Laufränge SUI im '+h(DISC[dc])+'</span>'+(sR.length?'<ul>'+sR.slice(-4).map(function(r){ return '<li>'+h(r.pl)+' '+r.d.slice(0,4)+', L'+r.run+': '+r.sui.filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}).slice(0,5).map(function(a){return h(shortN(a.n))+' '+(a.rk===1?'<b>1.</b>':a.rk+'.');}).join(', ')+'</li>'; }).join('')+'</ul>':'<p class="mu">Keine früheren Läufe im Dossier.</p>')+
     (function(){ var top=Object.keys(ranksBy).map(function(n){ var f=ranksBy[n].filter(Boolean); return {n:n,b:f.length?Math.min.apply(null,f):99,t5:f.filter(function(v){return v<=5;}).length,t10:f.filter(function(v){return v<=10;}).length}; }).filter(function(x){return x.t10;}).sort(function(a,b){return a.b-b.b||b.t10-a.t10;}).slice(0,3);
       return top.length?'<div class="kfz"><b>Fazit</b><ul>'+top.map(function(x){ return '<li>'+h(shortN(x.n))+': '+(x.b===1?'Laufbestzeit':'bestes '+x.b+'.')+(x.t10>1?' · '+x.t10+'× Top 10':'')+'</li>'; }).join('')+'</ul></div>':''; })()+'</div>';
   /* Athlet:innen */
@@ -4828,11 +4832,11 @@ function vPdf(evId,dc){
   var trs=rows.map(function(x){
     var hh=yrs.map(function(d){ var a=x.hh.filter(function(q){return q.d===d;})[0]; return a?(a.rk||'×'):'–'; });
     var RS=(resAll[x.n]||[]).filter(function(q){return q.disc===dc&&spSeason(q.d)===ps;}),sv=vpSeasonTxt(RS),sr=ranksBy[x.n]||[];
-    var note=vpNote(x,{fav:favN&&favN.n===x.n,pl:pl,setter:st1?st1[0].split(' ').slice(-1)[0]:'',sr:sr.filter(Boolean),dnf:sv.dnf});
+    var note=vpNote(x,{fav:favN&&favN.n===x.n,pl:pl,setter:st1?(st1[0].split(' ').slice(1).join(' ')||st1[0]):'',sr:sr.filter(Boolean),dnf:sv.dnf});
     return '<tr'+(favN&&favN.n===x.n?' class="fav"':'')+'><td class="nm">'+(D.BIB[x.n]?'<span class="bib">'+D.BIB[x.n]+'</span>':'')+lnH(x.n)+'</td><td>'+(hh.some(function(v){return v!=='–';})?hh.join(' · '):'–')+'</td><td>'+sv.t+'</td>'+(st1?'<td>'+(sr.length?sr.map(function(v){return v?v+'.':'×';}).join(' · '):'–')+'</td>':'')+'<td>'+note+'</td></tr>'; }).join('');
   var yl=yrs.length?yrs[0].slice(2,4)+'–'+yrs[yrs.length-1].slice(2,4):'';
-  var tbl='<h2 class="ws">'+flag('SUI')+'Wer schnell sein könnte <small>'+rows.length+' am Start'+(typeof startCheck==='function'&&/stimmt/.test(startCheck(ev,(function(o){o[dc]=1;return o;})({})))?', FIS-Startliste = monday':'')+'</small></h2><table class="w"><thead><tr><th>Nr. · Athlet:in</th><th>'+h(pl)+' '+yl+'</th><th>Vorsaison '+ps.slice(2)+'</th>'+(st1?'<th>'+h(st1[0].split(' ').slice(-1)[0])+'</th>':'')+'<th>Einschätzung</th></tr></thead><tbody>'+trs+'</tbody></table>'+
-    '<ul class="mu fn"><li>'+h(pl)+': Rang pro Jahr (× Ausfall, – nicht im 2. Lauf oder nicht gestartet) · Vorsaison: üblicher Rang '+ps+' (Median), die Form der neuen Saison zählt ab dem ersten Rennen'+(st1?' · '+h(st1[0].split(' ').slice(-1)[0])+': Laufrang in seinen Läufen':'')+' · Wetter und Sicht nicht berücksichtigt.</li></ul>';
+  var tbl='<h2 class="ws">'+flag('SUI')+'Wer schnell sein könnte <small>'+rows.length+' am Start'+(typeof startCheck==='function'&&/stimmt/.test(startCheck(ev,(function(o){o[dc]=1;return o;})({})))?', FIS-Startliste = monday':'')+'</small></h2><table class="w"><thead><tr><th>Nr. · Athlet:in</th><th>'+h(pl)+' '+yl+'</th><th>Vorsaison '+ps.slice(2)+'</th>'+(st1?'<th>'+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+'</th>':'')+'<th>Einschätzung</th></tr></thead><tbody>'+trs+'</tbody></table>'+
+    '<ul class="mu fn"><li>'+h(pl)+': Rang pro Jahr (× Ausfall, – nicht im 2. Lauf oder nicht gestartet) · Vorsaison: üblicher Rang '+ps+' (Median), die Form der neuen Saison zählt ab dem ersten Rennen'+(st1?' · '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+': Laufrang in seinen Läufen':'')+' · Wetter und Sicht nicht berücksichtigt.</li></ul>';
   var body='<h1>Vorschau '+h(DISC[dc])+' '+GN[ev.g]+'</h1><p class="sub">'+flag(ev.nat)+h(pl)+', '+WDL[dd.getDay()]+' '+dd.getDate()+'. '+MO[dd.getMonth()]+' '+dd.getFullYear()+' · Stand '+stand+'</p><div class="rule"></div>'+
     (neu.length?'<div class="neu"><b class="t">Neu heute</b><ul>'+neu.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul></div>':'')+
     '<div class="row"><div class="col">'+kurs+'</div><div class="col" style="flex:.82">'+setH+'</div></div>'+tbl;
@@ -4910,8 +4914,8 @@ function seFacts(ev,dc,day){
   var fz=[],best=sui.filter(function(a){return a.rk;})[0];
   if(best) fz.push('Beste:r SUI: <b>'+h(best.n)+'</b> '+best.rk+'.'+(best.rk>1&&best.df?' ('+h(best.df)+')':''));
   var t10=sui.filter(function(a){return a.rk&&a.rk<=10;}).length,out=sui.filter(function(a){return !a.rk;}).length; fz.push(t10+' in den Top 10'+(out?', '+out+' nicht klassiert':''));
-  if(up.length) fz.push('Besser als üblich: '+up.map(function(a){return h(a.n.split(' ').slice(-1)[0])+' '+a.rk+'.';}).join(', '));
-  if(dn.length) fz.push('Unter dem üblichen Rang: '+dn.map(function(a){return h(a.n.split(' ').slice(-1)[0])+' '+a.rk+'.';}).join(', '));
+  if(up.length) fz.push('Besser als üblich: '+up.map(function(a){return h(String(a.n).split(' ').slice(1).join(' ')||a.n)+' '+a.rk+'.';}).join(', '));
+  if(dn.length) fz.push('Unter dem üblichen Rang: '+dn.map(function(a){return h(String(a.n).split(' ').slice(1).join(' ')||a.n)+' '+a.rk+'.';}).join(', '));
   return {R:R,d:d,pl:pl,dd:dd,WDL:WDL,MO:MO,stand:stand,tech:tech,ps:ps,runs:runs,pod:pod,sui:sui,secs:secs,up:up,dn:dn,tbl:tbl,abH:abH,fz:fz};
 }
 function vPdfEnd(evId,dc,day){
