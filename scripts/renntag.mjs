@@ -1,5 +1,7 @@
-// Renntag-Abgleich (Vonsie, 26.10.2026): An Renntagen den monday-Sync selbst alle 30 Minuten starten (9–18 Uhr),
-// danach stündlich bis 22 Uhr (Nachtrennen). Der GitHub-Zeitplan allein läuft nur etwa alle 3–4 Stunden.
+// Renntag-Abgleich (Vonsie, 09.11.2026): pro Event-Wochenende je ein zusätzlicher monday-Sync (Zürcher Zeit):
+// Vortag 20:00, jeder Eventtag 20:00, letzter Eventtag 18:00. Aufeinanderfolgende Eventtage (auch Frauen + Männer) = ein Block.
+// Beispiel Levi (Sa W, So M): Fr 20:00, Sa 20:00, So 18:00. Der GitHub-Zeitplan läuft daneben wie immer etwa 5× pro Tag.
+// (Vorher: 9–18 Uhr alle 30 Min + stündlich bis 22 Uhr.)
 //   node scripts/renntag.mjs kick   (am Ende jedes monday-Syncs) startet die Schlaufe, wenn bald ein Renntag ist und keine läuft
 //   node scripts/renntag.mjs loop   (Workflow renntag.yml) wartet bis zum nächsten Termin, startet den Sync; nach ~5½ h startet sie sich neu
 // Renntag = Datum liegt im Zeitraum eines Events in monday «RVD Sync» (Spalte Zeitraum, nur Events mit Dossier-ID).
@@ -8,9 +10,7 @@ const TOKEN = process.env.MONDAY_TOKEN, GH = process.env.GH_TOKEN, REPO = proces
 const MODE = process.argv[2] || 'kick';
 const RVD = 18434554343;
 const MAXRUN = 5 * 3600e3 + 40 * 60e3;          // Job-Grenze bei GitHub: 6 h
-const SLOTS = [];
-for (let m = 9 * 60; m <= 18 * 60; m += 30) SLOTS.push(m);
-for (const h of [19, 20, 21, 22]) SLOTS.push(h * 60);
+const T_VORTAG = 20 * 60, T_TAG = 20 * 60, T_LETZTER = 18 * 60;   // Minuten nach Mitternacht (Zürich)
 
 export function zurichOffsetMin(t) {   // Minuten, die Zürich vor UTC liegt (60 oder 120)
   const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(t)).map(x => [x.type, x.value]));
@@ -21,13 +21,24 @@ function localToUtc(day, min) {   // «2026-10-26», 570 → Zeitpunkt 09:30 Zü
   const guess = Date.parse(day + 'T00:00:00Z') + min * 60e3;
   return guess - zurichOffsetMin(guess - 60 * 60e3) * 60e3;
 }
-// Nächste Termine an Renntagen ab «from» (höchstens 3 Tage voraus)
+const shiftDay = (d, k) => new Date(Date.parse(d + 'T12:00:00Z') + k * 864e5).toISOString().slice(0, 10);
+// Abgleich-Plan: Tag → Uhrzeit (Minuten). Vortag eines Blocks 20:00, Eventtage 20:00, letzter Tag eines Blocks 18:00
+export function plan(days) {
+  const p = new Map();
+  for (const d of [...days].sort()) {
+    const prev = shiftDay(d, -1), next = shiftDay(d, 1);
+    if (!days.has(prev)) p.set(prev, T_VORTAG);
+    p.set(d, days.has(next) ? T_TAG : T_LETZTER);
+  }
+  return p;
+}
+// Nächste Abgleich-Termine ab «from» (höchstens 3 Tage voraus)
 export function nextSlots(days, from, n = 1) {
-  const out = [];
+  const P = plan(days), out = [];
   for (let i = 0; i < 4 && out.length < n; i++) {
     const day = zurichDate(from + i * 864e5);
-    if (!days.has(day)) continue;
-    for (const m of SLOTS) { const t = localToUtc(day, m); if (t > from && out.length < n) out.push(t); }
+    if (!P.has(day)) continue;
+    const t = localToUtc(day, P.get(day)); if (t > from) out.push(t);
   }
   return out;
 }
@@ -68,7 +79,7 @@ async function main() {
   const now = Date.now();
   if (MODE === 'kick') {
     const [t] = nextSlots(days, now);
-    if (!t || t - now > 36 * 3600e3) { console.log('Renntag: kein Renntag in den nächsten 36 h.'); return; }
+    if (!t || t - now > 20 * 3600e3) { console.log('Renntag: kein Abgleich-Termin in den nächsten 20 h.'); return; }   // erst kurz vorher starten, nicht 1½ Tage warten
     let busy = 0;
     for (const st of ['in_progress', 'queued', 'waiting', 'pending']) busy += (await gh('/actions/workflows/renntag.yml/runs?per_page=5&status=' + st)).total_count || 0;
     if (busy) { console.log('Renntag: Schlaufe läuft schon.'); return; }
