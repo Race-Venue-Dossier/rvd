@@ -1,6 +1,6 @@
 name: Renntag-Abgleich
-# An Renntagen (Zeitraum eines Events in monday «RVD Sync») den monday-Sync alle 30 Minuten von 9 bis 18 Uhr starten,
-# danach stündlich bis 22 Uhr. Wird vom monday-Sync ab dem Vortag angestossen und startet sich nach ~5½ h selbst neu.
+# Zusätzliche monday-Syncs rund um Events (monday «RVD Sync», Spalte Zeitraum): Vortag 20:00, Eventtage 20:00, letzter Tag 18:00
+# (Vonsie, 09.11.2026). Wird vom monday-Sync angestossen (höchstens 20 h vorher); startet sich bei Bedarf nach ~5½ h selbst neu.
 on:
   workflow_dispatch:
 permissions:

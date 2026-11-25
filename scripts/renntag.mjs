@@ -2,6 +2,8 @@
 // Vortag 20:00, jeder Eventtag 20:00, letzter Eventtag 18:00. Aufeinanderfolgende Eventtage (auch Frauen + Männer) = ein Block.
 // Beispiel Levi (Sa W, So M): Fr 20:00, Sa 20:00, So 18:00. Der GitHub-Zeitplan läuft daneben wie immer etwa 5× pro Tag.
 // (Vorher: 9–18 Uhr alle 30 Min + stündlich bis 22 Uhr.)
+// Nordamerika (Vonsie, 25.11.2026): Renntage in den USA/Kanada enden spät am Schweizer Abend → dort Abgleich um 23:30 statt 20:00/18:00.
+// Erkannt am Eventnamen in monday (Liste NA unten). Fällt ein Europa- und ein Nordamerika-Event auf denselben Tag, gibt es beide Termine.
 //   node scripts/renntag.mjs kick   (am Ende jedes monday-Syncs) startet die Schlaufe, wenn bald ein Renntag ist und keine läuft
 //   node scripts/renntag.mjs loop   (Workflow renntag.yml) wartet bis zum nächsten Termin, startet den Sync; nach ~5½ h startet sie sich neu
 // Renntag = Datum liegt im Zeitraum eines Events in monday «RVD Sync» (Spalte Zeitraum, nur Events mit Dossier-ID).
@@ -10,7 +12,8 @@ const TOKEN = process.env.MONDAY_TOKEN, GH = process.env.GH_TOKEN, REPO = proces
 const MODE = process.argv[2] || 'kick';
 const RVD = 18434554343;
 const MAXRUN = 5 * 3600e3 + 40 * 60e3;          // Job-Grenze bei GitHub: 6 h
-const T_VORTAG = 20 * 60, T_TAG = 20 * 60, T_LETZTER = 18 * 60;   // Minuten nach Mitternacht (Zürich)
+const T_VORTAG = 20 * 60, T_TAG = 20 * 60, T_LETZTER = 18 * 60, T_NA = 23 * 60 + 30;   // Minuten nach Mitternacht (Zürich)
+export const NA = /copper|killington|beaver creek|birds of prey|tremblant|lake louise|aspen|palisades|squaw|sun valley|stowe|mammoth|panorama|nakiska|whistler|vail/i;
 
 export function zurichOffsetMin(t) {   // Minuten, die Zürich vor UTC liegt (60 oder 120)
   const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zurich', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(t)).map(x => [x.type, x.value]));
@@ -22,13 +25,15 @@ function localToUtc(day, min) {   // «2026-10-26», 570 → Zeitpunkt 09:30 Zü
   return guess - zurichOffsetMin(guess - 60 * 60e3) * 60e3;
 }
 const shiftDay = (d, k) => new Date(Date.parse(d + 'T12:00:00Z') + k * 864e5).toISOString().slice(0, 10);
-// Abgleich-Plan: Tag → Uhrzeit (Minuten). Vortag eines Blocks 20:00, Eventtage 20:00, letzter Tag eines Blocks 18:00
+// Abgleich-Plan: Tag → Uhrzeiten (Minuten). Vortag eines Blocks 20:00, Eventtage 20:00, letzter Tag eines Blocks 18:00;
+// Tage mit einem Nordamerika-Event (days.na) 23:30 – zusätzlich zum Europa-Termin, falls am selben Tag auch ein Europa-Event ist (days.eu)
 export function plan(days) {
-  const p = new Map();
+  const p = new Map(), na = days.na || new Set(), eu = days.eu || days, add = (d, m) => p.set(d, [...new Set([...(p.get(d) || []), m])].sort((a, b) => a - b));
   for (const d of [...days].sort()) {
     const prev = shiftDay(d, -1), next = shiftDay(d, 1);
-    if (!days.has(prev)) p.set(prev, T_VORTAG);
-    p.set(d, days.has(next) ? T_TAG : T_LETZTER);
+    if (!days.has(prev)) add(prev, T_VORTAG);
+    if (na.has(d)) add(d, T_NA);
+    if (eu.has(d)) add(d, days.has(next) ? T_TAG : T_LETZTER);
   }
   return p;
 }
@@ -37,16 +42,19 @@ export function nextSlots(days, from, n = 1) {
   const P = plan(days), out = [];
   for (let i = 0; i < 4 && out.length < n; i++) {
     const day = zurichDate(from + i * 864e5);
-    if (!P.has(day)) continue;
-    const t = localToUtc(day, P.get(day)); if (t > from) out.push(t);
+    for (const m of P.get(day) || []) { const t = localToUtc(day, m); if (t > from && out.length < n && !out.includes(t)) out.push(t); }
   }
   return out;
 }
+// spans: «2026-11-28 - 2026-11-29» oder {span, name}; Nordamerika-Events (NA) landen zusätzlich in days.na, alle anderen in days.eu
 export function raceDays(spans) {
-  const set = new Set();
-  for (const s of spans) {
+  const set = new Set(); set.na = new Set(); set.eu = new Set();
+  for (const x of spans) {
+    const s = typeof x === 'string' ? x : x.span, isNa = typeof x === 'object' && NA.test(x.name || '');
     const m = (s || '').match(/(\d{4}-\d\d-\d\d)\s*-\s*(\d{4}-\d\d-\d\d)/); if (!m) continue;
-    for (let t = Date.parse(m[1] + 'T12:00:00Z'); t <= Date.parse(m[2] + 'T12:00:00Z') && set.size < 400; t += 864e5) set.add(new Date(t).toISOString().slice(0, 10));
+    for (let t = Date.parse(m[1] + 'T12:00:00Z'); t <= Date.parse(m[2] + 'T12:00:00Z') && set.size < 400; t += 864e5) {
+      const d = new Date(t).toISOString().slice(0, 10); set.add(d); (isNa ? set.na : set.eu).add(d);
+    }
   }
   return set;
 }
@@ -55,15 +63,15 @@ async function spans() {
   const items = []; let cursor = null;
   for (let i = 0; i < 10; i++) {
     const q = cursor
-      ? { query: 'query($c:String!){ next_items_page(limit:500,cursor:$c){ cursor items{ column_values(ids:["text_mm7y6990","timerange_mm7ynrqk"]){ id text } } } }', variables: { c: cursor } }
-      : { query: 'query($id:[ID!]){ boards(ids:$id){ items_page(limit:500){ cursor items{ column_values(ids:["text_mm7y6990","timerange_mm7ynrqk"]){ id text } } } } }', variables: { id: [RVD] } };
+      ? { query: 'query($c:String!){ next_items_page(limit:500,cursor:$c){ cursor items{ name column_values(ids:["text_mm7y6990","timerange_mm7ynrqk"]){ id text } } } }', variables: { c: cursor } }
+      : { query: 'query($id:[ID!]){ boards(ids:$id){ items_page(limit:500){ cursor items{ name column_values(ids:["text_mm7y6990","timerange_mm7ynrqk"]){ id text } } } } }', variables: { id: [RVD] } };
     const r = await fetch('https://api.monday.com/v2', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: TOKEN, 'API-Version': '2024-10' }, body: JSON.stringify(q) });
     const j = await r.json(); if (!r.ok || j.errors) throw new Error(JSON.stringify(j.errors || j).slice(0, 300));
     const page = cursor ? j.data.next_items_page : j.data.boards[0].items_page;
     items.push(...page.items); cursor = page.cursor; if (!cursor) break;
   }
-  return items.map(it => Object.fromEntries(it.column_values.map(c => [c.id, c.text || ''])))
-    .filter(c => /^\d{4}-\d+-[MW]$/.test(c.text_mm7y6990 || '')).map(c => c.timerange_mm7ynrqk);
+  return items.map(it => ({ name: it.name, ...Object.fromEntries(it.column_values.map(c => [c.id, c.text || ''])) }))
+    .filter(c => /^\d{4}-\d+-[MW]$/.test(c.text_mm7y6990 || '')).map(c => ({ span: c.timerange_mm7ynrqk, name: c.name }));
 }
 async function gh(path, method = 'GET', body) {
   const r = await fetch('https://api.github.com/repos/' + REPO + path, { method, headers: { Authorization: 'Bearer ' + GH, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }, body: body && JSON.stringify(body) });
