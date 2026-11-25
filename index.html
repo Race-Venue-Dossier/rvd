@@ -1722,6 +1722,11 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 /* Kein Winterbild: körniger Swiss-Ski-Verlauf Weiss→Rot statt Sommerfoto (25.11.2026) */
 .evph.grad{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--red,#e3001b) 55%,transparent) 0%,color-mix(in srgb,var(--red,#e3001b) 18%,transparent) 45%,transparent 75%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.75}
 
+/* Abgesagtes Event (25.11.2026) */
+.evcard.xcan{opacity:.62}.evcard.xcan .evname{text-decoration:line-through;text-decoration-thickness:1px}
+.pill.xev{background:var(--surface);border:1px solid var(--line-2);color:var(--ink-2);font-weight:700}
+.xcanb{border-left:3px solid var(--line-2)}
+
 </style>
 
 </head>
@@ -2082,6 +2087,9 @@ function staffOf(ev){
   return (ls||ev.staff||[]).concat(entriesOf(ev,'staff').map(function(x){ return {n:x.n,r:x.r==='cc'?'cc':'onsite',note:x.note||'',_id:x.id}; }));
 }
 function cov(items){ var c={}; items.forEach(function(it){ c[it.k]=(c[it.k]||0)+1; }); return c; }
+/* Event ganz abgesagt (FIS-Kalender oder monday-Info «abgesagt …»); evX = Hinweis wie «Ersatzort offen» (Vonsie, 25.11.2026) */
+function evCancelled(e){ return !!(e&&e.races&&e.races.length&&e.races.every(function(r){return r.x;})); }
+function evXNote(e){ return e&&e.xNote?e.xNote:''; }
 function status(ev){ var t=today(); return t<ev.frm?'up':(t>ev.to?'past':'live'); }
 function seasons(){ var o={}; S.events.forEach(function(e){o[e.season]=1;}); return Object.keys(o).sort().reverse(); }
 function filtered(){
@@ -2757,7 +2765,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='/'&&!/INPUT|TEXTARE
 
 /* ───── Diese Woche: nächstes oder laufendes Event kompakt ───── */
 function weekCard(list){
-  var t=today(),ev=list.filter(function(e){return status(e)==='live';})[0]||list.filter(function(e){return e.frm>t;}).sort(function(a,b){return a.frm<b.frm?-1:1;})[0];
+  var t=today(),ev=list.filter(function(e){return status(e)==='live'&&!evCancelled(e);})[0]||list.filter(function(e){return e.frm>t&&!evCancelled(e);}).sort(function(a,b){return a.frm<b.frm?-1:1;})[0];
   if(!ev) return '';
   var st=staffOf(ev),on=st.filter(function(x){return x.r==='onsite';}),cc=st.filter(function(x){return x.r==='cc';});
   var live=status(ev)==='live',dd=daysTo(ev.frm);
@@ -2781,7 +2789,7 @@ function viewEvents(){
   speedLoad();
   var wk=weekCard(list),html=newCard()+wk+kpis(list,!!wk);
   var t=today(),nextId=null,lastMon='',rows='',nPast=0,nowDone=false;
-  list.forEach(function(e){ if(!nextId&&e.frm>t) nextId=e.id; });
+  list.forEach(function(e){ if(!nextId&&e.frm>t&&!evCancelled(e)) nextId=e.id; });
   list.forEach(function(e){
     var mon=MON[pd(e.frm).getMonth()]+' '+e.frm.slice(0,4);
     if(mon!==lastMon){ rows+=(lastMon?'</div>':'')+'<h3 class="evmon">'+mon+'</h3><div class="evlist">'; lastMon=mon; }
@@ -2792,11 +2800,12 @@ function viewEvents(){
     /* Inhalts-Zähler (Resultate, Kurssetzungen, Videos …) nicht mehr in der Liste, nur «neu» und «Vorschau» (Vonsie, 13.10.2026) */
     var chips=[];
     var nw=newOf(e).length; if(nw) chips.unshift('<span class="evc new"><b>'+nw+'</b>neu</span>');
-    if(st==='up'){ var pvn=vRaces(vkey(e.name),e.g).filter(function(o){return o.d<e.frm&&o.sui;}).length; if(pvn) chips.unshift('<span class="evc pv">Vorschau · <b>'+pvn+'</b>'+(pvn===1?'Rennen':'Rennen')+' hier</span>'); }
-    var state=st==='live'?'<span class="pill live">läuft</span>':(e.id===nextId?'<span class="pill next">als Nächstes · '+inWords(daysTo(e.frm))+'</span>':(st==='up'?'<span class="evst">'+inWords(daysTo(e.frm))+'</span>':st==='past'?'<span class="evst done">✓ beendet</span>':''));
+    var xc=evCancelled(e)&&st!=='past';
+    if(st==='up'&&!xc){ var pvn=vRaces(vkey(e.name),e.g).filter(function(o){return o.d<e.frm&&o.sui;}).length; if(pvn) chips.unshift('<span class="evc pv">Vorschau · <b>'+pvn+'</b>'+(pvn===1?'Rennen':'Rennen')+' hier</span>'); }
+    var state=xc?'<span class="pill xev">abgesagt'+(evXNote(e)?' · '+h(evXNote(e)):'')+'</span>':st==='live'?'<span class="pill live">läuft</span>':(e.id===nextId?'<span class="pill next">als Nächstes · '+inWords(daysTo(e.frm))+'</span>':(st==='up'?'<span class="evst">'+inWords(daysTo(e.frm))+'</span>':st==='past'?'<span class="evst done">✓ beendet</span>':''));
     var d1=pd(e.frm),d2=pd(e.to);
     var champ=e.cat==='WSC'?' champ wsc':e.cat==='OWG'?' champ owg':'';
-    rows+='<article class="evcard'+(st==='past'?' past':'')+(st==='live'?' live':'')+champ+'" data-act="open" data-v="'+h(e.id)+'">'+
+    rows+='<article class="evcard'+(st==='past'?' past':'')+(xc?' xcan':'')+(st==='live'?' live':'')+champ+'" data-act="open" data-v="'+h(e.id)+'">'+
       '<div class="evdate"><small>'+WD[d1.getDay()]+(e.frm!==e.to?'–'+WD[d2.getDay()]:'')+'</small><b>'+spanShort(e.frm,e.to)+'</b></div>'+
       '<div class="evmain"><div class="evtop"><button class="evname" type="button" data-act="open" data-v="'+h(e.id)+'">'+flag(e.nat)+h(e.name)+'</button>'+(champ?'<span class="chb">'+(e.cat==='WSC'?'WM '+e.frm.slice(0,4):'Olympia '+e.frm.slice(0,4))+'</span>':'')+state+'</div>'+
         '<div class="evmeta">'+gMark(e.g)+'<span>'+GN[e.g]+'</span>'+(e.cat!=='WC'?'<span class="pill">'+h(CAT[e.cat]||e.cat)+'</span>':'<span class="mu">Weltcup</span>')+racePills(e)+fisLink(e)+'</div>'+
@@ -3869,10 +3878,14 @@ function liveRvd(items,at){
       var L=sp?lMatch(p.name.replace(/·.*$/,''),g,sp[1],sp[2]):[]; if(L.length===1) ev=L[0]; }
     if(!ev) return;
     if(p.info&&p.info.trim()) info[ev.id]=p.info.trim();
+    /* Absage über monday (Info zum Event beginnt mit «abgesagt»): alle Rennen abgesagt, Hinweis «Ersatzort offen» o. ä. (Vonsie, 25.11.2026) */
+    var xl=(p.info||'').trim().split(/\n/)[0];
+    if(/^\s*abgesagt\b/i.test(xl)){ ev.monX=1; (ev.races||[]).forEach(function(r){ if(!r.x){ r.x=true; r.mx=1; } }); ev.xNote=/ersatz/i.test(xl)&&!/ersatz(?:ort|rennen)?\s*:\s*\S/i.test(xl)?'Ersatzort offen':(xl.replace(/^\s*abgesagt\s*[–:\-·,]*\s*/i,'').slice(0,60)); }
+    else if(ev.monX){ delete ev.monX; delete ev.xNote; (ev.races||[]).forEach(function(r){ if(r.mx){ delete r.x; delete r.mx; } }); }
     if(p.ath) ath[ev.id]=lAthList(p.ath);
     /* Aufgebot fehlt: ab 5 Tagen vor dem Event bis zum letzten Tag (Vonsie, 25.11.2026) */
     var td=today(),d5=new Date(Date.parse(td+'T12:00:00Z')+5*864e5).toISOString().slice(0,10);
-    if(p.id&&ev.frm<=d5&&(ev.to||ev.frm)>=td&&!lAthList(p.ath).length) chk.push({ev:ev,t:'Aufgebot',p:['Aufgebot fehlt'],mid:p.id,bd:'18434554343'});
+    if(p.id&&!evCancelled(ev)&&ev.frm<=d5&&(ev.to||ev.frm)>=td&&!lAthList(p.ath).length) chk.push({ev:ev,t:'Aufgebot',p:['Aufgebot fehlt'],mid:p.id,bd:'18434554343'});
     /* Stand der Analysen: erledigt = Status «erledigt» oder Inhalt vorhanden; «nicht nötig» zählt nicht */
     (p.sub||[]).forEach(function(s){ if(s.e||/^Beispiel-Eintrag/.test(s.name||'')) return;
       var prob=[],art=s.art||'',tech=/Riesenslalom|Slalom|GS|SL/.test(s.disc||'')&&!/Super/.test(s.disc||'');
@@ -3953,7 +3966,7 @@ function calApply(){
   var rIx={}; S.events.forEach(function(e){ (e.races||[]).forEach(function(r){ rIx[r.id]=e; }); });
   var touched={};
   CAL.evs.forEach(function(c){ c.races.forEach(function(r){ var e=rIx[r.id]; if(!e||!r.d) return; var o=e.races.filter(function(x){return x.id===r.id;})[0];
-    if(r.tm) o.tm=r.tm; if(o.d!==r.d){ o.d=r.d; n++; touched[e.id]=e; } if(!!o.x!==!!r.x){ if(r.x) o.x=true; else delete o.x; n++; touched[e.id]=e; } }); });
+    if(r.tm) o.tm=r.tm; if(o.d!==r.d){ o.d=r.d; n++; touched[e.id]=e; } if(!e.monX&&!!o.x!==!!r.x){ if(r.x) o.x=true; else delete o.x; n++; touched[e.id]=e; } }); });
   Object.keys(touched).forEach(function(k){ var e=touched[k]; e.races.sort(function(a,b){ return a.d<b.d?-1:a.d>b.d?1:String(a.cx)<String(b.cx)?-1:1; }); var lv=e.races.filter(function(r){return !r.x;}),al=lv.length?lv:e.races; e.frm=al[0].d; e.to=al[al.length-1].d; });
   CAL.evs.forEach(function(c){ ['M','W'].forEach(function(g){
     var R=c.races.filter(function(r){ return (r.g===g||r.g==='A')&&r.d&&ok(g,r.disc)&&!rIx[r.id]; }); if(!R.length) return;
@@ -5231,7 +5244,7 @@ dayBody(d,rs,(
       newH='<div class="dnew"><b>Neu seit deinem letzten Besuch</b>'+nd.map(function(x){ var n=newN(x.d); return '<button type="button" class="ndc" data-act="dtab" data-v="'+x.d+'">'+WD[pd(x.d).getDay()]+' '+dm(x.d)+' '+h(x.t)+' · '+n+'</button>'; }).join('')+(rest?'<span class="ndc">'+rest+' ohne Tag</span>':'')+'</div>'; }
     else if(newN(dk)) newH='<div class="dnew"><b>Neu seit deinem letzten Besuch</b>'+items.filter(function(it){ return isNew(it)&&it.d===dk; }).map(function(it){ var k=KIND[it.k]||KIND.div; return '<span class="ndc">'+h(k.s)+(it.t?': '+itTitle(it):'')+(it.run?' · Lauf '+h(it.run):'')+'</span>'; }).join('')+'</div>';
   }
-  var vsA=evRecent(ev)?doneBanner(ev):stat!=='past'?vorschauCard(ev):'',vsB=jahresCard(ev),vs=vsA+vsB;
+  var vsA=evCancelled(ev)&&stat!=='past'?'<section class="card dend xcanb"><div><b>Event abgesagt</b><span>'+(evXNote(ev)?h(evXNote(ev))+'. ':'')+'Wird ein Ersatzort festgelegt, erscheint das Event dort mit den neuen Daten.</span></div></section>':evRecent(ev)?doneBanner(ev):stat!=='past'?vorschauCard(ev):'',vsB=jahresCard(ev),vs=vsA+vsB;
   if(!navList.length) return head+newH+vs+(ov?'<div class="ovgrid">'+ov+'</div>':'')+'<div class="days"><section class="card"><div class="empty"><b>Kein Programm hinterlegt</b>Für dieses Event gibt es keine Renndaten.</div></section></div>'+vnote+cm;
   if(dk==='') {
     var minfo=LIVE.info[ev.id]?'<section class="card minfo"><div class="ch"><h2>Infos zum Event</h2><span class="h3v">aus monday «RVD Sync»</span></div><p class="noi18n mtx">'+h(LIVE.info[ev.id])+'</p></section>':'';
