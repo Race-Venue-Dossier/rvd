@@ -264,6 +264,20 @@ def tech_runs(rid, meta, ath):
     return out
 
 
+def setters(path):
+    """Kurssetzer pro Lauf aus der Jury-Angabe im FIS-PDF: «Course Setter / NAME Vorname / NAT» (Vonsie, 25.11.2026)"""
+    out = []
+    try:
+        for page in pymupdf.open(path):
+            for m in re.finditer(r'Course Setter\n([A-ZÄÖÜÉÈÀ\'\- ]+?) ([A-Z][^\n]*)\n([A-Z]{3})', page.get_text()):
+                x = [len(out) + 1, nice(m.group(1) + ' ' + m.group(2)), m.group(3)]
+                if not any(r[1] == x[1] for r in out): out.append(x)
+            if out: break
+    except Exception:
+        pass
+    return out
+
+
 def tech_meta(path, fallback):
     doc = pymupdf.open(path)
     for page in doc:
@@ -284,7 +298,7 @@ def main():
     if not todo:
         print('FIS-PDF: nichts zu tun'); return
     B = slope_index()
-    res = dict(races=[], ts=[], done=[])
+    res = dict(races=[], ts=[], done=[], cs={})
     for t in todo:
         rid = str(t['rid']); p = os.path.join(H, rid + '.pdf')
         try:
@@ -293,6 +307,10 @@ def main():
             time.sleep(1)
         except Exception as e:
             note('%s nicht geladen: %s' % (rid, str(e)[:80])); continue
+        cs = setters(p)
+        if cs:
+            res['cs'][rid] = cs
+            note('%s Kurssetzer: %s' % (rid, ', '.join('L%d %s (%s)' % tuple(x) for x in cs)))
         try:
             if t['disc'] in ('DH', 'SG', 'DHT'):
                 m = sec_parse(p)

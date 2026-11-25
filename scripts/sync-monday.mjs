@@ -75,7 +75,10 @@ async function calEvent(eid, season) {
     const cx0 = (txt.match(/\b(\d{4})\b/) || [])[1] || '';
     if (!g && cx0) g = cx0[0] === '5' ? 'W' : cx0[0] === '0' ? 'M' : '';   // FIS-Codex: 0… Männer, 5… Frauen
     const cx = (txt.match(/\b(\d{4})\b/) || [])[1] || '';
-    races.push({ id: +rid, d, cx, disc, g, x: /title="Cancelled"/.test(seg) ? 1 : 0, t: txt.slice(0, 160) });
+    // Startzeiten (Ortszeit, wie bei der FIS): «1st 10:30 … 2nd 13:30», sonst die erste Uhrzeit nach dem Datum (Vonsie, 25.11.2026)
+    let tm = [...txt.matchAll(/\b(?:1st|2nd|3rd)\s+(\d{1,2}:\d\d)/g)].map(x => x[1]);
+    if (!tm.length) { const m1 = txt.match(/\b\d{1,2}\s+[A-Z][a-z]{2}\s+(\d{1,2}:\d\d)\b/); if (m1) tm = [m1[1]]; }
+    races.push({ id: +rid, d, cx, disc, g, x: /title="Cancelled"/.test(seg) ? 1 : 0, ...(tm.length ? { tm } : {}), t: txt.slice(0, 160) });
   }
   return { eid: +eid, place, nat, races };
 }
@@ -91,7 +94,7 @@ async function calSync(test) {
 if ((process.env.FIS_TEST || '').trim() === 'cal') {
   const N = m => console.log('::notice title=FIS-Kalender::' + m.slice(0, 3800));
   const c = await calSync(true);
-  for (const e of c.evs) N(e.cat + ' ' + e.eid + ' ' + e.place + ' (' + e.nat + '): ' + e.races.map(r => r.id + ' ' + r.d + ' ' + r.cx + ' ' + r.disc + ' ' + r.g + (r.x ? ' ABGESAGT' : '')).join(' | '));
+  for (const e of c.evs) N(e.cat + ' ' + e.eid + ' ' + e.place + ' (' + e.nat + '): ' + e.races.map(r => r.id + ' ' + r.d + ' ' + r.cx + ' ' + r.disc + ' ' + r.g + (r.tm ? ' ' + r.tm.join('/') : '') + (r.x ? ' ABGESAGT' : '')).join(' | '));
   N('Rohtext erstes Rennen: ' + ((c.evs[0] || {}).races || [{}])[0].t);
   process.exit(0);
 }
