@@ -22,7 +22,7 @@
    Layout: fixe Kopfzeile mit Tabs, eine Filterleiste für alles darunter, Kennzahlen, dann Liste bzw. Event-Detail. */
 :root{
   --red:#DA291C; --red-d:#B11E14; --red-soft:rgba(218,41,28,.10);
-  --ink:#14181f; --ink-2:#3a4350; --muted:#6b7785; --line:#e6e9ee; --line-2:#c3cad4;
+  --ink:#14181f; --ink-2:#3a4350; --muted:#5f6b79; --line:#e6e9ee; --line-2:#c3cad4;
   --bg:#f4f6f9; --surface:#ffffff; --surface-2:#f8fafc; --field:#fbfcfe; --th:#f4f6f9; --row-line:#eef1f5;
   --hdr:#ffffff; --hdr-line:transparent; --tab:#414751; --sub:#7b8494; --chip:#79828f;
   --seg-bg:#d5dce6; --seg-line:#c2cbd7; --seg-txt:#59636f; --seg-on:#ffffff; --seg-on-txt:#14181f; --seg-shadow:0 1px 4px rgba(0,0,0,.22);
@@ -837,7 +837,7 @@ table.srt th.sh.on.asc::after{content:"▲"}
 .lvx{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-top:-4px;transition:transform .15s}
 .lvc[open] .lvx{transform:rotate(-135deg);margin-top:4px}
 .lvt tr.lvmo th{background:var(--surface-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding-block:6px}
-.lvt tr.past td{opacity:.55}
+.lvt tr.past td{opacity:.7}
 .lvt td.lvdt{font-weight:700;font-variant-numeric:tabular-nums}
 .lvt .lvn{flex-wrap:nowrap;white-space:nowrap}
 .lvk{font-size:10.5px;font-weight:750;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
@@ -1690,7 +1690,7 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .k3 li .lnk{font-weight:500}.k3 li .lnk b{font-weight:750}
 @media (max-width:640px){.vst .vfeq{display:none}}
 /* Eventliste: abgeschlossene Events dezent, Linie «Heute» vor dem nächsten Event (Vonsie, 27.10.2026) */
-.evcard.past>.evdate,.evcard.past>.evmain,.evcard.past .avs{opacity:.55;transition:opacity .15s}
+.evcard.past>.evdate,.evcard.past>.evmain,.evcard.past .avs{opacity:.7;transition:opacity .15s}
 .evcard.past:hover>.evdate,.evcard.past:hover>.evmain,.evcard.past:hover .avs,.evcard.past:focus-within>*{opacity:1}
 .evcard.past .flag{filter:grayscale(.5)}
 .evst.done{color:var(--muted);font-weight:600}
@@ -1760,7 +1760,7 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 }
 
 /* Team FEA: vergangene Events blasser (26.11.2026) */
-.mx2 th.mp{color:var(--muted)}.mx2 th.mp .mxn{font-weight:600}.mx2 td.mp .dot{opacity:.4}
+.mx2 th.mp{color:var(--muted)}.mx2 th.mp .mxn{font-weight:600}.mx2 td.mp .dot{opacity:.55}
 .tbl.vst tbody tr.vmx{animation:none}
 
 /* iPhone: spätere Monate eingeklappt (26.11.2026) */
@@ -1781,11 +1781,11 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 @media (max-width:640px){.bilk .lg-l{display:none}.bilk .lg-s{display:block}.bilk>div{padding:8px 11px}}
 
 /* Jahresvergleich: nicht mehr Aktive blasser (26.11.2026) */
-.jvr th.jvx{color:var(--muted);font-weight:600}.jvr td.jvx>*{opacity:.45}
+.jvr th.jvx{color:var(--muted);font-weight:600}.jvr td.jvx>*{opacity:.6}
 
 /* Strecken: Orte im aktuellen Kalender markiert (26.11.2026) */
 .svcal{display:inline-block;margin-left:6px;padding:0 6px;border-radius:999px;font-size:10px;font-weight:750;line-height:16px;color:var(--red);border:1px solid color-mix(in srgb,var(--red) 40%,var(--line))}
-.svn tr.svoff td{opacity:.6}
+.svn tr.svoff td{opacity:.75}
 /* iPhone: Karte «Als Nächstes» kompakter (26.11.2026) */
 @media (max-width:640px){
   .wkc .wk-row{align-items:flex-start;margin-top:8px}
@@ -1802,6 +1802,10 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
   .wkc .vhit>small{flex:0 0 100%}
   .wkc .vhit>span{display:inline!important;font-size:11.5px}
 }
+
+/* Lesbarkeit (26.11.2026): helles Grau #5f6b79 statt #6b7785 (Kontrast ≥ 5:1), blasse Elemente kräftiger */
+/* Renntag-Reiter: Startzeit über der Vorschau (26.11.2026) */
+.dpre-t{margin:0 0 14px}.dpre-t .dtime{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
 
 </style>
 
@@ -4447,6 +4451,15 @@ function vFitTag(v,thr){ if(v==null) return '<span class="mu">–</span>'; var a
 /* ───── Vorschau: Was liegt den Schweizer:innen an diesem Ort? (eine Karte pro Disziplin) ─────
    Chance hier = eigener Rang in vergleichbaren Rennen gegenüber dem eigenen Median-Rang der jeweiligen Saison:
    ähnliches Streckenprofil (Anteile Technisch/Mix/Gleiten), ähnliche Bedingungen (Schnee, Piste) und die bisherigen Rennen hier. */
+/* Vorschau nur für die Rennen eines Tages (Renntag-Reiter vor dem Rennen) */
+function dayPreview(ev,d){
+  if(!SP) return '';
+  var R2=(ev.races||[]).filter(function(r){ return r.d===d&&!r.x&&r.kind==='R'; }); if(!R2.length) return '';
+  var k=vkey(ev.name),prev=vRaces(k,ev.g).filter(function(o){ return o.d<ev.frm; }),out='';
+  if(R2.some(function(r){ return SPDD[r.disc]; })) out+=vSpeedPart(ev,k,prev);
+  ['GS','SL'].forEach(function(dc){ if(R2.some(function(r){ return r.disc===dc; })) out+=vTechPart(ev,k,prev,dc); });
+  return out;
+}
 function vorschauCard(ev){
   if(!SP) return '';
   var k=vkey(ev.name),before=ev.frm,R=vRaces(k,ev.g),prev=R.filter(function(o){return o.d<before;});
@@ -4997,12 +5010,14 @@ function vpNote(x,o){ var t=[];
   if(o.sr&&o.sr.length){ var b=Math.min.apply(null,o.sr); if(b<=5) t.push('In Kursen von '+h(o.setter)+' schon '+b+'.'); }
   if(x.fit!=null&&Math.abs(x.fit)>=2) t.push('Hier eher '+Math.round(Math.abs(x.fit))+' Ränge '+(x.fit<0?'besser':'schlechter')+' als üblich.');
   if(o.dnf) t.push('<span class="dn">Vorsaison viele Ausfälle.</span> Zuerst ins Ziel kommen.');
+  else if(o.dnq) t.push('<span class="dn">Vorsaison oft nicht im 2. Lauf.</span> Zuerst in die Top 30.');
   if(!t.length) t.push(x.usual!=null?'Meist um Rang '+Math.round(x.usual)+'.':'<span class="mu">Keine Weltcup-Daten im Dossier.</span>');
   return t.join(' '); }
-function vpSeasonTxt(L){ if(!L.length) return {t:'–'}; var fin=L.filter(function(x){return x.rk;}).map(function(x){return x.rk;}),dnf=L.length-fin.length;
-  if(fin.length>=3) { var m=med(fin); return {t:'meist Rang '+(m%1?Math.floor(m)+'–'+Math.ceil(m):m),dnf:dnf*2>=L.length}; }
+/* Ausfall (×) und «nicht im 2. Lauf» (–) getrennt zählen (Vonsie, 26.11.2026) */
+function vpSeasonTxt(L){ if(!L.length) return {t:'–'}; var fin=L.filter(function(x){return x.rk;}).map(function(x){return x.rk;}),dnq=L.filter(function(x){return !x.rk&&x.s==='DNQ';}).length,dnf=L.length-fin.length-dnq;
+  if(fin.length>=3) { var m=med(fin); return {t:'meist Rang '+(m%1?Math.floor(m)+'–'+Math.ceil(m):m),dnf:dnf*2>=L.length,dnq:dnq*2>=L.length}; }
   if(L.length<3) return {t:L.length===1?'1 Rennen':L.length+' Rennen'};  /* z. B. verletzt: keine Aussage */
-  return {t:L.length+' Rennen, '+fin.length+'× im Ziel',dnf:dnf*2>=L.length}; }
+  return {t:L.length+' Rennen: '+fin.length+'× klassiert'+(dnq?', '+dnq+'× nicht im 2. Lauf':'')+(dnf?', '+dnf+'× Ausfall':''),dnf:dnf*2>=L.length,dnq:!(dnf*2>=L.length)&&(dnq+dnf)*2>=L.length}; }
 /* Vorlage (Schrift, Tabellen, Farben) für alle Onepager */
 function vpCss(){
   return '@page{size:A4;margin:0}*{box-sizing:border-box;margin:0;padding:0}html,body{width:210mm;height:297mm}body{font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",Arial,sans-serif;color:#1d2228;font-size:9pt;line-height:1.32;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
@@ -5057,13 +5072,13 @@ function vPdf(evId,dc){
   var favN=rows.filter(function(x){return x.usual!=null&&x.usual<=4;}).sort(function(a,b){return a.usual-b.usual;})[0];
   var yrs=(D.hist||[]).map(function(o){return o.d;}).sort().slice(-5);
   var trs=rows.map(function(x){
-    var hh=yrs.map(function(d){ var a=x.hh.filter(function(q){return q.d===d;})[0]; return a?(a.rk||'×'):'–'; });
+    var hh=yrs.map(function(d){ var a=x.hh.filter(function(q){return q.d===d;})[0]; return a?(a.rk||noRk(a.s)[1]):'·'; });
     var RS=(resAll[x.n]||[]).filter(function(q){return q.disc===dc&&spSeason(q.d)===ps;}),sv=vpSeasonTxt(RS),sr=ranksBy[x.n]||[];
-    var note=vpNote(x,{fav:favN&&favN.n===x.n,pl:pl,setter:st1?(st1[0].split(' ').slice(1).join(' ')||st1[0]):'',sr:sr.filter(Boolean),dnf:sv.dnf});
-    return '<tr'+(favN&&favN.n===x.n?' class="fav"':'')+'><td class="nm">'+(D.BIB[x.n]?'<span class="bib">'+D.BIB[x.n]+'</span>':'')+lnH(x.n)+'</td><td>'+(hh.some(function(v){return v!=='–';})?hh.join(' · '):'–')+'</td><td>'+sv.t+'</td>'+(st1?'<td>'+(sr.length?sr.map(function(v){return v?v+'.':'×';}).join(' · '):'–')+'</td>':'')+'<td>'+note+'</td></tr>'; }).join('');
+    var note=vpNote(x,{fav:favN&&favN.n===x.n,pl:pl,setter:st1?(st1[0].split(' ').slice(1).join(' ')||st1[0]):'',sr:sr.filter(Boolean),dnf:sv.dnf,dnq:sv.dnq});
+    return '<tr'+(favN&&favN.n===x.n?' class="fav"':'')+'><td class="nm">'+(D.BIB[x.n]?'<span class="bib">'+D.BIB[x.n]+'</span>':'')+lnH(x.n)+'</td><td>'+(hh.some(function(v){return v!=='·';})?hh.join(' / '):'–')+'</td><td>'+sv.t+'</td>'+(st1?'<td>'+(sr.length?sr.map(function(v){return v?v+'.':'×';}).join(' · '):'–')+'</td>':'')+'<td>'+note+'</td></tr>'; }).join('');
   var yl=yrs.length?yrs[0].slice(2,4)+'–'+yrs[yrs.length-1].slice(2,4):'';
   var tbl='<h2 class="ws">'+flag('SUI')+'Wer schnell sein könnte <small>'+rows.length+' am Start'+(typeof startCheck==='function'&&/stimmt/.test(startCheck(ev,(function(o){o[dc]=1;return o;})({})))?', FIS-Startliste = monday':'')+'</small></h2><table class="w"><thead><tr><th>Nr. · Athlet:in</th><th>'+h(pl)+' '+yl+'</th><th>Vorsaison '+ps.slice(2)+'</th>'+(st1?'<th>'+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+'</th>':'')+'<th>Einschätzung</th></tr></thead><tbody>'+trs+'</tbody></table>'+
-    '<ul class="mu fn"><li>'+h(pl)+': Rang pro Jahr (× Ausfall, – nicht im 2. Lauf oder nicht gestartet) · Vorsaison: üblicher Rang '+ps+' (Median), die Form der neuen Saison zählt ab dem ersten Rennen'+(st1?' · '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+': Laufrang in seinen Läufen':'')+' · Wetter und Sicht nicht berücksichtigt.</li></ul>';
+    '<ul class="mu fn"><li>'+h(pl)+': Rang pro Jahr (× Ausfall, – nicht im 2. Lauf, · nicht gestartet) · Vorsaison: üblicher Rang '+ps+' (Median), die Form der neuen Saison zählt ab dem ersten Rennen'+(st1?' · '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+': Laufrang in seinen Läufen':'')+' · Wetter und Sicht nicht berücksichtigt.</li></ul>';
   var body='<h1>Vorschau '+h(DISC[dc])+' '+GN[ev.g]+'</h1><p class="sub">'+flag(ev.nat)+h(pl)+', '+WDL[dd.getDay()]+' '+dd.getDate()+'. '+MO[dd.getMonth()]+' '+dd.getFullYear()+' · Stand '+stand+'</p><div class="rule"></div>'+
     (neu.length?'<div class="neu"><b class="t">Neu heute</b><ul>'+neu.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul></div>':'')+
     '<div class="row"><div class="col">'+kurs+'</div><div class="col" style="flex:.82">'+setH+'</div></div>'+tbl;
@@ -5392,6 +5407,8 @@ dayBody(d,rs,(
   S.dtab=S.dtab||{}; var dk=S.dtab[ev.id];
   /* beendetes Event (z. B. am Abend des Renntags): beim Öffnen direkt der Renntag mit Resultaten und Grafiken */
   if(dk==null&&evRecent(ev)&&dayMap[evDoneDay(ev)]) dk=S.dtab[ev.id]=evDoneDay(ev);
+  /* Renntag vor dem Rennen: direkt der Reiter des heutigen Rennens (mit Startzeit, Vorschau und Startliste dieser Disziplin; Vonsie, 26.11.2026) */
+  if(dk==null&&stat==='live'&&!evRecent(ev)&&dayMap[today()]) dk=S.dtab[ev.id]=today();
   if(dk==null||(dk!==''&&!dayMap[dk])) dk=S.dtab[ev.id]='';
   var nav=navList.length?'<nav class="daynav" aria-label="Inhalt">'+'<button type="button" class="dn ov'+(dk===''?' on':'')+'" data-act="dtab" data-v=""><small>Event</small>Übersicht</button>'+
     navList.map(function(x){ var c=cov(items.filter(function(it){return it.d===x.d;})),n=Object.keys(c).reduce(function(a,k){return a+c[k];},0);
@@ -5420,7 +5437,11 @@ dayBody(d,rs,(
   var pn='<div class="dpn">'+(prev?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+prev.d+'">‹ '+WD[pd(prev.d).getDay()]+' '+dm(prev.d)+' '+h(prev.t)+'</button>':'<span></span>')+(next?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+next.d+'">'+WD[pd(next.d).getDay()]+' '+dm(next.d)+' '+h(next.t)+' ›</button>':'<span></span>')+'</div>';
   var miss=todoOf(ev).filter(function(x){return !x.done&&x.d===dk;});
   var missH=isAdm()&&miss.length&&stat!=='up'?'<div class="dmiss" id="dmiss"><b>Fehlt noch an diesem Tag</b>'+miss.map(function(x){return '<span class="tdc">'+h(todoShort(x))+'</span>';}).join('')+'<small class="mu">in monday «RVD Sync» beim Unterelement Datei, Link oder Notiz ergänzen oder «Stand» setzen</small></div>':'';
-  return head.replace('<section class="card dhero">','<section class="card dhero cmp">')+nav+missH+newH+'<div class="days">'+dayMap[dk]+'</div>'+pn+vnote+cm;
+  var dpre='';
+  if(dk===today()&&stat==='live'&&!evRecent(ev)&&/dempty/.test(dayMap[dk])&&typeof dayPreview==='function'){
+    var evD=Object.assign({},ev,{races:(ev.races||[]).filter(function(r){return r.d===dk;})});
+    var tl=typeof timeLine==='function'?timeLine(evD):''; dpre=(tl?'<div class="dpre-t">'+tl+'</div>':'')+dayPreview(ev,dk); }
+  return head.replace('<section class="card dhero">','<section class="card dhero cmp">')+nav+missH+newH+'<div class="days">'+dayMap[dk]+'</div>'+dpre+pn+vnote+cm;
 }
 
 /* ───────────── Team ───────────── */
