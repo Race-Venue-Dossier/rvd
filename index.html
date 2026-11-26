@@ -2797,7 +2797,7 @@ function kpis(list,noLead){ /* noLead: «Als Nächstes» steht schon darüber, d
     tail+=tile('Nächste 7 Tage',w.length?w.length+' '+(w.length===1?'Rennen':'Rennen'):'–',w.length?'<span class="noi18n">'+h(wn.join(' · '))+'</span>':'keine Rennen'); nT++; }
   /* «Jetzt»/«Als Nächstes» steht darüber: statt Kacheln eine schmale Zeile (Vonsie, 26.11.2026) */
   if(!lead&&!pre){ var it=function(v,k,s){ return '<span><b>'+v+'</b> '+k+(s?' <small>'+s+'</small>':'')+'</span>'; };
-    return '<p class="kpil" aria-label="Kennzahlen">'+it(list.length,'Events',accG().length>1?nM+' M · '+nW+' W':'')+it(run.length,'Rennen',tr?tr+' Trainings'+(xx?' · '+xx+' abgesagt':''):'')+
+    return '<p class="kpil" aria-label="Kennzahlen">'+it(list.length,'Events',accG().length>1&&nM&&nW?nM+' M · '+nW+' W':'')+it(run.length,'Rennen',tr?tr+' Trainings'+(xx?' · '+xx+' abgesagt':''):'')+
       (isAdm()?it(staffN.onsite+staffN.cc,'Einsätze FEA',staffN.onsite+' vor Ort · '+staffN.cc+' CC'):'')+(items?it(items,'Analysen',''):'')+'</p>'; }
   var nTiles=2+(isAdm()?1:0)+(pre?2:nT);
   return '<section class="kpis'+(lead?'':' nl')+'" style="--n:'+nTiles+'" aria-label="Kennzahlen">'+lead+
@@ -3136,7 +3136,7 @@ function seasonLine(list){
   if(list.length<3) return '';
   var a=list.reduce(function(m,e){ return e.frm<m?e.frm:m; },list[0].frm),b=list.reduce(function(m,e){ return e.to>m?e.to:m; },list[0].to);
   var A=pd(a.slice(0,8)+'01'),B=pd(b),B2=new Date(B.getFullYear(),B.getMonth()+1,1),span0=B2-A; if(span0<=0) return '';
-  var x=function(d){ return ((pd(d)-A)/span0*100).toFixed(2); },t=today(),gs=accG();
+  var x=function(d){ return ((pd(d)-A)/span0*100).toFixed(2); },t=today(),gs=accG().filter(function(g){ return list.some(function(e){ return e.g===g; }); });   /* nur das oben gewählte Geschlecht (Vonsie, 26.11.2026) */
   var mon=[],m=new Date(A); while(m<B2){ mon.push(new Date(m)); m=new Date(m.getFullYear(),m.getMonth()+1,1); }
   var lanes=gs.length>1?['W','M']:gs,lane=function(g){ return lanes.length>1?(g==='W'?0:1):0; };
   var dots=list.map(function(e){ var mid=e.frm===e.to?e.frm:e.frm,xc=evCancelled(e),st=status(e),ch=e.cat==='WSC'||e.cat==='OWG';
