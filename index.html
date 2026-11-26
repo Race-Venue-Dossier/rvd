@@ -2005,6 +2005,9 @@ button.ksp-row{cursor:pointer}button.ksp-row:hover{background:var(--bg2,rgba(0,0
 .ksdt{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--pc);border:2px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .ksax{display:flex;justify-content:space-between;margin:2px 0 0;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 @media (max-width:640px){.ksov .kso-g{grid-template-columns:1fr;gap:14px}}
+.kso-g:has(.ksr)+.lgi,.kso-g:has(.ksr)+*+.lgi{display:none}
+.kso-g .kslg{grid-column:1/-1}.kso-g .kslg .lgi{margin:0}
+.ksvsw{margin-left:auto;order:9}
 
 </style>
 
@@ -4194,9 +4197,16 @@ function tKsOverview(st){
   var cnt={}; discs.forEach(function(dc){ cnt[dc]=R.filter(function(r){return r.disc===dc;}).length; });
   var avg=function(dc,k){ var v=R.filter(function(r){return r.disc===dc;}).map(function(r){return ksVal(r.m,k);}).filter(function(x){return x!=null;}); return v.length?v.reduce(function(a,b){return a+b;},0)/v.length:null; };
   var lab=function(r){ return r.pl+' L'+r.run; },setN=function(r){ return r.set?r.set[1]+(r.set[2]&&r.set[2]!=='FIS'?' ('+r.set[2]+')':''):'–'; };
+  var charts=KSMET.map(function(M){
+    var bars=[];
+    discs.forEach(function(dc){ bars.push({v:avg(dc,M[0]),cls:'avg',l:'Ø '+(DSHORT[dc]||dc),s:cnt[dc]+' Läufe',t:'Ø '+M[1]+' über '+cnt[dc]+' Läufe '+(DISC[dc]||dc)+' mit Kursdaten'}); });
+    sel.forEach(function(r,i){ bars.push({v:ksVal(r.m,M[0]),cls:'pc'+(i%12),l:lab(r),s:dm(r.d)+(discs.length>1?' '+(DSHORT[r.disc]||r.disc):''),t:lab(r)+' · '+dm(r.d)+' · Kurssetzer: '+setN(r)}); });
+    var mx=Math.max.apply(null,bars.map(function(b){return b.v||0;}).concat([1e-9]));
+    return '<div class="kso"><p class="h3">'+M[1]+(M[2]?' <small class="mu">'+M[2]+'</small>':'')+'</p><div class="ksob">'+bars.map(function(b){
+      return '<div class="ksbar '+b.cls+'" style="--h:'+(b.v==null?0:b.v/mx*100).toFixed(1)+'%" title="'+h(b.t)+'"><b>'+ksFmt(b.v,M[3])+'</b><i></i><span>'+h(b.l)+'<small>'+h(b.s)+'</small></span></div>'; }).join('')+'</div></div>'; }).join('');
   /* Bandbreite statt Säulen: jeder Lauf ein Strich, Ø markiert, eingeblendete Läufe als farbige Punkte; Strich antippen blendet den Lauf ein (Vonsie, 26.11.2026) */
   var RD=R.filter(function(r){ return r.disc===dcur; });
-  var charts=KSMET.map(function(M){
+  var chartsR=KSMET.map(function(M){
     var V=RD.map(function(r){ return {r:r,v:ksVal(r.m,M[0])}; }).filter(function(x){ return x.v!=null; }); if(!V.length) return '';
     var lo=Math.min.apply(null,V.map(function(x){return x.v;})),hi=Math.max.apply(null,V.map(function(x){return x.v;})),pd0=(hi-lo)*0.04||Math.max(1,Math.abs(lo)*0.05);
     var P=function(v){ return ((v-lo+pd0)/(hi-lo+2*pd0)*100).toFixed(2); },a=avg(dcur,M[0]),u=M[2]?' '+M[2]:'';
@@ -4206,6 +4216,10 @@ function tKsOverview(st){
     return '<div class="kso"><div class="ksoh"><p class="h3">'+M[1]+(M[2]?' <small class="mu">'+M[2]+'</small>':'')+'</p><p class="ksav"><b>Ø '+ksFmt(a,M[3])+'</b>'+sv+'</p></div>'+
       '<div class="ksr" role="img" aria-label="'+h(M[1]+': Spanne '+ksFmt(lo,M[3])+' bis '+ksFmt(hi,M[3])+u+', Durchschnitt '+ksFmt(a,M[3]))+'"><i class="ksln" style="left:'+P(lo)+'%;right:'+(100-P(hi))+'%"></i>'+ticks+(a!=null?'<i class="ksa" style="left:'+P(a)+'%"></i>':'')+dots+'</div>'+
       '<p class="ksax"><span>'+ksFmt(lo,M[3])+'</span><span>'+ksFmt(hi,M[3])+'</span></p></div>'; }).join('');
+  /* Ansicht wählbar: Bandbreite (Standard) oder Björns Balken (Vonsie, 26.11.2026) */
+  var ksBars=st.ksv==='bars';
+  if(!ksBars) charts=chartsR+'<div class="kslg">'+lgI('Jeder Strich ein Lauf '+h(DISC[dcur]||'')+', dunkel = Ø, farbig = eingeblendete Läufe · Strich antippen blendet den Lauf ein','Torabstand und Versatz: Ø der gewerteten offenen Tore (ohne Figuren und Ausreisser), Drehwinkel: Ø Betrag, Gefälle: über die Kurslänge.')+'</div>';
+  ksw+='<div class="seg ksvsw" role="group" aria-label="Darstellung"><button type="button" aria-pressed="'+!ksBars+'" data-act="ksv" data-v="range">Bandbreite</button><button type="button" aria-pressed="'+ksBars+'" data-act="ksv" data-v="bars">Balken</button></div>';
   var opts=R.filter(function(r){ return st.ksr.indexOf(r.key)<0; });
   var dd='<select class="sel ksdd" data-chg="ksr" aria-label="Lauf einblenden"><option value="">Lauf einblenden …</option>'+discs.map(function(dc){ var o=opts.filter(function(r){return r.disc===dc;}); return o.length?'<optgroup label="'+h(DISC[dc]||dc)+'">'+o.map(function(r){
     return '<option value="'+h(r.key)+'">'+h(dm(r.d)+' '+r.pl+' · Lauf '+r.run+' · '+setN(r))+'</option>'; }).join('')+'</optgroup>':''; }).join('')+'</select>';
@@ -4223,7 +4237,7 @@ function tKsOverview(st){
   var gn=st.tg==='M'?'Männer':'Frauen';
   return '<section class="card ksov"><div class="ch"><h2>Kurssetzung '+gn+'</h2><span class="h3v">'+R.filter(function(r){return r.disc===dcur;}).length+' Läufe '+h(DISC[dcur]||'')+' mit Kursdaten · 2025/26</span></div>'+
     '<div class="kso-top">'+ksw+dd+chips+'</div><div class="kso-g">'+charts+'</div>'+
-    lgI('Jeder Strich ein Lauf '+h(DISC[dcur]||'')+', dunkel = Ø, farbig = eingeblendete Läufe · Strich antippen blendet den Lauf ein','Torabstand und Versatz: Ø der gewerteten offenen Tore (ohne Figuren und Ausreisser), Drehwinkel: Ø Betrag, Gefälle: über die Kurslänge.')+plans+'</section>';
+    lgI('Grau = Ø aller Läufe · farbig = eingeblendete Läufe','Torabstand und Versatz: Ø der gewerteten offenen Tore (ohne Figuren und Ausreisser), Drehwinkel: Ø Betrag, Gefälle: über die Kurslänge.')+plans+'</section>';
 }
 
 /* ───────────── Live-Daten aus monday.com ─────────────
@@ -6339,6 +6353,7 @@ document.addEventListener('click',function(ev){
     case 'gl': S.gl[el.getAttribute('data-k')]=+v; render(); break;
     case 'ksetter': ksOpen(v,el.getAttribute('data-d')); break;   /* Kurssetzer-Übersicht (Vonsie, 26.11.2026) */
     case 'kspx': ksClose(); break;
+    case 'ksv': tState().ksv=v; render(); break;   /* Kurssetzung: Bandbreite oder Balken */
     case 'ksadd': var ka=tState(); ka.ksr=ka.ksr||[]; if(ka.ksr.indexOf(v)<0) ka.ksr.push(v); render(); break;   /* Kurssetzung: Lauf per Strich einblenden */
     case 'mxall': S.mxAll=!S.mxAll; render(); break;   /* Team-Matrix: ganze Saison */
     case 'srchday': srchClose(); ksClose(); S.tab='events'; S.ev=v; S.pop=null; S.form=null; S.dtab=S.dtab||{}; S.dtab[v]=el.getAttribute('data-d'); var e2=S.events.filter(function(x){return x.id===v;})[0]; if(e2) S.season=e2.season; render(); window.scrollTo(0,0); break;
