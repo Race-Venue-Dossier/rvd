@@ -1970,6 +1970,26 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .vlast .vlk{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
 .vlast .rkb{font-style:normal}
 @media (max-width:640px){.vlast{gap:3px 10px;font-size:12.5px}.vlast .vlp{display:block;width:100%;white-space:normal}.vlast .vlp .rkb{vertical-align:middle}}
+.vlast .vlb{margin-left:auto}.vlast{padding:6px 8px 6px 12px}
+@media (max-width:640px){.vlast .vlb{margin-left:0;margin-top:4px}}
+/* Kurssetzer-Übersicht (26.11.2026) */
+.ksn{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.ksn:hover{color:var(--red,#e3001b);text-decoration-color:currentColor}
+.ksp{position:fixed;inset:0;z-index:100}
+.ksp-bg{position:absolute;inset:0;background:rgba(10,14,20,.35);backdrop-filter:blur(2px)}
+.ksp-box{position:relative;max-width:520px;width:calc(100% - 24px);max-height:calc(100vh - 120px);overflow:auto;margin:calc(env(safe-area-inset-top,0px) + 70px) auto 0;background:var(--surface);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.25);padding:14px 16px 16px;animation:vhin .25s ease-out both;outline:none}
+.ksp-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.ksp-h small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
+.ksp-h b{font-size:18px}
+.ksp-s{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:0 0 10px;padding:8px 10px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.03));border:1px solid var(--line);font-size:13px}
+.ksp-hd,.ksp-row{display:grid;grid-template-columns:1fr auto 84px;gap:10px;align-items:center}
+.ksp-hd{margin:0;padding:0 8px 4px;white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}.ksp-hd span:last-child{text-align:center}
+.ksp-l{list-style:none;margin:0;padding:0}
+.ksp-row{width:100%;font:inherit;color:inherit;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:8px;font-size:14px}
+button.ksp-row{cursor:pointer}button.ksp-row:hover{background:var(--bg2,rgba(0,0,0,.03))}
+.ksp-p{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ksp-d{font-size:12.5px;color:var(--ink-2);white-space:nowrap}.ksp-r{text-align:center}.ksp-r .rkb{font-style:normal}
+.ksp-m{font-size:12px;margin:8px 0 0}
 
 </style>
 
@@ -3073,7 +3093,7 @@ function srchIndex0(){
   var meta={}; if(SP){ (SP.races||[]).concat(SP.ts||[]).forEach(function(r){ if(!meta[r.id]) meta[r.id]={d:r.d,disc:r.disc,pl:r.pl,g:r.g}; }); }
   if(SP&&SP.cs) Object.keys(SP.cs).forEach(function(id){ (SP.cs[id].r||[]).forEach(function(x){ var n=SNFIX[x[1]]||x[1]; if(!n) return;
     var o=K[n]=K[n]||{n:n,nat:x[2]||'',L:[]}, ri=RI[id], m=meta[id]||{};
-    o.L.push({id:id,run:x[0],e:ri&&ri.e,d:(ri&&ri.d)||m.d||'',disc:(ri&&ri.disc)||m.disc||'',pl:(ri&&ri.e&&ri.e.name)||m.pl||''}); }); });
+    o.L.push({id:id,run:x[0],e:ri&&ri.e,g:(ri&&ri.e&&ri.e.g)||m.g||'',d:(ri&&ri.d)||m.d||'',disc:(ri&&ri.disc)||m.disc||'',pl:(ri&&ri.e&&ri.e.name)||m.pl||''}); }); });
   Object.keys(K).forEach(function(n){ K[n].L.sort(function(a,b){return a.d<b.d?1:-1;}); });
   return {A:Object.keys(A).map(function(k){return A[k];}),E:E,O:Object.keys(O).map(function(k){return O[k];}),K:Object.keys(K).map(function(k){return K[k];})};
 }
@@ -4108,7 +4128,7 @@ function techCard(r){
     return '<tr><td class="stick"><button type="button" class="lnk" data-act="tprof" data-v="'+h(a.n)+'" data-g="'+r.g+'" data-d="'+r.disc+'">'+lnH(a.n)+'</button></td><td class="num">+'+a.tot.toFixed(2)+'</td>'+
       ['st','mi','sc'].map(function(k){ var v=sec(a,k); return '<td class="num hc" style="'+divBg(v,ref,2)+'">'+hund(v)+'</td>'; }).join('')+
       '<td class="nw">Tor '+(wi+1)+gt+' <small class="mu">+'+wv.toFixed(2)+'</small></td></tr>'; }).join('');
-  return '<div class="spc"><div class="spc-h"><span class="pill">'+h((DISC[r.disc]||r.disc)+' · Lauf '+r.run)+'</span><span class="cd-t">Gate-to-Gate-Auswertung · Rückstand pro Tor</span><span class="sp"></span>'+(r.top?'<span class="spc-n">Laufbestzeit: '+h(r.top)+'</span>':'')+(function(x){return x?'<span class="spc-n">Kurs: '+vSetterTxt(x)+'</span>':'';})(vSetter(vRid(r.g,r.d,r.disc),r.run))+'</div>'+
+  return '<div class="spc"><div class="spc-h"><span class="pill">'+h((DISC[r.disc]||r.disc)+' · Lauf '+r.run)+'</span><span class="cd-t">Gate-to-Gate-Auswertung · Rückstand pro Tor</span><span class="sp"></span>'+(r.top?'<span class="spc-n">Laufbestzeit: '+h(r.top)+'</span>':'')+(function(x){return x?'<span class="spc-n">Kurs: '+vSetterTxt(x,r.disc)+'</span>':'';})(vSetter(vRid(r.g,r.d,r.disc),r.run))+'</div>'+
     '<div class="tw"><table class="tbl spt tgc"><thead><tr><th class="stick">Athlet:in</th><th class="num">Rückstand Lauf</th><th class="num">Start</th><th class="num">Mitte</th><th class="num">Schluss</th><th>Grösster Verlust</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '<p class="spc-l">Zeitverlust pro Tor auf die Bestzeit in Hundertstelsekunden je Kursdrittel. <span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der Schnitt der Schweizer:innen in diesem Lauf. Namen antippen für das Athletenprofil.</p></div>';
 }
@@ -4177,7 +4197,7 @@ function tKsOverview(st){
     sel.forEach(function(r){ var m=r.m,e=m.fin||m.G[m.G.length-1]; yr=Math.max(yr,e.y); m.G.concat(m.fin?[m.fin]:[]).forEach(function(g){ xmin=Math.min(xmin,g.x); xmax=Math.max(xmax,g.x); }); if(m.dmed) dmd.push(m.dmed); });
     var dmed=dmd.length?med(dmd):25,xr=Math.max(1,xmax-xmin),s=Math.max(Math.min(760/Math.max(1,yr),260/xr),13/dmed); if(yr*s>1500) s=1500/yr;
     var w=Math.round(xr*s+250);
-    plans='<div class="ksplans">'+sel.map(function(r,i){ return '<div><p class="h3"><i class="ksdot pc'+(i%12)+'"></i>'+h(r.pl)+' · '+dm(r.d)+' · '+h(DISC[r.disc]||r.disc)+' Lauf '+r.run+'</p><p class="cap">Kurssetzer: '+(r.set?vSetterTxt(r.set):'–')+' · '+r.m.n+' Tore · '+Math.round(r.m.len)+' m</p><div class="ksplan-w">'+ksPlanLab(r.it,{s:s,yr:yr,xmin:xmin,xmax:xmax,w:w})+'</div></div>'; }).join('')+'</div>'+
+    plans='<div class="ksplans">'+sel.map(function(r,i){ return '<div><p class="h3"><i class="ksdot pc'+(i%12)+'"></i>'+h(r.pl)+' · '+dm(r.d)+' · '+h(DISC[r.disc]||r.disc)+' Lauf '+r.run+'</p><p class="cap">Kurssetzer: '+(r.set?vSetterTxt(r.set,r.disc):'–')+' · '+r.m.n+' Tore · '+Math.round(r.m.len)+' m</p><div class="ksplan-w">'+ksPlanLab(r.it,{s:s,yr:yr,xmin:xmin,xmax:xmax,w:w})+'</div></div>'; }).join('')+'</div>'+
       '<p class="spc-l">Beschriftung pro Tor: Nr., Distanz und Versatz zum vorherigen Tor in m, Drehwinkel am Tor in ° · Punkt rot/blau = Torfarbe, Ring = Figur. Zum Vergleich gleicher Massstab für alle eingeblendeten Läufe.</p>';
   }
   var gn=st.tg==='M'?'Männer':'Frauen';
@@ -4650,7 +4670,7 @@ var SNFIX={'Pete Anderson':'Peter Anderson','Alex Berthold':'Alexander Berthold'
   'Julian Vuignier':'Julien Vuignier','Hannes Zochling':'Hannes Zöchling','Hannes Zoechling':'Hannes Zöchling',
   'Nordlund Joergen':'Jørgen Nordlund','DAVIES Tristan Glasse':'Tristan Glasse-Davies','DIO Simone Del':'Simone Del Dio','Simone Deldio':'Simone Del Dio','HERVAS Jose Luis Alejo':'Alejo Hervas'};
 function vSetter(id,run){ var c=SP&&SP.cs&&SP.cs[String(id)]; if(!c||!c.r) return null; var x=c.r.filter(function(x){return x[0]===(run||1);})[0]||(run>1?null:c.r[0])||null; return x&&SNFIX[x[1]]?[x[0],SNFIX[x[1]]].concat(x.slice(2)):x; }
-function vSetterTxt(x){ return x?h(x[1])+(x[2]&&x[2]!=='FIS'?' <small class="mu">'+h(x[2])+'</small>':x[2]==='FIS'?' <small class="mu">FIS</small>':''):''; }
+function vSetterTxt(x,dc){ return x?(dc?'<button type="button" class="ksn" data-act="ksetter" data-v="'+h(x[1])+'" data-d="'+h(dc)+'" title="Kurse von '+h(x[1])+' in dieser Disziplin">'+h(x[1])+'</button>':h(x[1]))+(x[2]&&x[2]!=='FIS'?' <small class="mu">'+h(x[2])+'</small>':x[2]==='FIS'?' <small class="mu">FIS</small>':''):''; }
 /* FIS-Rennnummer zu einem Lauf (Geschlecht, Datum, Disziplin) */
 var VRID=null;
 function vRid(g,d,disc){
@@ -4854,12 +4874,12 @@ function vSpeedPart(ev,k,prev,dc){
       '<td data-l="Hier" data-sv="'+(x.best||99)+'">'+vHist(x.hh,3)+'</td><td data-l="'+(fpre?'Vorsaison':'Form')+'">'+vForm(x.n,DD,ev.frm,fpre)+'</td></tr>'; }).join('')+'</tbody></table></div>'+vMore(vid,rows.length,vall); tbl=(rows.length?tbl:'')+vs.html;
   /* Onepager auch für Abfahrt und Super-G (Vonsie, 26.11.2026) */
   if(dc) VPDF[ev.id+'|'+dc]={rows:rows.slice(),BIB:BIB,hist:hist,here:here,sp:{sh:sh,chips:chips,snowT:snowT}};
-  var body=(dc?'<div class="vpdfr"><button type="button" class="btn sm" data-act="vpdf" data-v="'+h(ev.id)+'" data-d="'+dc+'" title="Onepager in der Swiss-Ski-Vorlage, zum Drucken oder als PDF">Onepager (PDF)</button></div>':'')+(dc?vLastHere(hist,dc):'')+'<p class="jvl">Streckenprofil hier <small class="mu">aus den FIS-Sektoren der Vorjahre</small></p>'+bar+condHtml+hi+(typeof startCheck==='function'?startCheck(ev,DD):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,dc?[dc]:['DH','SG']):'')+
+  var pb=dc?'<button type="button" class="btn sm" data-act="vpdf" data-v="'+h(ev.id)+'" data-d="'+dc+'" title="Onepager in der Swiss-Ski-Vorlage, zum Drucken oder als PDF">Onepager (PDF)</button>':'',body=(dc?vLastHere(hist,dc,pb)||'<div class="vpdfr">'+pb+'</div>':'')+'<p class="jvl">Streckenprofil hier <small class="mu">aus den FIS-Sektoren der Vorjahre</small></p>'+bar+condHtml+hi+(typeof startCheck==='function'?startCheck(ev,DD):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,dc?[dc]:['DH','SG']):'')+
     vInfo('Rennen mit ähnlichem Streckenprofil'+(hasCond?', ähnlichen Bedingungen':''));
   return vCard(h(TT),(starters&&starters.length?'Am Start laut '+startersSrc(ev)+' · ':'')+vSub(hist),body,dc||'DH SG');
 }
 /* letzte Ausgabe hier in dieser Disziplin: bester CH-Rang, Rückstand, Sieg, Kurssetzer (Vonsie, 26.11.2026) */
-function vLastHere(hist,dc){
+function vLastHere(hist,dc,btn){
   var L=hist.filter(function(o){ return (o.disc===dc||(dc==='DH'&&o.disc==='DHT'))&&(o.sui||o.x); }); if(!L.length) return '';
   var o=L[L.length-1],ok=(o.sui||[]).filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}),b=ok[0],gap=null;
   if(b&&o.sp&&o.sp.bf){ var r=o.sp.rows.filter(function(a){return a.n===b.n;})[0]; if(r&&r.fin) gap=r.fin-o.sp.bf; }
@@ -4868,8 +4888,8 @@ function vLastHere(hist,dc){
   if(o.x&&!ok.length) P.push('<span class="mu">abgesagt</span>');
   else P.push(b?'<span class="vlk">Bester CH</span> '+h(shortN(b.n))+' <i class="rkb '+rkCls(b.rk)+'">'+b.rk+'</i>'+(gap!=null&&b.rk>1?' <span class="mu">'+sg(Math.round(gap*100)/100)+' s</span>':''):'<span class="vlk">Bester CH</span> <span class="mu">kein Resultat</span>');
   if(o.win) P.push('<span class="vlk">Sieg</span> '+flag(o.win[1])+' '+h(shortN(o.win[0])));
-  if(se.length) P.push('<span class="vlk">Kurssetzer</span> '+se.map(function(x){ return h(x[1])+(x[2]&&x[2]!=='FIS'?' <small class="mu">'+h(x[2])+'</small>':''); }).join(' / '));
-  return '<p class="vlast"><b class="vlh">Letzte Ausgabe</b> <span class="vly">'+dm(o.d)+o.d.slice(0,4)+'</span>'+P.map(function(x){ return '<span class="vlp">'+x+'</span>'; }).join('')+'</p>';
+  if(se.length) P.push('<span class="vlk">Kurssetzer</span> '+se.map(function(x){ return vSetterTxt(x,dc==='DHT'?'DH':dc); }).join(' / '));
+  return '<p class="vlast"><b class="vlh">Letzte Ausgabe</b> <span class="vly">'+dm(o.d)+o.d.slice(0,4)+'</span>'+P.map(function(x){ return '<span class="vlp">'+x+'</span>'; }).join('')+(btn?'<span class="vlb">'+btn+'</span>':'')+'</p>';   /* Onepager-Knopf in derselben Zeile (Vonsie, 26.11.2026) */
 }
 function vTechPart(ev,k,prev,dc){
   if(!SP.ts) return '';
@@ -4928,7 +4948,7 @@ function vTechPart(ev,k,prev,dc){
       return '<tr'+vTrA(vo,x,i,many)+'><td class="stick">'+vBib(BIB,x.n)+'<button type="button" class="lnk" data-act="tprof" data-v="'+h(x.n)+'" data-g="'+ev.g+'" data-d="'+dc+'">'+lnH(x.n)+'</button></td>'+
       vChCell(x,basis,sig)+
       '<td data-l="Hier" data-sv="'+(x.best||99)+'">'+vHist(x.hh,3)+'</td><td data-l="'+(fpre?'Vorsaison':'Form')+'">'+vForm(x.n,(function(o){o[dc]=1;return o;})({}),ev.frm,fpre)+'</td></tr>'; }).join('')+'</tbody></table></div>'+vMore(vid,rows.length,vall); tbl=(rows.length?tbl:'')+vs.html;
-  var body='<div class="vpdfr"><button type="button" class="btn sm" data-act="vpdf" data-v="'+h(ev.id)+'" data-d="'+dc+'" title="Onepager in der Swiss-Ski-Vorlage, zum Drucken oder als PDF">Onepager (PDF)</button></div>'+vLastHere(hist,dc)+(typeof vTodayHtml==='function'?vTodayHtml(ev,dc):'')+/* ohne Kursdaten kein leerer Block «Kurs hier»; Hinweis steht unter «So lesen» und im Jahresvergleich (Vonsie, 26.11.2026) */
+  var pb='<button type="button" class="btn sm" data-act="vpdf" data-v="'+h(ev.id)+'" data-d="'+dc+'" title="Onepager in der Swiss-Ski-Vorlage, zum Drucken oder als PDF">Onepager (PDF)</button>',body=(vLastHere(hist,dc,pb)||'<div class="vpdfr">'+pb+'</div>')+(typeof vTodayHtml==='function'?vTodayHtml(ev,dc):'')+/* ohne Kursdaten kein leerer Block «Kurs hier»; Hinweis steht unter «So lesen» und im Jahresvergleich (Vonsie, 26.11.2026) */
     (chips.length?'<p class="jvl">Kurs hier <small class="mu">aus den Kurssetzungen der Vorjahre</small></p><div class="vchips">'+chips.map(function(c){return '<span class="vchip"><b>'+h(c[0])+'</b>'+h(c[1])+'</span>';}).join('')+'</div>':'')+
     hi+(typeof startCheck==='function'?startCheck(ev,(function(o){o[dc]=1;return o;})({})):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,dc):'')+
     vInfo('Läufen mit ähnlichem Kurs'+(!chips.length?' (für diesen Ort keine Kursdaten pro Tor, daher ohne Kurstyp-Wertung)':hasKt?'':' (Kurs hier im Schnitt, daher ohne Kurstyp-Wertung)'));
@@ -4974,13 +4994,13 @@ function jahresCard(ev){
         var st=(o.sp&&o.sp.st)||(c2&&c2.sec)||c.sec;
         var ku=st?'<span class="vmini">'+st.map(function(t){return '<i class="st'+t+'" title="'+h(STL[t])+'"></i>';}).join('')+'</span>':mu('–');
         var s1=vSetter(o.id,1);
-        return '<tr'+(cur?' class="me"':'')+'>'+yr+cond+'<td>'+ku+'</td><td class="nw">'+(s1?vSetterTxt(s1):mu('–'))+'</td>'+win+'</tr>';
+        return '<tr'+(cur?' class="me"':'')+'>'+yr+cond+'<td>'+ku+'</td><td class="nw">'+(s1?vSetterTxt(s1,dc):mu('–'))+'</td>'+win+'</tr>';
       }
       var rr=rrOf(o);
       /* ohne Kursdaten: beide Läufe in einer Zeile (Vonsie, 12.10.2026) */
-      if(!rr[0].cv&&!rr[1].cv) return '<tr class="'+(cur?'me ':'')+'r1 jnd">'+yr+cond+(kdNo?'':'<td class="num mu">1 · 2</td><td colspan="'+(dc==='SL'?4:3)+'" class="mu jvnd">'+(cur?'noch keine Kursdaten':'–')+'</td>')+'<td class="nw">'+(rr[0].s||rr[1].s?rr.map(function(x){ return x.s?'<span class="jvs"><small class="mu">L'+x.rn+'</small> '+vSetterTxt(x.s)+'</span>':''; }).join(''):mu('–'))+'</td>'+win+'</tr>';
+      if(!rr[0].cv&&!rr[1].cv) return '<tr class="'+(cur?'me ':'')+'r1 jnd">'+yr+cond+(kdNo?'':'<td class="num mu">1 · 2</td><td colspan="'+(dc==='SL'?4:3)+'" class="mu jvnd">'+(cur?'noch keine Kursdaten':'–')+'</td>')+'<td class="nw">'+(rr[0].s||rr[1].s?rr.map(function(x){ return x.s?'<span class="jvs"><small class="mu">L'+x.rn+'</small> '+vSetterTxt(x.s,dc)+'</span>':''; }).join(''):mu('–'))+'</td>'+win+'</tr>';
       return rr.map(function(x,i){ var v=x.cv;
-        var run='<td class="num">'+x.rn+'</td><td class="num">'+(v?v.ng:mu('–'))+'</td>'+(dc==='SL'?'<td class="num">'+(v?v.nfig:mu('–'))+'</td>':'')+'<td class="num">'+(v&&v.pit!=null?Math.round(v.pit)+' %':mu('–'))+'</td><td class="num">'+(v&&v.off!=null?n1(v.off)+' m':mu('–'))+'</td><td class="nw">'+(x.s?vSetterTxt(x.s):mu('–'))+'</td>';
+        var run='<td class="num">'+x.rn+'</td><td class="num">'+(v?v.ng:mu('–'))+'</td>'+(dc==='SL'?'<td class="num">'+(v?v.nfig:mu('–'))+'</td>':'')+'<td class="num">'+(v&&v.pit!=null?Math.round(v.pit)+' %':mu('–'))+'</td><td class="num">'+(v&&v.off!=null?n1(v.off)+' m':mu('–'))+'</td><td class="nw">'+(x.s?vSetterTxt(x.s,dc):mu('–'))+'</td>';
         return '<tr class="'+(cur?'me ':'')+(i?'r2':'r1')+'">'+(i?'':yr.replace('<td ','<td rowspan="2" ')+cond.replace(/<td>/g,'<td rowspan="2">').replace(/<td class/g,'<td rowspan="2" class'))+run+(i?'':win.replace('<td ','<td rowspan="2" '))+'</tr>'; }).join('');
     }).join('');
     var head='<thead><tr><th class="stick">Jahr</th>'+(CF.snow?'<th class="num">Schnee</th>':'')+(CF.air?'<th class="num">Luft</th>':'')+(CF.wx?'<th>Wetter</th>':'')+(CF.prep?'<th>Piste</th>':'')+
@@ -5181,6 +5201,34 @@ function ptsCard(g,discs,seasons,act,ctl){
   return '<section class="card ptc"><div class="ch"><h2>Weltcup-Punkte pro Rennen</h2>'+(ctl||'<span class="h3v">Schweiz '+GN[g]+' · '+seasons.join(', ')+'</span>')+'</div>'+body+
     '<p class="spc-l">Säule = Punkte aller Schweizer:innen im Rennen, aufgeteilt nach Athlet:in. Olympia und WM ohne Weltcup-Punkte nicht enthalten. Säule antippen zeigt die Athlet:in, Namen antippen öffnet das Profil.</p></section>';
 }
+
+/* ───── Kurssetzer antippen: seine letzten Kurse in dieser Disziplin mit dem besten CH-Rang (Vonsie, 26.11.2026) ───── */
+var KSP=null,VBS=null,VBSK='';
+function vBestSui(){ var R=vResAll(); if(VBS&&VBSK===R) return VBS; var o={}; Object.keys(R).forEach(function(n){ R[n].forEach(function(x){ if(!x.rk) return; var d=x.disc==='DHT'?'DH':x.disc,k=x.g+'|'+x.d+'|'+d; if(o[k]==null||x.rk<o[k]) o[k]=x.rk; }); }); VBS=o; VBSK=R; return o; }
+function ksClose(){ if(KSP){ KSP.remove(); KSP=null; document.documentElement.classList.remove('ksp-on'); } }
+function ksOpen(name,dc){
+  ksClose(); if(typeof srchIndex!=='function') return;
+  var D=function(d){ return d==='DHT'?'DH':d; },K=srchIndex().K.filter(function(k){ return k.n===name; })[0],B=vBestSui(),t=today();
+  var L=(K?K.L:[]).filter(function(x){ return D(x.disc)===dc&&x.d<=t&&(S.g==='all'||!x.g||x.g===S.g); });
+  /* ein Eintrag pro Rennen, Läufe zusammengefasst */
+  var R={},ord=[]; L.forEach(function(x){ var k=x.g+'|'+x.d+'|'+dc; if(!R[k]){ R[k]={x:x,runs:[],rk:B[k]!=null?B[k]:null}; ord.push(k); } if(x.run&&R[k].runs.indexOf(x.run)<0) R[k].runs.push(x.run); });
+  var rows=ord.map(function(k){ return R[k]; }).sort(function(a,b){ return a.x.d<b.x.d?1:-1; });
+  var gs={}; rows.forEach(function(r){ if(r.x.g) gs[r.x.g]=1; }); var both=Object.keys(gs).length>1;
+  /* Vergleich: bester CH-Rang in allen Rennen derselben Disziplin, Geschlecht und Saisons */
+  var se={}; rows.forEach(function(r){ se[(r.x.g||'')+'|'+spSeason(r.x.d)]=1; });
+  var base=[]; Object.keys(B).forEach(function(k){ var p=k.split('|'); if(p[2]===dc&&se[p[0]+'|'+spSeason(p[1])]) base.push(B[k]); });
+  var mine=rows.filter(function(r){ return r.rk!=null; }).map(function(r){ return r.rk; }),avg=vAvg(mine),bav=vAvg(base),df=avg!=null&&bav!=null?avg-bav:null;
+  var verd=mine.length<3||df==null?'<span class="tcp eq">zu wenig Rennen</span>':Math.abs(df)<2?'<span class="tcp eq">wie sonst</span>':'<span class="tcp '+(df<0?'up':'dn')+'">'+(df<0?'liegt uns':'eher schwierig')+'</span>';
+  var nat='';   /* Nation wechselt je nach Team und Jahr, darum weggelassen */
+  var list=rows.slice(0,12).map(function(r){ var x=r.x,inner='<span class="ksp-p">'+(x.e?flag(x.e.nat):'')+'<b>'+h(plShort(x.pl||''))+'</b>'+(both&&x.g?' '+gMark(x.g):'')+'</span><span class="ksp-d">'+dm(x.d)+x.d.slice(0,4)+(TECD[dc]&&r.runs.length?' · Lauf '+r.runs.sort().join(' + '):'')+'</span><span class="ksp-r">'+(r.rk!=null?'<i class="rkb '+rkCls(r.rk)+'">'+r.rk+'</i>':'<span class="mu">–</span>')+'</span>';
+    return '<li>'+(x.e?'<button type="button" class="ksp-row" data-act="srchday" data-v="'+h(x.e.id)+'" data-d="'+h(x.d)+'">'+inner+'</button>':'<div class="ksp-row">'+inner+'</div>')+'</li>'; }).join('');
+  KSP=document.createElement('div'); KSP.className='ksp';
+  KSP.innerHTML='<div class="ksp-bg" data-act="kspx"></div><div class="ksp-box" role="dialog" aria-label="Kurssetzer '+h(name)+'" tabindex="-1"><div class="ksp-h"><div><small>Kurssetzer · '+h(DISC[dc]||dc)+'</small><b>'+h(name)+'</b>'+nat+'</div><button type="button" class="btn ghost sm" data-act="kspx" aria-label="Schliessen">Schliessen</button></div>'+
+    (rows.length?'<p class="ksp-s"><span><b>'+rows.length+'</b> '+(rows.length===1?'Rennen':'Rennen')+'</span><span>Ø bester CH-Rang <b>'+(avg!=null?n1(avg):'–')+'</b>'+(bav!=null?' <small class="mu">sonst '+n1(bav)+'</small>':'')+'</span>'+verd+'</p><p class="ksp-hd"><span>Ort</span><span>Datum</span><span>Bester CH</span></p><ul class="ksp-l">'+list+'</ul>'+(rows.length>12?'<p class="mu ksp-m">'+(rows.length-12)+' ältere Rennen nicht gezeigt</p>':''):'<p class="mu">Keine bisherigen Kurse in dieser Disziplin gefunden.</p>')+'</div>';
+  document.body.appendChild(KSP); document.documentElement.classList.add('ksp-on');
+  var bx=KSP.querySelector('.ksp-box'); if(bx) bx.focus({preventScroll:true});
+}
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&KSP){ e.stopPropagation(); ksClose(); } },true);
 
 /* ───────────── Sprache: Deutsch (Standard) oder Englisch ─────────────
    Englisch wird nach dem Darstellen übersetzt: Textknoten und Attribute (title, aria-label, placeholder) werden
@@ -5804,6 +5852,11 @@ function viewTeam(){
     return '<span class="nm">'+h(p.n)+'</span><span class="tr" role="img" aria-label="'+(p.onsite+p.cc)+' Einsätze: '+p.onsite+' vor Ort, '+p.cc+' Command Center">'+(p.onsite?'<i class="a" style="width:'+(p.onsite/max*100)+'%" title="'+p.onsite+' vor Ort">'+p.onsite+'</i>':'')+(p.cc?'<i class="b" style="width:'+(p.cc/max*100)+'%" title="'+p.cc+' Command Center">'+p.cc+'</i>':'')+'<b class="tot">'+(p.onsite+p.cc)+'</b></span>';
   }).join('')+'</div>';
   var evs=list.filter(function(e){ return people.some(function(p){return p.ev[e.id];}); });
+  /* zuerst nur die nächsten 4 Wochen, «Ganze Saison» klappt den Rest auf (Vonsie, 26.11.2026) */
+  var evAll=evs,tW=today(),t28=(function(){ var d=pd(tW); d.setDate(d.getDate()+28); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); })();
+  var evW=evs.filter(function(e){ return e.to>=tW&&e.frm<=t28; }),mxW=evW.length&&evW.length<evAll.length,winOn=mxW&&!S.mxAll;
+  if(winOn) evs=evW;
+  var peopleM=winOn?people.filter(function(p){ return evs.some(function(e){ return p.ev[e.id]; }); }):people;
   /* Kopf waagrecht: Monatsblöcke, darunter Kurzname, Flagge, M/W und Datum; kommende Rennwoche hervorgehoben (Vonsie, 12.10.2026) */
   var MXS={"Val d'Isère":"Val d'Is.",'Val Gardena/Gröden':'Gröden','Val Gardena':'Gröden','Madonna di Campiglio':'Madonna','Garmisch-Partenkirchen':'Garmisch','Dachstein West / Gosau':'Gosau','Cortina d\'Ampezzo':'Cortina','Copper Mountain':'Copper','Crans-Montana':'Crans-M.','Kranjska Gora':'Kranjska','Courchevel Meribel':'Courchevel'};
   var mxS=function(n){ n=String(n).replace(/\s*\(TBC\)/,'').trim(); if(MXS[n]) return MXS[n]; var f=n.split('/')[0].trim(); return f.length<=10?f:f.split(/[\s-]/)[0].slice(0,9); };
@@ -5816,7 +5869,7 @@ function viewTeam(){
   var cc=function(e){ return (first[e.id]?' mf':'')+(nx(e)?' nx':'')+(e.to<t0?' mp':''); };
   /* Doppelt eingeplant: gleiche Person zur gleichen Zeit an zwei Orten vor Ort (Vonsie, 19.10.2026) */
   var DUP={},dupL=[];
-  people.forEach(function(p){ var ids=Object.keys(p.ev),E=ids.map(function(id){ return evs.filter(function(e){return e.id===id;})[0]; }).filter(Boolean);
+  people.forEach(function(p){ var ids=Object.keys(p.ev),E=ids.map(function(id){ return evAll.filter(function(e){return e.id===id;})[0]; }).filter(Boolean);
     for(var i=0;i<E.length;i++) for(var j=i+1;j<E.length;j++){ var a=E[i],b=E[j],xa=p.ev[a.id],xb=p.ev[b.id];
       if(!(xa.onsite&&xb.onsite)||xa.x||xb.x) continue; /* vor Ort + Command Center gleichzeitig ist oft gewollt (z. B. Olympia) */ if(a.frm>b.to||b.frm>a.to) continue; if(vkey(a.name)===vkey(b.name)) continue;
       var t=p.n+': '+a.name+' '+GN[a.g]+' ('+(xa.onsite?'vor Ort':'Command Center')+') und '+b.name+' '+GN[b.g]+' ('+(xb.onsite?'vor Ort':'Command Center')+'), '+span(a.frm<b.frm?b.frm:a.frm,a.to<b.to?a.to:b.to);
@@ -5825,19 +5878,19 @@ function viewTeam(){
     '<tr><th class="stick">Person</th>'+evs.map(function(e){
       var xc=evCancelled(e);
       return '<th class="h'+cc(e)+(xc?' xc':'')+(e.id===nowId&&evs[0].id!==nowId?' mxnow':'')+'" title="'+h(e.name+' '+GN[e.g]+', '+span(e.frm,e.to)+(xc?' · abgesagt'+(evXNote(e)?', '+evXNote(e):''):''))+'"><span class="mxn">'+h(mxS(e.name))+'</span><small>'+(xc?'abgesagt':flag(e.nat)+(S.g==='all'?' '+(e.g==='M'?'M':'W')+' · ':' ')+e.frm.slice(8,10)+'.')+'</small></th>';
-    }).join('')+'<th class="c">Total</th></tr></thead><tbody>'+people.map(function(p){
+    }).join('')+'<th class="c">Total'+(winOn?' <small class="mu">Saison</small>':'')+'</th></tr></thead><tbody>'+peopleM.map(function(p){
       var pw=p.n.trim().split(/\s+/),ps=pw.length>1?pw[0]+' '+pw[pw.length-1].charAt(0)+'.':p.n;
       return '<tr><td class="stick" title="'+h(p.n)+'"><span class="pl">'+h(p.n)+'</span><span class="ps noi18n" aria-hidden="true">'+h(ps)+'</span></td>'+evs.map(function(e){ var x=p.ev[e.id]||{},du=DUP[p.n+'|'+e.id],xc=evCancelled(e);
         if(xc) return '<td class="c'+cc(e)+' xc">'+(x.onsite||x.cc?'<i class="dot xd" title="'+h('Event abgesagt – '+(x.onsite?'vor Ort':'Command Center')+' umplanen')+'"></i>':'')+'</td>';
         return '<td class="c'+cc(e)+(du?' dup':'')+'"'+(du?' title="'+h('Doppelt eingeplant: '+du.join(' · '))+'"':'')+'>'+(x.onsite?'<i class="dot onsite" title="vor Ort"></i>':'')+(x.cc?'<i class="dot cc" title="Command Center"></i>':'')+'</td>'; }).join('')+'<td class="c sum">'+(p.onsite+p.cc)+'</td></tr>';
     }).join('')+'</tbody></table></div>';
   /* Einsätze bei abgesagten Events, die noch kommen: umplanen */
-  var xL=[]; evs.forEach(function(e){ if(!evCancelled(e)||e.to<t0) return; people.forEach(function(p){ var x=p.ev[e.id]; if(x) xL.push(p.n+': '+e.name+' '+GN[e.g]+' ('+(x.onsite?'vor Ort':'Command Center')+'), '+span(e.frm,e.to)); }); });
+  var xL=[]; evAll.forEach(function(e){ if(!evCancelled(e)||e.to<t0) return; people.forEach(function(p){ var x=p.ev[e.id]; if(x) xL.push(p.n+': '+e.name+' '+GN[e.g]+' ('+(x.onsite?'vor Ort':'Command Center')+'), '+span(e.frm,e.to)); }); });
   var lg='<div class="legend"><span><i class="dot onsite"></i>vor Ort</span><span><i class="dot cc"></i>Command Center</span>'+(dupL.length?'<span><i class="dupk"></i>doppelt eingeplant</span>':'')+(xL.length?'<span><i class="dot xd"></i>Event abgesagt</span>':'')+'</div>'+
     (xL.length?'<div class="dupl xpl"><b>Umplanen: Event abgesagt ('+xL.length+')</b><ul>'+xL.map(function(t){return '<li>'+h(t)+'</li>';}).join('')+'</ul><p class="mu">Einsatz in monday («Sport Science Support») anpassen, sobald der Ersatzort feststeht.</p></div>':'')+
     (dupL.length?'<div class="dupl"><b>Doppelt eingeplant ('+dupL.length+')</b><ul>'+dupL.map(function(t){return '<li>'+h(t)+'</li>';}).join('')+'</ul><p class="mu">Gleiche Person zur gleichen Zeit an zwei Orten vor Ort. In monday («Sport Science Support») prüfen.</p></div>':'');
   /* Wichtigstes zuerst: wer wo ist, dann Einsätze pro Person, zuletzt die Bilanz (Vonsie, 26.11.2026) */
-  return '<section class="card"><div class="ch"><div><h2>'+(list.some(function(e){return e.to>=today();})?'Wer wird wo sein':'Wer war wo')+'</h2></div></div>'+mx+'</section>'+todoCard(list)+chkCard(list)+
+  return '<section class="card"><div class="ch"><div><h2>'+(list.some(function(e){return e.to>=today();})?'Wer wird wo sein':'Wer war wo')+'</h2>'+(winOn?'<p>Nächste 4 Wochen · '+evs.length+' von '+evAll.length+' Events</p>':'')+'</div>'+(mxW?'<button type="button" class="btn ghost sm" data-act="mxall" aria-expanded="'+!winOn+'">'+(winOn?'Ganze Saison':'Nur nächste 4 Wochen')+'</button>':'')+'</div>'+mx+'</section>'+todoCard(list)+chkCard(list)+
     '<section class="card"><div class="ch"><div><h2>Einsätze pro Person</h2><p>Person × Event × Rolle · Saison '+h(S.season)+', nach den Filtern oben</p></div></div>'+lg+bars+'</section>'+bilanzCard(list)+livePlanCard();
 }
 
@@ -6264,7 +6317,10 @@ document.addEventListener('click',function(ev){
     case 'evpast': S.evPast=!S.evPast; if(S.evPast) ANIM='evpast'; render(); break;
     case 'evview': S.evView=v; remember(); render(); break;
     case 'gl': S.gl[el.getAttribute('data-k')]=+v; render(); break;
-    case 'srchday': srchClose(); S.tab='events'; S.ev=v; S.pop=null; S.form=null; S.dtab=S.dtab||{}; S.dtab[v]=el.getAttribute('data-d'); var e2=S.events.filter(function(x){return x.id===v;})[0]; if(e2) S.season=e2.season; render(); window.scrollTo(0,0); break;
+    case 'ksetter': ksOpen(v,el.getAttribute('data-d')); break;   /* Kurssetzer-Übersicht (Vonsie, 26.11.2026) */
+    case 'kspx': ksClose(); break;
+    case 'mxall': S.mxAll=!S.mxAll; render(); break;   /* Team-Matrix: ganze Saison */
+    case 'srchday': srchClose(); ksClose(); S.tab='events'; S.ev=v; S.pop=null; S.form=null; S.dtab=S.dtab||{}; S.dtab[v]=el.getAttribute('data-d'); var e2=S.events.filter(function(x){return x.id===v;})[0]; if(e2) S.season=e2.season; render(); window.scrollTo(0,0); break;
     case 'imp': impSet(v); break;
     case 'vpdf': vPdf(v,el.getAttribute('data-d')); break;
     case 'vpdfe': vPdfEnd(v,el.getAttribute('data-d'),el.getAttribute('data-day')); break;   /* Schlussbericht (PDF) */
