@@ -1952,6 +1952,14 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
   .evcard>.evteam .avs,.evcard>.evteam>.mu{display:none}
   .evcard>.evteam{position:absolute;right:12px;top:50%;transform:translateY(-50%)}
 }
+/* Disziplin-Umschalter in der Reiterleiste (26.11.2026) */
+@media (min-width:641px){
+  .ovf>.ovsw{display:none}
+  .daynav:has(>.ovsw.in){-webkit-mask-image:none;mask-image:none;padding-right:4px}
+  .daynav>.ovsw.in{margin-left:auto;height:auto;align-self:stretch;flex:0 0 auto}
+  .daynav>.ovsw.in button{padding:0 18px;font-size:13px}
+}
+@media (max-width:640px){.daynav>.ovsw.in{display:none}}
 
 </style>
 
@@ -5687,7 +5695,9 @@ dayBody(d,rs,(
     /* mehrere Disziplinen: Umschalter statt alle Vorschau- und Jahresvergleich-Karten untereinander (Vonsie, 26.11.2026) */
     var dsw=ovDiscs(ev,vsA+vsB+(ov||'')),dcur=dsw.length>1?ovDisc(ev,dsw):'';
     var swH=dcur?'<div class="ovsw seg" role="group" aria-label="Disziplin">'+dsw.map(function(d){ return '<button type="button" aria-pressed="'+(d===dcur)+'" data-act="ovdc" data-v="'+h(ev.id+'|'+d)+'">'+h(DISC[d])+'</button>'; }).join('')+'</div>':'';
-    return head+nav+newH+minfo+(dcur?'<div class="ovf ovf-'+dcur+'">'+swH+vsA+(ov?'<div class="ovgrid">'+ov+'</div>':'')+vsB+'</div>':vsA+(ov?'<div class="ovgrid">'+ov+'</div>':'')+vsB)+vnote+cm;
+    /* Desktop: Umschalter rechts in der Reiterleiste, gleich hoch (Vonsie, 26.11.2026); iPhone: darunter */
+    var navO=dcur?nav.replace('</nav>',swH.replace('class="ovsw seg"','class="ovsw seg in"')+'</nav>'):nav;
+    return head+navO+newH+minfo+(dcur?'<div class="ovf ovf-'+dcur+'">'+swH+vsA+(ov?'<div class="ovgrid">'+ov+'</div>':'')+vsB+'</div>':vsA+(ov?'<div class="ovgrid">'+ov+'</div>':'')+vsB)+vnote+cm;
   }
   var di=navList.map(function(x){return x.d;}).indexOf(dk),prev=navList[di-1],next=navList[di+1];
   var pn='<div class="dpn">'+(prev?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+prev.d+'">‹ '+WD[pd(prev.d).getDay()]+' '+dm(prev.d)+' '+h(prev.t)+'</button>':'<span></span>')+(next?'<button type="button" class="btn ghost" data-act="dtab" data-v="'+next.d+'">'+WD[pd(next.d).getDay()]+' '+dm(next.d)+' '+h(next.t)+' ›</button>':'<span></span>')+'</div>';
