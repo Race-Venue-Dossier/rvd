@@ -3053,7 +3053,7 @@ var SRIX=null,SRIK='';
 function srchIndex(){ var k=S.events.length+'|'+(SP?(SP.races||[]).length+'|'+(SP.ts||[]).length:0); if(SRIX&&SRIK===k&&SRIX.ev===S.events) return SRIX; SRIK=k; SRIX=srchIndex0(); SRIX.ev=S.events; return SRIX; }
 function srchIndex0(){
   var A={},E=[];
-  var add=function(n,d){ if(!n||/\//.test(n)) return; var o=A[n]=A[n]||{n:n,sp:0,te:0,g:''}; if(SPDD[d]) o.sp++; else if(/GS|SL/.test(d)) o.te++; };
+  var add=function(n,d){ if(!n||/\//.test(n)) return; var o=A[n]=A[n]||{n:n,sp:0,te:0,g:'',dc:{}}; var dd=d==='DHT'?'DH':d; if(SPDD[d]) o.sp++; else if(/GS|SL/.test(d)) o.te++; if(/^(DH|SG|GS|SL)$/.test(dd)) o.dc[dd]=(o.dc[dd]||0)+1; };
   var R=SP?vResAll():{}; Object.keys(R).forEach(function(n){ R[n].forEach(function(x){ add(n,x.disc); if(A[n]&&!A[n].g) A[n].g=x.g; }); });
   S.events.forEach(function(e){ E.push(e); });
   /* Rennen → Event/Tag (zum Springen), Orte, Kurssetzer aus den FIS-Kurssetzungen */
@@ -3087,7 +3087,9 @@ function srchList0(){
   if(q.length<2){ el.innerHTML='<p class="srch-h">Mindestens 2 Buchstaben, z. B. «oder», «wengen» oder «kitz».</p>'; return; }
   var I=srchIndex(),out=[];
   I.A.filter(function(a){ return srchFold(a.n).indexOf(q)>=0; }).sort(function(a,b){ return (b.sp+b.te)-(a.sp+a.te); }).slice(0,6).forEach(function(a){
-    var tech=a.te>a.sp; out.push('<button type="button" class="srch-r" data-act="'+(tech?'tprof':'spprof')+'" data-v="'+h(a.n)+'" data-g="'+(a.g||'M')+'" data-s="all"><span class="srch-k">Athlet:in</span><b>'+lnH(a.n)+'</b><small>'+(a.sp?a.sp+' Rennen Speed':'')+(a.sp&&a.te?' · ':'')+(a.te?a.te+' Rennen Technik':'')+'</small></button>'); });
+    /* Rennen pro Disziplin, Profil in der Disziplin mit den meisten Rennen (Vonsie, 26.11.2026) */
+    var DL=['DH','SG','GS','SL'].filter(function(d){ return a.dc[d]; }),top=DL.slice().sort(function(x,y){ return a.dc[y]-a.dc[x]; })[0]||'',tech=/GS|SL/.test(top)||(!top&&a.te>a.sp);
+    out.push('<button type="button" class="srch-r" data-act="'+(tech?'tprof':'spprof')+'" data-v="'+h(a.n)+'" data-g="'+(a.g||'M')+'" data-s="all" data-d="'+top+'"><span class="srch-k">Athlet:in</span><b>'+lnH(a.n)+'</b><small>'+DL.map(function(d){ return h(DISC[d])+' '+a.dc[d]; }).join(' · ')+'</small></button>'); });
   var t=today(),nA=out.length;
   I.E.filter(function(e){ return srchFold(e.name+' '+(CAT[e.cat]||'')+' '+e.nat).indexOf(q)>=0; }).sort(function(a,b){ var ua=a.to>=t,ub=b.to>=t; if(ua!==ub) return ua?-1:1; return ua?(a.frm<b.frm?-1:1):(a.frm<b.frm?1:-1); }).slice(0,8).forEach(function(e){
     out.push('<button type="button" class="srch-r" data-act="open" data-v="'+h(e.id)+'"><span class="srch-k">Event</span><b>'+flag(e.nat)+h(e.name)+'</b><small>'+GN[e.g]+' · '+span(e.frm,e.to)+(e.cat!=='WC'?' · '+h(CAT[e.cat]||e.cat):'')+'</small></button>'); });
@@ -3695,11 +3697,12 @@ function spProfile(name,s,tm,top,races,all,WW,sea){
   var seasT='';
   if(all){
     var SE=spSeasonList(L.map(function(x){return x.r;}));
-    seasT='<p class="h3" style="margin-top:18px">Pro Saison</p><div class="tw"><table class="tbl sas"><thead><tr><th>Saison</th><th class="num">'+WW.unit+'</th><th class="num">Bester '+WW.rank+'</th><th class="num">'+WW.rank+' Median</th><th class="num">'+WW.pod+'</th><th class="num">Top 10</th><th class="num">Rückstand</th><th class="num">'+WW.disc[0][1]+'</th><th class="num">'+WW.disc[1][1]+'</th></tr></thead><tbody>'+
+    var one1=WW.disc.filter(function(d){ return L.some(function(x){ return x.r.disc===d[0]||(d[0]==='DH'&&x.r.disc==='DHT'); }); }).length<2;
+    seasT='<p class="h3" style="margin-top:18px">Pro Saison</p><div class="tw"><table class="tbl sas"><thead><tr><th>Saison</th><th class="num">'+WW.unit+'</th><th class="num">Bester '+WW.rank+'</th><th class="num">'+WW.rank+' Median</th><th class="num">'+WW.pod+'</th><th class="num">Top 10</th><th class="num">Rückstand</th>'+(one1?'':'<th class="num">'+WW.disc[0][1]+'</th><th class="num">'+WW.disc[1][1]+'</th>')+'</tr></thead><tbody>'+
       SE.map(function(x){ var A=L.filter(function(y){return y.r.season===x;}),rk=A.map(function(y){return y.a.rk;}),R=A.filter(function(y){return !y.r.tr;}),v=med(A.map(function(y){return y.a.fp;}));
         var dv=function(dc){ return med(A.filter(function(y){return y.r.disc===dc;}).map(function(y){return y.a.fp;})); },bst=Math.min.apply(null,rk);
         return '<tr><td><b>'+x+'</b></td><td class="num">'+A.length+'</td><td class="num"><span class="rkb '+rkCls(bst)+'">'+bst+'</span></td><td class="num">'+Math.round(med(rk))+'</td><td class="num">'+R.filter(function(y){return y.a.rk<=3;}).length+'</td><td class="num">'+R.filter(function(y){return y.a.rk<=10;}).length+' / '+R.length+'</td>'+
-          '<td class="num hc" style="'+divBg(v,s.mfp,1.2)+'"><b>'+pc(v)+'</b></td><td class="num">'+pc(dv(WW.disc[0][0]))+'</td><td class="num">'+pc(dv(WW.disc[1][0]))+'</td></tr>'; }).join('')+
+          '<td class="num hc" style="'+divBg(v,s.mfp,1.2)+'"><b>'+pc(v)+'</b></td>'+(one1?'':'<td class="num">'+pc(dv(WW.disc[0][0]))+'</td><td class="num">'+pc(dv(WW.disc[1][0]))+'</td>')+'</tr>'; }).join('')+
       '</tbody></table></div>'+lgI('<span class="lg good"></span> besser <span class="lg bad"></span> schlechter als der eigene Schnitt ('+pc(s.mfp)+')','Rückstand: Median auf die '+WW.ref+'. Farbe im Vergleich zum eigenen Schnitt über alle Saisons.'+(WW===SPW?' Podeste und Top 10 aus Rennen (ohne Trainings).':''));
   }
   return '<section class="card spp" id="spProfile"><div class="ch"><h2>'+h(name)+'</h2><span class="h3v">Athletenprofil'+(WW===SPW?'':' Technik')+' · '+(all?'alle Saisons':sea)+'</span></div>'+
@@ -3794,8 +3797,8 @@ function helpFold(tech){
   var key='hlp|'+(tech?'tech':'speed');
   return '<details class="fold hlp" data-fold="'+key+'"'+(S.fold[key]?' open':'')+'><summary>So liest du die Analyse</summary><div class="fold-b"><dl>'+L.map(function(x){ return '<div><dt>'+x[0]+'</dt><dd>'+x[1]+'</dd></div>'; }).join('')+'</dl></div></details>';
 }
-function spCtx(g,season,mode){
-  var races=spRaces({g:g,season:season,mode:mode||'R'}),team=spTeam(races),top=spTop(races),stats={};
+function spCtx(g,season,mode,sd){
+  var races=spRaces({g:g,season:season,mode:mode||'R',sd:sd}),team=spTeam(races),top=spTop(races),stats={};
   team.forEach(function(n){ stats[n]=spStats(n,races); });
   var m=function(k){ return med(team.map(function(n){return stats[n][k];}).filter(function(v){return v!=null;})); };
   return {races:races,team:team,top:top,stats:stats,tm:{T:m('mT'),M:m('mM'),G:m('mG'),fp:m('mfp')}};
@@ -3809,28 +3812,35 @@ function tCtx(g,td){
   TKT.forEach(function(k){ tm['kt_'+k[0]]=med(team.map(function(n){ var q=stats[n].kt[k[0]]; return q&&q.v!=null?q.v:null; }).filter(function(v){return v!=null;})); });
   return {st:st,runs:runs,stats:stats,tm:tm};
 }
+/* Disziplin eines Profils: aus dem Zusammenhang, sonst die mit den meisten Rennen der Person (Vonsie, 26.11.2026) */
+function popDisc(o){
+  if(!SP||o.d) return;
+  { var cnt={},src=o.k==='sp'?SP.races.filter(function(r){ return r.g===o.g&&!r.tr&&r.rows.some(function(a){return a.n===o.n;}); }):tRunsAsRaces().filter(function(r){ return r.g===o.g&&r.rows.some(function(a){return a.n===o.n;}); });
+    src.forEach(function(r){ var d=r.disc==='DHT'?'DH':r.disc; cnt[d]=(cnt[d]||0)+1; }); o.d=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a];})[0]||(o.k==='sp'?'DH':'GS'); }
+}
 function popOpen(o,latest){
+  popDisc(o);
   /* «Alle» (Vorschau, Suche): mit der letzten Saison der Person beginnen, «Alle» bleibt wählbar */
-  if(latest&&o.s==='all'&&SP){ var L=(o.k==='sp'?SP.races:(SP.ts||[]).map(function(r){ return {g:r.g,season:spSeason(r.d),a:r.a}; })).filter(function(r){ return r.g===o.g&&(r.a||r.rows||[]).some(function(a){ return (a[0]||a.n)===o.n; }); });
+  if(latest&&o.s==='all'&&SP){ var L=(o.k==='sp'?SP.races:(SP.ts||[]).map(function(r){ return {g:r.g,season:spSeason(r.d),a:r.a,disc:r.disc}; })).filter(function(r){ return r.g===o.g&&(!o.d||r.disc===o.d||(o.d==='DH'&&r.disc==='DHT'))&&(r.a||r.rows||[]).some(function(a){ return (a[0]||a.n)===o.n; }); });
     var ss=L.map(function(r){return r.season;}).sort(); if(ss.length) o.s=ss[ss.length-1]; }
   S.pop=o; render();
 }
 function athPop(){
-  var p=S.pop; if(!p) return '';
+  var p=S.pop; if(!p) return ''; popDisc(p);
   var body,seas,lab,list=[],none='<div class="empty"><b>Zu wenig Daten</b>In dieser Saison gibt es zu wenig Läufe. Andere Saison wählen.</div>',
     /* Name aus einem Direkt-Link, den es in den Daten nicht gibt */
     nf='<div class="empty"><b>Nicht gefunden</b>Zu diesem Namen gibt es keine Daten.</div>',known=function(R){ return R.some(function(r){ return r.g===p.g&&r.rows.some(function(a){ return a.n===p.n; }); }); };
   if(!SP){ speedLoad(); body='<div class="empty"><b>Wird geladen …</b></div>'; seas=[]; lab=''; }
   else if(p.k==='sp'){
     lab='Speed'; seas=spSeasons(p.g);
-    var c=spCtx(p.g,p.s,p.m),s=c.stats[p.n]||spStats(p.n,c.races); list=c.team;
+    var c=spCtx(p.g,p.s,p.d==='SG'?'R':p.m,p.d),s=c.stats[p.n]||spStats(p.n,c.races); list=c.team;
     body=s.n?spProfile(p.n,s,c.tm,c.top,c.races,p.s==='all',SPW,p.s):known(SP.races)?none:nf;
   } else {
     lab='Technik'; seas=tSeasons(p.g);
-    var t=p.s==='2025/26'?tCtx(p.g,'all'):null,s2=t?(t.stats[p.n]||tStats(p.n,t.runs)):null;
+    var t=p.s==='2025/26'?tCtx(p.g,p.d||'all'):null,s2=t?(t.stats[p.n]||tStats(p.n,t.runs)):null;
     if(t) list=Object.keys(t.stats);
     if(s2&&s2.n) body=tProfile(t.st,p.n,s2,t.tm,t.runs);
-    else {  /* ältere Saisons oder ohne Gate-to-Gate-Daten: Laufränge und Rückstand aus den FIS-Zwischenzeiten */ var R=tRunsAsRaces().filter(function(r){ return r.g===p.g&&(p.s==='all'||r.season===p.s); }),tmm=spTeam(R),ss={}; tmm.forEach(function(n){ ss[n]=spStats(n,R); }); list=tmm;
+    else {  /* ältere Saisons oder ohne Gate-to-Gate-Daten: Laufränge und Rückstand aus den FIS-Zwischenzeiten */ var R=tRunsAsRaces().filter(function(r){ return r.g===p.g&&(!p.d||r.disc===p.d)&&(p.s==='all'||r.season===p.s); }),tmm=spTeam(R),ss={}; tmm.forEach(function(n){ ss[n]=spStats(n,R); }); list=tmm;
       var s3=ss[p.n]||spStats(p.n,R); body=s3.n?spProfile(p.n,s3,{T:null,M:null,G:null,fp:med(tmm.map(function(n){return ss[n].mfp;}))},{T:null,M:null,G:null},R,p.s==='all',TCW,p.s):known(tRunsAsRaces())?none:nf; }
   }
   var opts=seas.map(function(x){return [x,x];}).concat([['all','Alle']]);
@@ -3841,7 +3851,7 @@ function athPop(){
   var nav=NL.length>1?'<span class="apop-nav">'+nbtn(-1,nprev)+nbtn(1,nnext)+'</span>':'';
   return '<div class="apop" role="dialog" aria-modal="true" aria-label="Athletenprofil '+h(p.n)+'"><div class="apop-bg" data-act="popx"></div>'+
     '<div class="apop-box" tabindex="-1"><div class="apop-h"><div class="apop-t"><small>'+(GN[p.g]||'')+(lab?' · '+lab:'')+' · Athletenprofil</small><b>'+lnH(p.n)+'</b></div>'+copyBtn('ic')+
-      (opts.length>1?seg('ap-s','popsea',p.s,opts,'sm'):'')+nav+'<button type="button" class="apop-x" data-act="popx" aria-label="Schliessen">×</button></div>'+
+      seg('ap-d','popdis',p.d,p.k==='sp'?[['DH','Abfahrt'],['SG','Super-G']]:[['GS','Riesenslalom'],['SL','Slalom']],'sm')+(opts.length>1?seg('ap-s','popsea',p.s,opts,'sm'):'')+nav+'<button type="button" class="apop-x" data-act="popx" aria-label="Schliessen">×</button></div>'+
     '<div class="apop-b">'+body+'</div></div></div>';
 }
 function popPaint(){
@@ -4820,16 +4830,18 @@ function vSpeedPart(ev,k,prev,dc){
   var SNOW={kalt:'kalt (unter −8 °C)',mittel:'mittel (−8 bis −4 °C)',mild:'mild (über −4 °C)'};
   var chips=[]; if(cond.snow) chips.push(['Schnee '+cond.snow,SNOW[cond.snow]+(snowT!=null?' · typisch '+fC(snowT)+' °C':'')]); if(cond.prep) chips.push(['Piste '+cond.prep,'häufigste Präparierung hier']); if(cond.wx) chips.push(['Wetter '+cond.wx,'häufigstes Wetter hier']);
   var condHtml=chips.length?'<p class="vcond"><b>Typisch hier:</b> '+chips.map(function(c){return h(c[0]);}).join(' · ')+(snowT!=null?' <span class="mu">(Schnee typisch '+fC(snowT)+' °C)</span>':'')+'</p>':'';
-  var hi=vHi(rows,DD,ev.frm,function(d){return DISC[d]||d;},function(n){ return 'data-act="spprof" data-v="'+h(n)+'" data-g="'+ev.g+'" data-s="all"'; },TT);
-  var vs=vNoData(rows,function(n){ return 'data-act="spprof" data-v="'+h(n)+'" data-g="'+ev.g+'" data-s="all"'; },BIB); rows=vs.rows;
+  var hi=vHi(rows,DD,ev.frm,function(d){return DISC[d]||d;},function(n){ return 'data-act="spprof" data-v="'+h(n)+'" data-g="'+ev.g+'" data-s="all" data-d="'+(dc||'')+'"'; },TT);
+  var vs=vNoData(rows,function(n){ return 'data-act="spprof" data-v="'+h(n)+'" data-g="'+ev.g+'" data-s="all" data-d="'+(dc||'')+'"'; },BIB); rows=vs.rows;
   var fpre=vFormPre(rows,DD,ev.frm);
   var sig=rows.some(vSig),vo=vOrd(rows),vid='vsp'+ev.id+(dc||''),vall=!!(S.vAll&&S.vAll[vid]),many=rows.length>6;
   var tbl='<div class="tw"><table class="tbl vst srt'+(many&&!vall?' vfold':'')+'" data-sid="vsp'+(dc||'')+'"><thead><tr><th class="stick">Athlet:in</th><th>'+vChTh(sig)+'</th><th>Hier bisher</th>'+vFormTh(fpre)+'</tr></thead><tbody>'+
     rows.map(function(x,i){ var basis='Profil '+vD(x.cp)+(hasCond?' · Bedingungen '+vD(x.cc):'')+' · hier '+vD(x.ch);
-      return '<tr'+vTrA(vo,x,i,many)+'><td class="stick">'+vBib(BIB,x.n)+'<button type="button" class="lnk" data-act="spprof" data-v="'+h(x.n)+'" data-g="'+ev.g+'" data-s="all">'+lnH(x.n)+'</button></td>'+
+      return '<tr'+vTrA(vo,x,i,many)+'><td class="stick">'+vBib(BIB,x.n)+'<button type="button" class="lnk" data-act="spprof" data-v="'+h(x.n)+'" data-g="'+ev.g+'" data-s="all" data-d="'+(dc||'')+'">'+lnH(x.n)+'</button></td>'+
       vChCell(x,basis,sig)+
       '<td data-l="Hier" data-sv="'+(x.best||99)+'">'+vHist(x.hh,3)+'</td><td data-l="'+(fpre?'Vorsaison':'Form')+'">'+vForm(x.n,DD,ev.frm,fpre)+'</td></tr>'; }).join('')+'</tbody></table></div>'+vMore(vid,rows.length,vall); tbl=(rows.length?tbl:'')+vs.html;
-  var body='<p class="jvl">Streckenprofil hier <small class="mu">aus den FIS-Sektoren der Vorjahre</small></p>'+bar+condHtml+hi+(typeof startCheck==='function'?startCheck(ev,DD):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,dc?[dc]:['DH','SG']):'')+
+  /* Onepager auch für Abfahrt und Super-G (Vonsie, 26.11.2026) */
+  if(dc) VPDF[ev.id+'|'+dc]={rows:rows.slice(),BIB:BIB,hist:hist,here:here,sp:{sh:sh,chips:chips,snowT:snowT}};
+  var body=(dc?'<div class="vpdfr"><button type="button" class="btn sm" data-act="vpdf" data-v="'+h(ev.id)+'" data-d="'+dc+'" title="Onepager in der Swiss-Ski-Vorlage, zum Drucken oder als PDF">Onepager (PDF)</button></div>':'')+'<p class="jvl">Streckenprofil hier <small class="mu">aus den FIS-Sektoren der Vorjahre</small></p>'+bar+condHtml+hi+(typeof startCheck==='function'?startCheck(ev,DD):'')+tbl+(typeof vBibHtml==='function'?vBibHtml(ev,dc?[dc]:['DH','SG']):'')+
     vInfo('Rennen mit ähnlichem Streckenprofil'+(hasCond?', ähnlichen Bedingungen':''));
   return vCard(h(TT),(starters&&starters.length?'Am Start laut '+startersSrc(ev)+' · ':'')+vSub(hist),body,dc||'DH SG');
 }
@@ -5306,7 +5318,7 @@ function vPdf(evId,dc){
   impRun(function(){ vorschauCard(ev); });
   var D=VPDF[ev.id+'|'+dc]; if(!D){ alertBox('Für diese Disziplin gibt es keine Vorschau-Daten.'); return; }
   var L=vpToday(ev,dc),it1=L[0],it2=L[1],G=it1?it1.gates:null,sec=G?ksSections(G):[],st1=vpSetterOf(ev,dc,it1?it1.run||1:1,it1&&it1.note),st2=vpSetterOf(ev,dc,it2?it2.run||2:2,it2&&it2.note);
-  var pl=ev.name.replace(/\s*·.*$/,''),dd=pd(ev.frm),WDL=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],MO=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  var pl=ev.name.replace(/\s*·.*$/,''),dd=pd(((ev.races||[]).filter(function(r){return r.disc===dc&&r.kind==='R'&&!r.x;})[0]||{d:ev.frm}).d),WDL=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],MO=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   var now=new Date(),stand=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
   /* Neu heute */
   var neu=[];
@@ -5333,6 +5345,14 @@ function vPdf(evId,dc){
   if(st1) setH+='<div class="ks"><b>Frühere '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+'-Läufe</b> <span class="mu">Laufränge SUI im '+h(DISC[dc])+'</span>'+(sR.length?'<ul>'+sR.slice(-4).map(function(r){ return '<li>'+h(r.pl)+' '+r.d.slice(0,4)+', L'+r.run+': '+r.sui.filter(function(a){return a.rk;}).sort(function(a,b){return a.rk-b.rk;}).slice(0,5).map(function(a){return h(shortN(a.n))+' '+(a.rk===1?'<b>1.</b>':a.rk+'.');}).join(', ')+'</li>'; }).join('')+'</ul>':'<p class="mu">Keine früheren Läufe im Dossier.</p>')+
     (function(){ var top=Object.keys(ranksBy).map(function(n){ var f=ranksBy[n].filter(Boolean); return {n:n,b:f.length?Math.min.apply(null,f):99,t5:f.filter(function(v){return v<=5;}).length,t10:f.filter(function(v){return v<=10;}).length}; }).filter(function(x){return x.t10;}).sort(function(a,b){return a.b-b.b||b.t10-a.t10;}).slice(0,3);
       return top.length?'<div class="kfz"><b>Fazit</b><ul>'+top.map(function(x){ return '<li>'+h(shortN(x.n))+': '+(x.b===1?'Laufbestzeit':'bestes '+x.b+'.')+(x.t10>1?' · '+x.t10+'× Top 10':'')+'</li>'; }).join('')+'</ul></div>':''; })()+'</div>';
+  /* Speed: Strecke statt Kursplan, ein Kurssetzer (Vonsie, 26.11.2026) */
+  var spd=!!SPDD[dc];
+  if(spd){ var P=D.sp||{},sh=P.sh;
+    kurs='<h2>Strecke <small>aus den FIS-Sektoren der Vorjahre</small></h2>'+(sh?'<table><tbody>'+['T','M','G'].filter(function(t){return sh[t];}).map(function(t){ return '<tr><td>'+h(STL[t])+'</td><td class="n"><b>'+Math.round(sh[t]*100)+' %</b></td></tr>'; }).join('')+'</tbody></table>':'<p class="mu">Streckencharakter noch nicht erfasst.</p>')+
+      ((P.chips||[]).length?'<p class="plt">Typisch hier</p><ul>'+P.chips.map(function(c){ return '<li><b>'+h(c[0])+'</b></li>'; }).join('')+(P.snowT!=null?'<li class="mu">Schnee typisch '+vpNum(P.snowT)+' °C</li>':'')+'</ul>':'');
+    var stS=vpSetterFis(ev,dc,1);
+    setH='<h2>Kurssetzer</h2><table><tbody><tr><td>'+h(DISC[dc])+'</td><td>'+(stS?flag(stS[1])+'<b>'+h(stS[0])+'</b> '+stS[1]:'<span class="mu">noch offen</span>')+'</td></tr></tbody></table>';
+    st1=null; ranksBy={}; }
   /* Athlet:innen */
   var resAll=vResAll(),ps=vpPrevSeason(ev.season),rows=D.rows.slice().sort(function(a,b){ return (D.BIB[a.n]||999)-(D.BIB[b.n]||999)||lnCmp(a.n,b.n); });
   var favN=rows.filter(function(x){return x.usual!=null&&x.usual<=4;}).sort(function(a,b){return a.usual-b.usual;})[0];
@@ -5344,7 +5364,7 @@ function vPdf(evId,dc){
     return '<tr'+(favN&&favN.n===x.n?' class="fav"':'')+'><td class="nm">'+(D.BIB[x.n]?'<span class="bib">'+D.BIB[x.n]+'</span>':'')+lnH(x.n)+'</td><td>'+(hh.some(function(v){return v!=='·';})?hh.join(' / '):'–')+'</td><td>'+sv.t+'</td>'+(st1?'<td>'+(sr.length?sr.map(function(v){return v?v+'.':'×';}).join(' · '):'–')+'</td>':'')+'<td>'+note+'</td></tr>'; }).join('');
   var yl=yrs.length?yrs[0].slice(2,4)+'–'+yrs[yrs.length-1].slice(2,4):'';
   var tbl='<h2 class="ws">'+flag('SUI')+'Wer schnell sein könnte <small>'+rows.length+' am Start'+(typeof startCheck==='function'&&/stimmt/.test(startCheck(ev,(function(o){o[dc]=1;return o;})({})))?', FIS-Startliste = monday':'')+'</small></h2><table class="w"><thead><tr><th>Nr. · Athlet:in</th><th>'+h(pl)+' '+yl+'</th><th>Vorsaison '+ps.slice(2)+'</th>'+(st1?'<th>'+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+'</th>':'')+'<th>Einschätzung</th></tr></thead><tbody>'+trs+'</tbody></table>'+
-    '<ul class="mu fn"><li>'+h(pl)+': Rang pro Jahr (× Ausfall, – nicht im 2. Lauf, · nicht gestartet) · Vorsaison: üblicher Rang '+ps+' (Median), die Form der neuen Saison zählt ab dem ersten Rennen'+(st1?' · '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+': Laufrang in seinen Läufen':'')+' · Wetter und Sicht nicht berücksichtigt.</li></ul>';
+    '<ul class="mu fn"><li>'+h(pl)+': Rang pro Jahr ('+(spd?'× Ausfall':'× Ausfall, – nicht im 2. Lauf')+', · nicht gestartet) · Vorsaison: üblicher Rang '+ps+' (Median), die Form der neuen Saison zählt ab dem ersten Rennen'+(st1?' · '+h((st1[0].split(' ').slice(1).join(' ')||st1[0]))+': Laufrang in seinen Läufen':'')+' · Wetter und Sicht nicht berücksichtigt.</li></ul>';
   var body='<h1>Vorschau '+h(DISC[dc])+' '+GN[ev.g]+'</h1><p class="sub">'+flag(ev.nat)+h(pl)+', '+WDL[dd.getDay()]+' '+dd.getDate()+'. '+MO[dd.getMonth()]+' '+dd.getFullYear()+' · Stand '+stand+'</p><div class="rule"></div>'+
     (neu.length?'<div class="neu"><b class="t">Neu heute</b><ul>'+neu.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul></div>':'')+
     '<div class="row"><div class="col">'+kurs+'</div><div class="col" style="flex:.82">'+setH+'</div></div>'+tbl;
@@ -6034,8 +6054,8 @@ function glyphIcons(root){
 
 /* ───── Verlauf: Zurück/Vor im Browser bleibt in der Seite ───── */
 var NAV={busy:false,last:null};
-function navSnap(){ var sp=S.sp||{}; return {pop:S.pop?{k:S.pop.k,n:S.pop.n,g:S.pop.g,s:S.pop.s,m:S.pop.m}:null,tab:S.tab,ev:S.ev||null,dt:(S.ev&&S.dtab&&S.dtab[S.ev]!=null)?S.dtab[S.ev]:null,
-  sp:{area:sp.area,g:sp.g,season:sp.season,mode:sp.mode,ath:sp.ath,tg:sp.tg,td:sp.td,tsea:sp.tsea,tath:sp.tath}}; }
+function navSnap(){ var sp=S.sp||{}; return {pop:S.pop?{k:S.pop.k,n:S.pop.n,g:S.pop.g,s:S.pop.s,m:S.pop.m,d:S.pop.d}:null,tab:S.tab,ev:S.ev||null,dt:(S.ev&&S.dtab&&S.dtab[S.ev]!=null)?S.dtab[S.ev]:null,
+  sp:{area:sp.area,g:sp.g,season:sp.season,mode:sp.mode,sd:sp.sd,ath:sp.ath,tg:sp.tg,td:sp.td,tsea:sp.tsea,tath:sp.tath}}; }
 /* ───── Direkt-Links: die Adresse (#…) zeigt auf die Ansicht, ein Link öffnet sie wieder ─────
    #events · #team · #speed · #analysen · #e/<Event>[/<Tag>] · #a/speed|tech/<M|W>/<Saison> · #p/sp|t/<M|W>/<Saison>/<Name>
    Saison als 2025-26 oder all. Wer keinen Zugriff hat, landet in der Eventliste bzw. im eigenen Bereich. */
@@ -6043,7 +6063,7 @@ function seaU(s){ return String(s||'').replace('/','-'); }
 function seaD(s){ s=String(s||''); return s==='all'?'all':/^\d{4}-\d{2}$/.test(s)?s.replace('-','/'):null; }
 function navHash(){
   var p;
-  if(S.pop) p=['p',S.pop.k==='t'?'t':'sp',S.pop.g||'M',seaU(S.pop.s),encodeURIComponent(S.pop.n)];
+  if(S.pop){ p=['p',S.pop.k==='t'?'t':'sp',S.pop.g||'M',seaU(S.pop.s),encodeURIComponent(S.pop.n)]; if(S.pop.d) p.push(S.pop.d); }
   else if(S.ev){ p=['e',encodeURIComponent(S.ev)]; var d=S.dtab&&S.dtab[S.ev]; if(d) p.push(encodeURIComponent(d)); }
   else if(S.tab==='speed'){ var sp=spState(); p=sp.area==='tech'?['a','tech',sp.tg||'M',seaU(sp.tsea||'2025/26')]:['a','speed',sp.g||'M',seaU(sp.season)]; }
   else p=[S.tab||'events'];
@@ -6064,7 +6084,7 @@ function navApply(hash){
     if(accG().indexOf(g)<0||accA().indexOf(tech?'T':'S')<0) return false;
     var sp=spState(); S.tab='speed'; S.ev=null; S.form=null; sp.area=tech?'tech':'speed';
     if(tech){ sp.tg=g; if(!prof) sp.tsea=sea; } else { sp.g=g; if(!prof) sp.season=sea; }
-    S.pop=prof?{k:tech?'t':'sp',n:p[4],g:g,s:sea,m:sp.mode||'R'}:null;
+    S.pop=prof?{k:tech?'t':'sp',n:p[4],g:g,s:sea,m:sp.mode||'R',d:/^(DH|SG|GS|SL)$/.test(p[5]||'')?p[5]:null}:null;
     return true;
   }
   if(['events','team','analysen','speed'].indexOf(p[0])>=0){ S.tab=p[0]; S.ev=null; S.pop=null; S.form=null; return true; }
@@ -6171,14 +6191,14 @@ document.addEventListener('click',function(ev){
     case 'season': S.season=v; S.venue=''; S.ev=null; remember(); render(); break;
     case 'g': S.g=v; remember(); render(); break;
     case 'logout': try{ localStorage.removeItem('rvd-k'); localStorage.removeItem('rvd-u'); }catch(e){} location.reload(); break;
-    case 'spprof': srchClose(); var spp=spState(); popOpen({k:'sp',n:v,g:el.getAttribute('data-g')||spp.g,s:el.getAttribute('data-s')||spp.season,m:'A'},true); break;
+    case 'spprof': srchClose(); var spp=spState(); popOpen({k:'sp',n:v,g:el.getAttribute('data-g')||spp.g,s:el.getAttribute('data-s')||spp.season,m:'A',d:el.getAttribute('data-d')||null},true); break;
     case 'dtab': S.dtab=S.dtab||{}; S.dtab[S.ev]=v; render(); var dnon=document.querySelector('.daynav .dn.on'); if(dnon&&dnon.scrollIntoView) dnon.scrollIntoView({block:'nearest',inline:'center'}); var dnv=document.querySelector('.daynav'); if(dnv){ var top=dnv.getBoundingClientRect().top+window.scrollY-70; if(window.scrollY>top) window.scrollTo(0,top); } break;
     case 'jump': var dj=document.getElementById('day-'+v); if(dj) dj.scrollIntoView({behavior:'smooth',block:'start'}); break;
     case 'spg': spState().g=v; spState().ath=null; render(); break;
     case 'sps': spState().season=v; render(); break;
     case 'spm': spState().mode=v; render(); break;
-    case 'spath': var sq=spState(); popOpen(sq.area==='tech'?{k:'t',n:v,g:sq.tg,s:sq.tsea||'2025/26'}:{k:'sp',n:v,g:sq.g,s:sq.season,m:sq.mode}); break;
-    case 'tath': var tq0=spState(); popOpen({k:'t',n:v,g:tq0.tg,s:tq0.tsea||'2025/26'}); break;
+    case 'spath': var sq=spState(); popOpen(sq.area==='tech'?{k:'t',n:v,g:sq.tg,s:sq.tsea||'2025/26',d:sq.td}:{k:'sp',n:v,g:sq.g,s:sq.season,m:sq.mode,d:sq.sd}); break;
+    case 'tath': var tq0=spState(); popOpen({k:'t',n:v,g:tq0.tg,s:tq0.tsea||'2025/26',d:tq0.td}); break;
     case 'popx': S.pop=null; render(); break;
     case 'popsea': if(S.pop){ S.pop.s=v; render(); } break;
     case 'copylink': shareLink(); break;
@@ -6195,7 +6215,8 @@ document.addEventListener('click',function(ev){
     case 'bilcsv': bilanzCsv(filtered()); break;
     case 'todo': S.tab='events'; S.ev=v; S.form=null; S.dtab=S.dtab||{}; var tdd=el.getAttribute('data-d')||''; S.dtab[v]=tdd; render();
       setTimeout(function(){ var m=document.getElementById('dmiss')||document.querySelector('.dtodo'); if(m){ m.scrollIntoView({behavior:'smooth',block:'center'}); m.classList.add('flash'); } },60); break;
-    case 'tprof': srchClose(); var tq=spState(); popOpen({k:'t',n:v,g:el.getAttribute('data-g')||tq.tg,s:el.getAttribute('data-s')||'2025/26'},true); break;
+    case 'tprof': srchClose(); var tq=spState(); popOpen({k:'t',n:v,g:el.getAttribute('data-g')||tq.tg,s:el.getAttribute('data-s')||'2025/26',d:el.getAttribute('data-d')||null},true); break;
+    case 'popdis': if(S.pop){ S.pop=Object.assign({},S.pop,{d:v}); render(); } break;   /* Profil: Disziplin (Vonsie, 26.11.2026) */
     case 'tg': spState().tg=v; spState().tath=null; render(); break;
     case 'td': spState().td=v; render(); break;
     case 'spd': spState().sd=v; if(v!=='DH') spState().mode='R'; render(); break;   /* Speed-Disziplin (Vonsie, 26.11.2026) */
