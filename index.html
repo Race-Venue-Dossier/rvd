@@ -1844,7 +1844,7 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .dcard .dempty::before{content:"";width:14px;height:14px;flex:0 0 14px;background:currentColor;opacity:.7;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E") center/contain no-repeat}
 /* Saison-Zeitleiste */
 .slc{padding:10px 16px 8px}
-.sl{position:relative;height:74px;margin:0 6px 0 22px}
+.slc .slw{position:relative;height:74px;margin:0 6px 0 22px}
 .sl-m{position:absolute;bottom:0;font-size:10px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-left:4px;border-left:1px solid var(--line);height:100%;display:flex;align-items:flex-end}
 .sl-l{position:absolute;left:-20px;transform:translateY(-50%);font-size:10.5px;font-weight:800;color:var(--muted)}
 .sl-ax{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:var(--line);transform:translateY(-50%)}
@@ -1854,7 +1854,7 @@ svg.plan-lab text.gl .gn{font-weight:700;fill:var(--muted)}
 .sl-d.past{opacity:.45}.sl-d.xc{background:var(--surface);border:2px dashed var(--muted);width:9px;height:9px}
 .sl-d.ch{width:14px;height:14px;box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px #d4a017}
 .sl-d:hover,.sl-d:focus-visible{transform:translate(-50%,-50%) scale(1.35);outline:none;z-index:2}
-@media (max-width:640px){.sl{height:64px}.sl-d{width:9px;height:9px}.sl-d.ch{width:12px;height:12px}}
+@media (max-width:640px){.slc .slw{height:64px}.sl-d{width:9px;height:9px}.sl-d.ch{width:12px;height:12px}}
 /* Desktop: Wetterkacheln in «Als Nächstes» bündig untereinander statt versetzt (26.11.2026) */
 @media (min-width:641px){.wk-head>.wx.wk{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:6px}.wk-head>.wx.wk .wxd{min-width:160px}}
 
@@ -3068,7 +3068,7 @@ function seasonLine(list){
   var dots=list.map(function(e){ var mid=e.frm===e.to?e.frm:e.frm,xc=evCancelled(e),st=status(e),ch=e.cat==='WSC'||e.cat==='OWG';
     return '<button type="button" class="sl-d '+e.g+(st==='past'?' past':'')+(xc?' xc':'')+(ch?' ch':'')+'" style="left:'+x(mid)+'%;top:'+(lanes.length>1?(lane(e.g)?'64%':'28%'):'46%')+'" data-act="open" data-v="'+h(e.id)+'" title="'+h(e.name.replace(/\s*\(TBC\)/,'')+' '+GN[e.g]+', '+span(e.frm,e.to)+(xc?' · abgesagt':''))+'" aria-label="'+h(e.name+' '+GN[e.g])+'"></button>'; }).join('');
   var now=t>=a&&t<=b?'<i class="sl-now" style="left:'+x(t)+'%" title="heute"></i>':'';
-  return '<section class="card slc" aria-label="Saison auf einen Blick"><div class="sl">'+
+  return '<section class="card slc" aria-label="Saison auf einen Blick"><div class="slw">'+
     mon.map(function(d,i){ return '<span class="sl-m" style="left:'+((d-A)/span0*100).toFixed(2)+'%">'+MONS[d.getMonth()]+'</span>'; }).join('')+
     (lanes.length>1?'<span class="sl-l" style="top:28%">W</span><span class="sl-l" style="top:64%">M</span>':'')+'<i class="sl-ax" style="top:'+(lanes.length>1?'28%':'46%')+'"></i>'+(lanes.length>1?'<i class="sl-ax" style="top:64%"></i>':'')+now+dots+'</div></section>';
 }
