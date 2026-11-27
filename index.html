@@ -4274,7 +4274,7 @@ function tKsOverview(st){
     var dmed=dmd.length?med(dmd):25,xr=Math.max(1,xmax-xmin),s=Math.max(Math.min(760/Math.max(1,yr),260/xr),13/dmed); if(yr*s>1500) s=1500/yr;
     var w=Math.round(xr*s+250);
     plans='<div class="ksplans">'+sel.map(function(r,i){ return '<div><p class="h3"><i class="ksdot pc'+(i%12)+'"></i>'+h(r.pl)+' · '+dm(r.d)+' · '+h(DISC[r.disc]||r.disc)+' Lauf '+r.run+'</p><p class="cap">Kurssetzer: '+(r.set?vSetterTxt(r.set,r.disc):'–')+' · '+r.m.n+' Tore · '+(r.m.len?Math.round(r.m.len)+' m':'Länge –')+'</p>'+(r.it?'<div class="ksplan-w">'+ksPlanLab(r.it,{s:s,yr:yr,xmin:xmin,xmax:xmax,w:w})+'</div>':'<p class="spc-l">Kein Kursplan im Dossier, nur Kennzahlen aus '+(r.src==='cs'?'der Kurssetzungs-Seite':'Gate-to-Gate')+'.</p>')+'</div>'; }).join('')+'</div>'+
-      (sel.some(function(r){return r.it;})?'<p class="spc-l">Beschriftung pro Tor: Nr., Distanz und Versatz zum vorherigen Tor in m, Drehwinkel am Tor in ° · Punkt rot/blau = Torfarbe, Ring = Figur. Zum Vergleich gleicher Massstab für alle eingeblendeten Läufe.</p>':'');
+      '<p class="spc-l">Beschriftung pro Tor: Nr., Distanz und Versatz zum vorherigen Tor in m, Drehwinkel am Tor in ° · Punkt rot/blau = Torfarbe, Ring = Figur. Zum Vergleich gleicher Massstab für alle eingeblendeten Läufe.</p>';
   }
   var gn=st.tg==='M'?'Männer':'Frauen';
   return '<section class="card ksov"><div class="ch"><h2>Kurssetzung '+gn+'</h2><span class="h3v">'+R.filter(function(r){return r.disc===dcur;}).length+' Läufe '+h(DISC[dcur]||'')+' mit Kursdaten · '+h(ksSeaLab(st))+'</span></div>'+
