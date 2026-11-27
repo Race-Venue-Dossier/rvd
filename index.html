@@ -2009,6 +2009,11 @@ button.ksp-row{cursor:pointer}button.ksp-row:hover{background:var(--bg2,rgba(0,0
 .kso-g .kslg{grid-column:1/-1}.kso-g .kslg .lgi{margin:0}
 .ksvsw{margin-left:auto;order:9}
 
+/* Kein Flackern beim Neuaufbau derselben Ansicht (Abgleich, Umschalter): Einblendungen nur beim ersten Öffnen (Vonsie, 27.11.2026) */
+#view.vsame .wkc,#view.vsame .wk-cd b,#view.vsame .vhit,#view.vsame .vst tbody tr,#view.vsame .vm i,#view.vsame .wxd,#view.vsame .dtodo-b i,
+#apopw.pkeep .apop-bg,#apopw.pkeep .apop-box,#apopw.pkeep .vhit,#apopw.pkeep .vst tbody tr,#apopw.pkeep .vm i,#apopw.pkeep .wxd{animation:none}
+#view.vsame .evph{transition:none}
+
 </style>
 
 </head>
@@ -3908,6 +3913,8 @@ function athPop(){
 function popPaint(){
   var w=document.getElementById('apopw'); if(!w){ w=document.createElement('div'); w.id='apopw'; document.body.appendChild(w); }
   var was=!!w.firstChild,y=was&&w.querySelector('.apop-b')?w.querySelector('.apop-b').scrollTop:0;
+  /* offenes Profil neu aufgebaut: Hintergrund und Fenster nicht nochmals einblenden (sonst flackert es bei jedem Klick; Vonsie, 27.11.2026) */
+  w.classList.toggle('pkeep',was&&!!S.pop);
   w.innerHTML=athPop(); document.documentElement.classList.toggle('popopen',!!S.pop);
   if(S.pop){ sortTables(w); segScroll(w); if(was){ var b=w.querySelector('.apop-b'); if(b) b.scrollTop=y; } else { var x=w.querySelector('.apop-box'); if(x) x.focus({preventScroll:true}); } }
 }
@@ -4419,7 +4426,7 @@ function fisStarters(ev){ var o={}; fisRacesOf(ev).forEach(function(r){ if(r.kin
 /* ───── FIS-Kalender nachführen (Vonsie, 27.10.2026): data/cal.json schreibt die Action höchstens einmal pro Tag.
    Übernimmt neue Daten, Absagen und neue Rennen oder Events; Disziplin bekannter Rennen bleibt wie im Dossier (GSQ/SLQ/TP). ───── */
 var CAL=null;
-function calLoad(){ if(!window.__encFetch||CAL) return; fetch('data/cal.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){ if(j&&j.evs){ CAL=j; calApply(); render(); } },function(){}); }
+function calLoad(){ if(!window.__encFetch||CAL) return; fetch('data/cal.json',{cache:'no-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){ if(j&&j.evs){ CAL=j; calApply(); renderIfChanged(); } },function(){}); }
 function calArea(dc){ return /^(DH|SG|DHT)$/.test(dc)?'S':/^(GS|SL|GSQ|SLQ|PAR|TP|PGS|PSL)$/.test(dc)?'T':''; }
 function calApply(){
   if(!CAL||!S.events.length) return;
@@ -6134,6 +6141,7 @@ function renderIfChanged(){
   if(Math.abs(window.scrollY-y)>2) window.scrollTo(0,y);
   sxPaint(v);
 }
+var VKEY=null;
 function render(){ return impRun(render0); }
 function render0(){
   var a=document.activeElement,fid=a&&a.id&&document.getElementById('view').contains(a)?a.id:null,ss=null,se=null;
@@ -6146,11 +6154,14 @@ function render0(){
   if(typeof secNeed==='function') secNeed();
   var v=document.getElementById('view'),bv=buildView(),html=(typeof offBanner==='function'?offBanner():'')+impBar()+bv[0],ev=bv[1];
   RLAST=html;
+  /* Gleiche Ansicht neu aufgebaut (Abgleich, Umschalter, Filter): Einblend-Animationen und Foto-Überblendung nicht nochmals abspielen,
+     sonst flackern Karten und Kopfbild bei jedem Neuaufbau (Vonsie, 27.11.2026) */
+  var vk=S.tab+'|'+(S.ev||'')+'|'+(S.ready?1:0); v.classList.toggle('vsame',vk===VKEY); VKEY=vk;
   v.innerHTML=html;
   /* sanftes Aufklappen nur direkt nach einem Klick (nicht bei jedem Abgleich-Render, sonst flackert es; Vonsie, 26.11.2026) */
   if(ANIM){ var an='anim-'+ANIM; ANIM=null; v.classList.add(an); setTimeout(function(){ v.classList.remove(an); },500); }
-  hydrateMon(v); hydrateEnc(v); sortTables(v); if(S.tab==='events'&&!S.ev&&S.evView==='map') mountMap();
-  fitLists(v); segScroll(v); mxScroll(v); glyphIcons(v); hydratePh(v); if(typeof popPaint==="function") popPaint(); navPush();
+  hydrateMon(v); hydrateEnc(v); hydratePh(v); sortTables(v); if(S.tab==='events'&&!S.ev&&S.evView==='map') mountMap();
+  fitLists(v); segScroll(v); mxScroll(v); glyphIcons(v); if(typeof popPaint==="function") popPaint(); navPush();
   var bh=document.querySelector('.bar'); if(bh) document.documentElement.style.setProperty('--barh',bh.offsetHeight+'px');
   if(fid){ var n=document.getElementById(fid); if(n){ n.focus({preventScroll:true}); if(ss!=null){ try{ n.setSelectionRange(ss,se); }catch(e){} } } }
   rowKeys(document); sxPaint(document); pageTitle(S.ready&&!S.noDb?ev:null);
