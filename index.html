@@ -2013,6 +2013,13 @@ button.ksp-row{cursor:pointer}button.ksp-row:hover{background:var(--bg2,rgba(0,0
 #view.vsame .wkc,#view.vsame .wk-cd b,#view.vsame .vhit,#view.vsame .vst tbody tr,#view.vsame .vm i,#view.vsame .wxd,#view.vsame .dtodo-b i,
 #apopw.pkeep .apop-bg,#apopw.pkeep .apop-box,#apopw.pkeep .vhit,#apopw.pkeep .vst tbody tr,#apopw.pkeep .vm i,#apopw.pkeep .wxd{animation:none}
 #view.vsame .evph{transition:none}
+/* Event-Kopf: Trennlinie endet vor dem Foto, ohne Einsatz kein Leerraum (Vonsie, 27.11.2026) */
+@media (min-width:641px){ .dhero:has(.evph.hero.on) .dstaff{margin-right:35%} }
+.dhero:has(.evph.hero.on) .dstaff:not(:has(.plist)){min-height:0}
+.dstaff:not(:has(.plist)) .dsg{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dstaff:not(:has(.plist)) .dsg>*{margin:0}
+/* iPhone-Zeitleiste: kleinere Punkte mit feinem Rand, damit Wochenenden im Dez./Jan. nicht verklumpen (Vonsie, 27.11.2026) */
+@media (max-width:640px){.sl-d{width:7px;height:7px;box-shadow:0 0 0 1.5px var(--surface)}.sl-d.xc{width:5px;height:5px;border-width:1.5px}.sl-d.ch{width:10px;height:10px;box-shadow:0 0 0 1.5px var(--surface),0 0 0 3px #d4a017}.slc .slw{height:58px}}
 
 </style>
 
@@ -3623,7 +3630,7 @@ function spSeasonSum(races,s){
     fp:med(rows.map(function(a){return a.fp;})),fb:med(best),DH:med(byD.DH||[]),SG:med(byD.SG||[]),GS:med(byD.GS||[]),SL:med(byD.SL||[])};
 }
 function spSeasonChart(sums,WW){ WW=WW||SPW;
-  var mob=window.innerWidth<640,W=mob?380:window.innerWidth>=1000?1100:680,H=mob?200:190,pl=40,pr=16,pt=30,pb=30,vals=[];
+  var mob=window.innerWidth<640,W=mob?380:window.innerWidth>=1000?1100:680,H=mob?200:190,pl=WW===SPW?40:56,pr=16,pt=30,pb=30,vals=[];
   sums.forEach(function(s){ ['fp','fb'].forEach(function(k){ if(s[k]!=null) vals.push(s[k]); }); });
   if(!vals.length) return '';
   var mxv=Math.max(1,Math.ceil(Math.max.apply(null,vals)*1.2*2)/2),step=mxv>4?1:0.5;
@@ -3722,7 +3729,7 @@ function spProfile(name,s,tm,top,races,all,WW,sea){
     return '<div class="spbg"><p class="spbh"><i class="st'+t+'" aria-hidden="true"></i>'+STL[t]+'<small>'+s[t].length+' Sektoren</small></p>'+row(s['m'+t],'me')+row(tm[t],'tm')+row(top[t],'tp')+'</div>';
   }).join('')+'<p class="spc-l">Median-Rückstand auf die Sektor-Bestzeit.</p></div>';
   /* Formkurve: Punkt = Lauf, Zahl = Rang, Höhe = Rückstand auf die Siegerzeit */
-  var mob=window.innerWidth<640,many=L.length>30,W=mob?380:(many&&window.innerWidth>=1000)?1100:680,Hh=mob?220:210,pl=mob?34:40,pr=mob?8:14,pt=30,pb=40,mxv=Math.max(2,Math.ceil(Math.max.apply(null,L.map(function(x){return x.a.fp;}))));
+  var mob=window.innerWidth<640,many=L.length>30,W=mob?380:(many&&window.innerWidth>=1000)?1100:680,Hh=mob?220:210,pl=(mob?34:40)+(WW===SPW?0:16),pr=mob?8:14,pt=30,pb=40,mxv=Math.max(2,Math.ceil(Math.max.apply(null,L.map(function(x){return x.a.fp;}))));
   var X=function(i){ return pl+14+(L.length<2?0:i/(L.length-1)*(W-pl-pr-28)); },Y=function(v){ return pt+Math.min(v,mxv)/mxv*(Hh-pb-pt); };
   var ticks=[]; for(var v=0;v<=mxv+1e-9;v+=mxv>4?2:1) ticks.push(v);
   var grid=ticks.map(function(v){ return '<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(v).toFixed(1)+'" y2="'+Y(v).toFixed(1)+'" class="gl'+(v===0?' z':'')+'"/><text x="'+(pl-6)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" class="ax">'+(v===0?(WW===SPW?'Sieg':'Bestzeit'):'+'+v+' %')+'</text>'; }).join('');
@@ -5149,6 +5156,10 @@ function setterTech(st){
     lgI('Zahl = Ränge besser (−) oder schlechter (+) als sonst','Laufrang gegenüber dem eigenen Median-Laufrang, Ø über alle Schweizer Fahrten ab 3 Fahrten. Negativ = besser als sonst. Bestenliste oben: nur Kurssetzer mit mindestens 3 gesetzten Läufen in Rennen.')+'<p class="spc-l kfoot">Torabstand: Median der offenen Tore · Offset: Ø seitlicher Versatz · Figuren pro Lauf · <span class="lg good"></span> enger/gerader <span class="lg bad"></span> weiter/gedrehter als der Schnitt der Disziplin.</p>'+
     '</section>';
 }
+/* Rennen eines Kurssetzers kurz: Orte mit Anzahl statt Liste aller Rennen (Vonsie, 27.11.2026) */
+function ksPlaces(rs){ var c={},o=[]; rs.forEach(function(r){ var p=r.pl.replace(/,.*$/,''); if(!c[p]){ c[p]=0; o.push(p); } c[p]++; });
+  o.sort(function(a,b){ return c[b]-c[a]; }); var sh=o.slice(0,6).map(function(p){ return p+(c[p]>1?' '+c[p]+'×':''); }).join(' · ');
+  return o.length>6?sh+' · +'+(o.length-6)+' Orte':sh; }
 function setterSpeed(st,races){
   var pool=races.filter(function(r){return !r.tr;});
   var nd={},np={}; pool.forEach(function(r){ r.rows.forEach(function(a){ if(a.nat!=='SUI') return; (nd[a.n+'|'+r.disc]=nd[a.n+'|'+r.disc]||[]).push(a.rk); (np[a.n]=np[a.n]||[]).push(a.rk); }); });
@@ -5160,10 +5171,10 @@ function setterSpeed(st,races){
   L.forEach(function(o){ o.d=vAvg(o.dl); vBestWorst(o,o.races.length<2?1:2); });
   L.sort(function(a,b){ return b.races.length-a.races.length||a.d-b.d; });
   var head='<thead><tr><th class="stick">Kurssetzer</th><th>Rennen</th><th class="num">Rang SUI</th><th>Liegt / liegt weniger</th></tr></thead>';
-  var row=function(o){ return '<tr><td class="stick nw">'+(o.nat&&o.nat!=='FIS'?flag(o.nat)+' ':'')+'<b>'+h(o.n)+'</b>'+(o.nat==='FIS'?' <small class="mu">FIS</small>':'')+'</td><td class="wrap" data-sv="'+o.races.length+'"><b>'+o.races.length+'</b> <small class="mu">'+h(o.races.map(function(r){return r.pl.replace(/,.*$/,'')+' '+(DSHORT[r.disc]||r.disc)+' '+r.d.slice(2,4);}).join(', '))+'</small></td>'+
-      '<td class="num" data-sv="'+(o.d==null?99:o.d.toFixed(2))+'">'+vDelta(o.d)+' <small class="mu">'+o.dl.length+'</small></td><td class="wrap">'+vWho(o)+'</td></tr>'; };
-  var top=vSetterTop(L,function(o){ return ' '+o.races.length+' Rennen: '+o.races.map(function(r){return r.pl.replace(/,.*$/,'')+' '+(DSHORT[r.disc]||r.disc)+' '+r.d.slice(2,4);}).join(', '); });
-  var tbl=top+'<details class="kmore"'+(top?'':' open')+'><summary>Alle '+L.length+' Kurssetzer</summary><div class="tw"><table class="tbl kst srt" data-sid="kss">'+head+'<tbody>'+L.map(row).join('')+'</tbody></table></div></details>';
+  var row=function(o){ return '<tr><td class="stick nw">'+(o.nat&&o.nat!=='FIS'?flag(o.nat)+' ':'')+'<b>'+h(o.n)+'</b>'+(o.nat==='FIS'?' <small class="mu">FIS</small>':'')+'</td><td class="wrap" data-sv="'+o.races.length+'"><b>'+o.races.length+'</b> <small class="mu">'+h(ksPlaces(o.races))+'</small></td>'+
+      '<td class="num" data-sv="'+(o.d==null?99:o.d.toFixed(2))+'">'+vDelta(o.d)+' <small class="mu" title="Schweizer Fahrten">'+o.dl.length+' Fahrten</small></td><td class="wrap">'+vWho(o)+'</td></tr>'; };
+  var top=vSetterTop(L,function(o){ return ' '+o.races.length+' Rennen: '+ksPlaces(o.races); });
+  var tbl=top+'<details class="kmore"'+(top&&L.length>1?'':' open')+'><summary>'+(L.length>1?'Alle '+L.length+' Kurssetzer':'Kurssetzer')+'</summary><div class="tw"><table class="tbl kst srt" data-sid="kss">'+head+'<tbody>'+L.map(row).join('')+'</tbody></table></div></details>';
   return '<section class="card"><div class="ch"><h2>Kurssetzer</h2><span class="h3v">'+L.length+' Kurssetzer · '+pool.length+' Rennen</span></div>'+tbl+
     lgI('Zahl = Ränge besser (−) oder schlechter (+) als sonst','Rang gegenüber dem eigenen Median-Rang der Disziplin, Ø über alle Schweizer Fahrten ab 3 Fahrten. Negativ = besser als sonst. Bestenliste oben: nur Kurssetzer mit mindestens 3 Rennen (ohne Trainings). In der Abfahrt setzen meist die FIS-Renndirektoren.')+'</section>';
 }
@@ -5931,7 +5942,7 @@ function viewTeam(){
     (xL.length?'<div class="dupl xpl"><b>Umplanen: Event abgesagt ('+xL.length+')</b><ul>'+xL.map(function(t){return '<li>'+h(t)+'</li>';}).join('')+'</ul><p class="mu">Einsatz in monday («Sport Science Support») anpassen, sobald der Ersatzort feststeht.</p></div>':'')+
     (dupL.length?'<div class="dupl"><b>Doppelt eingeplant ('+dupL.length+')</b><ul>'+dupL.map(function(t){return '<li>'+h(t)+'</li>';}).join('')+'</ul><p class="mu">Gleiche Person zur gleichen Zeit an zwei Orten vor Ort. In monday («Sport Science Support») prüfen.</p></div>':'');
   /* Wichtigstes zuerst: wer wo ist, dann Einsätze pro Person, zuletzt die Bilanz (Vonsie, 26.11.2026) */
-  return '<section class="card"><div class="ch"><div><h2>'+(list.some(function(e){return e.to>=today();})?'Wer wird wo sein':'Wer war wo')+'</h2>'+(winOn?'<p>Nächste 4 Wochen · '+evs.length+' von '+evAll.length+' Events</p>':'')+'</div>'+(mxW?'<button type="button" class="btn ghost sm" data-act="mxall" aria-expanded="'+!winOn+'">'+(winOn?'Ganze Saison':'Nur nächste 4 Wochen')+'</button>':'')+'</div>'+mx+'</section>'+todoCard(list)+chkCard(list)+
+  return '<section class="card"><div class="ch"><div><h2>'+(list.some(function(e){return e.to>=today();})?'Wer wird wo sein':'Wer war wo')+'</h2>'+(winOn?'<p>Nächste 4 Wochen · '+evs.length+' von '+evAll.length+' Events</p>':'')+'</div>'+(mxW?'<button type="button" class="btn sm" data-act="mxall" aria-expanded="'+!winOn+'">'+(winOn?'Ganze Saison':'Nur nächste 4 Wochen')+'</button>':'')+'</div>'+mx+'</section>'+todoCard(list)+chkCard(list)+
     '<section class="card"><div class="ch"><div><h2>Einsätze pro Person</h2><p>Person × Event × Rolle · Saison '+h(S.season)+', nach den Filtern oben</p></div></div>'+lg+bars+'</section>'+bilanzCard(list)+livePlanCard();
 }
 
