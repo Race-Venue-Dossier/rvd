@@ -2023,6 +2023,15 @@ button.ksp-row{cursor:pointer}button.ksp-row:hover{background:var(--bg2,rgba(0,0
 /* Kurssetzer-Knopf nicht spaltig wie die Bestenliste (.ksn-Kollision; Vonsie, 27.11.2026) */
 button.ksn{display:inline;font-size:inherit;text-align:left}
 .evc.pv.none{border-style:dashed;border-color:var(--line);color:var(--muted);font-weight:600}
+/* Weltcup-Punkte, eine Disziplin: Säulen links über die Breite, Rangliste rechts (Vonsie, 27.11.2026) */
+.pchw .pchb{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start;margin-top:8px}
+.plr{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--bg2,rgba(0,0,0,.03));border:1px solid var(--line)}
+.plrh{display:flex;justify-content:space-between;margin:0 0 4px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plr .plgi{font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line);align-items:flex-start}.plr .plgi:last-child{border-bottom:0}
+.plr .plgi i{margin-top:3px}.plr .plgi b{font-size:13px}
+.plr .plgi span{display:flex;flex-direction:column;gap:2px;color:var(--ink);font-weight:600;white-space:normal}
+.plr .plgi small{font-size:10.5px;font-weight:500;color:var(--muted)}
+.plr .plgi s{display:block;height:3px;border-radius:2px;background:var(--pc);opacity:.8;text-decoration:none}
 
 </style>
 
@@ -5216,11 +5225,14 @@ function ptsChart(g,disc,seasons,act,half,col){
   var names=Object.keys(tot).sort(function(a,b){return tot[b]-tot[a];}); col=col||ptsCols(g,[disc],seasons);
   var sums=R.map(function(r){return r.a.reduce(function(s,a){return s+a.p;},0);}),mx=Math.max(50,Math.max.apply(null,sums));
   var step=mx>200?50:mx>100?25:20,top=Math.ceil(mx/step)*step;
-  var mob=window.innerWidth<640,avail=Math.min(window.innerWidth-(mob?40:90),1300); if(half) avail=Math.floor((avail-28)/2); var pl=34,x0=mob?84:92,gap=mob?12:(R.length>9?12:18);
-  var bw=Math.max(mob?30:28,Math.min(64,Math.floor((avail-x0-gap)/R.length-gap))),pt=18,ph=mob?200:230,pb=104,W=Math.max(avail,x0+R.length*(bw+gap)),Hh=pt+ph+pb;
+  var mob=window.innerWidth<640,avail=Math.min(window.innerWidth-(mob?40:90),1300); if(half) avail=Math.floor((avail-28)/2);
+  /* eine Disziplin auf breitem Bildschirm: Säulen über die ganze Breite, rechts Rangliste statt Legende oben (Vonsie, 27.11.2026) */
+  var wide=!half&&!mob&&window.innerWidth>=1000; if(wide) avail-=300;
+  var pl=34,x0=mob?84:92,gap=mob?12:(R.length>9?12:18);
+  var bw=Math.max(mob?30:28,Math.min(wide?76:64,Math.floor((avail-x0-gap)/R.length-gap))),stp=wide?Math.max(bw+gap,(avail-x0-8)/R.length):bw+gap,pt=18,ph=mob?200:230,pb=104,W=Math.max(avail,x0+R.length*(bw+gap)),Hh=pt+ph+pb;
   var Y=function(v){return pt+ph-v/top*ph;};
   var grid=''; for(var v=0;v<=top;v+=step) grid+='<line x1="'+pl+'" x2="'+W+'" y1="'+Y(v).toFixed(1)+'" y2="'+Y(v).toFixed(1)+'" class="gl'+(v?'':' z')+'"/><text x="'+(pl-6)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" class="ax">'+v+'</text>';
-  var bars=R.map(function(r,i){ var x=x0+i*(bw+gap),y0=0,segs='';
+  var bars=R.map(function(r,i){ var x=Math.round(x0+i*stp+(stp-bw-gap)/2),y0=0,segs='';
     r.a.slice().sort(function(a,b){return names.indexOf(a.n)-names.indexOf(b.n);}).forEach(function(a){ var y1=Y(y0+a.p),y2=Y(y0),hh=y2-y1;
       segs+='<g class="pcs pc'+col[a.n]+'" data-n="'+h(a.n)+'" data-rk="'+a.rk+'" data-p="'+a.p+'" data-r="'+h(dm(r.d)+' '+r.pl)+'"><rect x="'+x+'" y="'+y1.toFixed(1)+'" width="'+bw+'" height="'+Math.max(0,hh-1.2).toFixed(1)+'" rx="2"/>'+(hh>=13?'<text x="'+(x+bw/2)+'" y="'+(y1+hh/2+3.8).toFixed(1)+'" text-anchor="middle">'+a.p+'</text>':'')+'</g>';
       y0+=a.p; });
@@ -5228,7 +5240,11 @@ function ptsChart(g,disc,seasons,act,half,col){
     return segs+'<text x="'+lx+'" y="'+(Y(sums[i])-5).toFixed(1)+'" text-anchor="middle" class="ax pst">'+sums[i]+'</text>'+
       '<text transform="translate('+lx+','+ly+') rotate(-50)" text-anchor="end" class="ax pxl">'+dm(r.d)+' '+h(plShort(r.pl))+'</text>'; }).join('');
   var leg='<div class="plg">'+names.map(function(n){ return '<button type="button" class="lnk plgi" data-n="'+h(n)+'" data-act="'+act+'" data-v="'+h(n)+'" data-g="'+g+'" data-d="'+disc+'" data-s="all"><i class="pc'+col[n]+'"></i><span>'+h(lnF(n))+'</span><b>'+tot[n]+'</b></button>'; }).join('')+'</div>';
-  return '<div class="pch"><p class="h3">'+h(DISC[disc])+' <small class="mu">'+R.length+' Rennen · '+sums.reduce(function(a,b){return a+b;},0)+' Punkte</small></p>'+leg+
+  var sumAll=sums.reduce(function(a,b){return a+b;},0),svgS='<div class="pscr"><svg viewBox="0 0 '+W+' '+Hh+'" width="'+W+'" height="'+Hh+'" role="img" aria-label="Weltcup-Punkte pro Rennen, '+h(DISC[disc])+'">'+grid+bars+'</svg></div>';
+  if(wide){ svgS=svgS.replace('width="'+W+'" height="'+Hh+'"','width="'+W+'" height="'+Hh+'" style="width:100%;height:auto"'); var nR=function(n){ return R.filter(function(r){ return r.a.some(function(a){return a.n===n;}); }).length; };
+    var rl='<div class="plr"><p class="plrh"><span>Athlet:in</span><span>Punkte</span></p>'+names.map(function(n){ return '<button type="button" class="lnk plgi" data-n="'+h(n)+'" data-act="'+act+'" data-v="'+h(n)+'" data-g="'+g+'" data-d="'+disc+'" data-s="all"><i class="pc'+col[n]+'"></i><span>'+h(lnF(n))+'<small>'+nR(n)+(nR(n)===1?' Rennen':' Rennen')+' · '+Math.round(tot[n]/sumAll*100)+' %</small><s class="pc'+col[n]+'" style="width:'+(tot[n]/tot[names[0]]*100).toFixed(1)+'%"></s></span><b>'+tot[n]+'</b></button>'; }).join('')+'</div>';
+    return '<div class="pch pchw"><p class="h3">'+h(DISC[disc])+' <small class="mu">'+R.length+' Rennen · '+sumAll+' Punkte</small></p><div class="pchb">'+svgS+rl+'</div></div>'; }
+  return '<div class="pch"><p class="h3">'+h(DISC[disc])+' <small class="mu">'+R.length+' Rennen · '+sumAll+' Punkte</small></p>'+leg+
     '<div class="pscr"><svg viewBox="0 0 '+W+' '+Hh+'" width="'+W+'" height="'+Hh+'" role="img" aria-label="Weltcup-Punkte pro Rennen, '+h(DISC[disc])+'">'+grid+bars+'</svg></div></div>';
 }
 /* Hover/Tippen auf ein Säulenstück: Athlet:in anzeigen und in allen Säulen hervorheben */
