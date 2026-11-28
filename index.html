@@ -2036,6 +2036,29 @@ button.ksn{display:inline;font-size:inherit;text-align:left}
 .kslg .ksref{margin-top:4px}.ksav .ksas{font-size:11px;font-weight:600;color:var(--muted);margin-left:2px}
 .ksav .ksfew{color:var(--warn,#b45309)}
 .ksssw{margin-left:auto;order:8}.ksssw+.ksvsw{margin-left:8px}
+/* Team FEA «Wer wird wo sein»: Band «diese Woche» ruhiger und geschlossen (Vonsie, 28.11.2026) */
+.mx2 .nx{background:color-mix(in srgb,var(--s1) 5%,transparent)}
+.mx2 th.h.nx{background:color-mix(in srgb,var(--s1) 11%,transparent);box-shadow:inset 0 3px 0 var(--s1)}
+.mx2 th.h.nx0{border-top-left-radius:10px}.mx2 th.h.nx1{border-top-right-radius:10px}
+.mx2 tbody tr:last-child td.nx0{border-bottom-left-radius:10px}.mx2 tbody tr:last-child td.nx1{border-bottom-right-radius:10px}
+.mx2 .nx.mf:not(.nx0){border-left-color:color-mix(in srgb,var(--s1) 22%,transparent)}
+.mx2 tbody tr:last-child td.nx{box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--s1) 14%,transparent)}
+.mx2 thead tr.mxm th.mf{border-left-color:transparent}
+/* Karten-Popup klar gegliedert (Vonsie, 28.11.2026) */
+.mpop-e{display:flex;flex-direction:column;gap:8px;padding:10px 12px}
+.mpop-r1{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mpop-d{font-size:15px}
+.mpop-in{font-size:11.5px;font-weight:700;color:var(--ink-2);background:var(--bg2,rgba(0,0,0,.04));border-radius:999px;padding:2px 8px;white-space:nowrap}
+.mpop-in.live{color:#fff;background:var(--red)}
+.mpop-e .mpop-m{justify-content:flex-start}
+.mpop-r3{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:7px}
+.mpop-r3 .mpop-s,.mpop-r3 .mpop-go{grid-column:auto;white-space:nowrap}
+/* Leerer Renntag: links ausgerichtet auf einer Zeile statt mittig (Vonsie, 28.11.2026) */
+.days .dcard:has(.dempty){flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:10px 18px;padding:12px 16px}
+.days .dcard:has(.dempty) .dch{margin:0;justify-content:flex-start;flex:0 0 auto}
+.days .dcard:has(.dempty) .body{flex:1;min-width:220px;margin:0;padding:0 0 0 18px;border-left:1px solid var(--line)}
+.days .dcard:has(.dempty) .dempty{justify-content:flex-start;text-align:left}
+@media (max-width:640px){.days .dcard:has(.dempty){flex-direction:column;align-items:flex-start}.days .dcard:has(.dempty) .body{padding:0;border-left:0}}
 
 </style>
 
@@ -4738,9 +4761,11 @@ function mapPopup(g){
   var t=today();
   return '<div class="mpop"><p class="mpop-h">'+flag(g.ev[0].nat)+'<b>'+h(g.ev[0].name.replace(/\s*\(TBC\)/,''))+'</b></p>'+g.ev.map(function(e){
     var st=status(e),staff=staffOf(e),c=cov(itemsOf(e)),n=Object.keys(c).reduce(function(s,k){return s+c[k];},0);
-    return '<button type="button" class="mpop-e" data-act="open" data-v="'+h(e.id)+'"><span class="mpop-d">'+spanShort(e.frm,e.to)+(e.frm.slice(0,4)!==t.slice(0,4)?' '+e.frm.slice(0,4):'')+'</span>'+
-      '<span class="mpop-m">'+gMark(e.g)+racePills(e)+(st==='up'?'<span class="mu">'+inWords(daysTo(e.frm))+'</span>':'')+'</span>'+
-      '<span class="mpop-s">'+(n?n+' Einträge':'noch keine Einträge')+(staff.length?' · '+staff.length+' FEA':'')+'</span><span class="mpop-go">Event öffnen ›</span></button>';
+    /* klar gegliedert: Datum + Abstand, Disziplinen, unten Stand und «Öffnen» (Vonsie, 28.11.2026) */
+    return '<button type="button" class="mpop-e" data-act="open" data-v="'+h(e.id)+'">'+
+      '<span class="mpop-r1"><span class="mpop-d">'+spanShort(e.frm,e.to)+(e.frm.slice(0,4)!==t.slice(0,4)?' '+e.frm.slice(0,4):'')+'</span>'+(st==='up'?'<span class="mpop-in">'+inWords(daysTo(e.frm))+'</span>':st==='live'?'<span class="mpop-in live">läuft</span>':'')+'</span>'+
+      '<span class="mpop-m">'+gMark(e.g)+racePills(e)+'</span>'+
+      '<span class="mpop-r3"><span class="mpop-s">'+(n?n+' Einträge':'noch keine Einträge')+(staff.length?' · '+staff.length+' FEA':'')+'</span><span class="mpop-go">Event öffnen ›</span></span></button>';
   }).join('')+'</div>';
 }
 function mountMap(){
@@ -5359,6 +5384,8 @@ document.addEventListener('pointermove',ptsTip,{passive:true});
 document.addEventListener('pointerdown',ptsTip,{passive:true});
 window.addEventListener('scroll',function(){ if(PTIP&&!PTIP.hidden){ PTIP.hidden=true; ptsHi(null); } },{passive:true});
 function ptsCard(g,discs,seasons,act,ctl){
+  /* Speed: nur die oben gewählte Disziplin (Abfahrt oder Super-G), nie gemischt – wie bei Technik (Vonsie, 28.11.2026) */
+  if(discs.length>1&&discs.indexOf('DH')>=0&&typeof spState==='function'){ var sd0=spState().sd; if(sd0==='DH'||sd0==='SG') discs=[sd0]; }
   var half=discs.length>1&&window.innerWidth>=1100;
   var col=ptsCols(g,discs,seasons),parts=discs.map(function(dc){ return ptsChart(g,dc,seasons,act,half,col); }).filter(Boolean),body=parts.length>1&&half?'<div class="pcg">'+parts.join('')+'</div>':parts.join('');
   if(!body&&!ctl) return '';
@@ -6030,7 +6057,7 @@ function viewTeam(){
   var first={}; evs.forEach(function(e,i){ if(!i||mk(evs[i-1])!==mk(e)) first[e.id]=1; });
   /* vergangene Events blasser, Tabelle startet bei heute (mxScroll in 17_rendern.js, Vonsie 26.11.2026) */
   var nowId=(evs.filter(function(e){return e.to>=t0;})[0]||{}).id;
-  var cc=function(e){ return (first[e.id]?' mf':'')+(nx(e)?' nx':'')+(e.to<t0?' mp':''); };
+  var cc=function(e){ return (first[e.id]?' mf':'')+(nx(e)?' nx'+(e.id===NX0?' nx0':'')+(e.id===NX1?' nx1':''):'')+(e.to<t0?' mp':''); };
   /* Doppelt eingeplant: gleiche Person zur gleichen Zeit an zwei Orten vor Ort (Vonsie, 19.10.2026) */
   var DUP={},dupL=[];
   people.forEach(function(p){ var ids=Object.keys(p.ev),E=ids.map(function(id){ return evAll.filter(function(e){return e.id===id;})[0]; }).filter(Boolean);
@@ -6038,6 +6065,7 @@ function viewTeam(){
       if(!(xa.onsite&&xb.onsite)||xa.x||xb.x) continue; /* vor Ort + Command Center gleichzeitig ist oft gewollt (z. B. Olympia) */ if(a.frm>b.to||b.frm>a.to) continue; if(vkey(a.name)===vkey(b.name)) continue;
       var t=p.n+': '+a.name+' '+GN[a.g]+' ('+(xa.onsite?'vor Ort':'Command Center')+') und '+b.name+' '+GN[b.g]+' ('+(xb.onsite?'vor Ort':'Command Center')+'), '+span(a.frm<b.frm?b.frm:a.frm,a.to<b.to?a.to:b.to);
       (DUP[p.n+'|'+a.id]=DUP[p.n+'|'+a.id]||[]).push(t); (DUP[p.n+'|'+b.id]=DUP[p.n+'|'+b.id]||[]).push(t); dupL.push(t); } });
+  var nxL=evs.filter(nx),NX0=nxL.length?nxL[0].id:null,NX1=nxL.length?nxL[nxL.length-1].id:null;   /* Band «diese Woche»: Anfang und Ende (Vonsie, 28.11.2026) */
   var mx='<div class="tw"><table class="tbl mx mx2"><thead><tr class="mxm"><th class="stick"></th>'+months.map(function(m){ return '<th class="mxmo mf" colspan="'+m.n+'">'+MN[+m.k.slice(5,7)-1]+' '+m.k.slice(0,4)+'</th>'; }).join('')+'<th></th></tr>'+
     '<tr><th class="stick">Person</th>'+evs.map(function(e){
       var xc=evCancelled(e);
